@@ -24,3 +24,9 @@ export function rootPathHash(rootPath: string): string {
 export function isMissingSource(source: SourceState): boolean {
     return source.status.toLowerCase() === "degraded" && source.lastError === missingRootMessage;
 }
+
+/** Returns the shared MCP bearer token only when the environment value is non-empty. */
+export function environmentMcpToken(value: string | undefined): string | undefined {
+    const token = value?.trim();
+    return token ? token : undefined;
+}

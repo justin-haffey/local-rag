@@ -2,7 +2,7 @@ const assert = require("node:assert/strict");
 const path = require("node:path");
 const test = require("node:test");
 
-const { isMissingSource, missingRootMessage, rootPathHash } = require("../out/sourceState.js");
+const { environmentMcpToken, isMissingSource, missingRootMessage, rootPathHash } = require("../out/sourceState.js");
 
 test("root path identity is case-insensitive and ignores a trailing separator", () => {
     const root = path.resolve("C:\\LocalRagFixture");
@@ -19,4 +19,10 @@ test("only the explicit missing-root degraded state is considered stale", () => 
     assert.equal(isMissingSource({ ...base, status: "Degraded", lastError: missingRootMessage }), true);
     assert.equal(isMissingSource({ ...base, status: "Degraded", lastError: "Weaviate is unavailable." }), false);
     assert.equal(isMissingSource({ ...base, status: "Ready", lastError: missingRootMessage }), false);
+});
+
+test("shared MCP tokens are trimmed and blank values fall back to Secret Storage", () => {
+    assert.equal(environmentMcpToken("  shared-token  "), "shared-token");
+    assert.equal(environmentMcpToken("   "), undefined);
+    assert.equal(environmentMcpToken(undefined), undefined);
 });

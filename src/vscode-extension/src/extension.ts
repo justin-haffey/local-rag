@@ -4,7 +4,7 @@ import * as path from "node:path";
 import { ChildProcess, spawn } from "node:child_process";
 import * as vscode from "vscode";
 import { resolveInstallerConfiguration } from "./installerSettings";
-import { isMissingSource, rootPathHash, SourceState } from "./sourceState";
+import { environmentMcpToken, isMissingSource, rootPathHash, SourceState } from "./sourceState";
 
 interface BackendDiscovery {
     endpoint: string;
@@ -178,6 +178,9 @@ async function launchBackend(context: vscode.ExtensionContext, executable: strin
 }
 
 async function getOrCreateToken(context: vscode.ExtensionContext): Promise<string> {
+    const sharedMcpToken = environmentMcpToken(process.env.LOCALRAG_MCP_TOKEN);
+    if (sharedMcpToken) return sharedMcpToken;
+
     const key = "localRag.token";
     const existing = await context.secrets.get(key);
     if (existing) return existing;
