@@ -46,6 +46,7 @@ builder.Services.AddSingleton<IndexWorkChannel>();
 builder.Services.AddSingleton<OperationalMetrics>();
 builder.Services.AddSingleton<IndexJobStore>();
 builder.Services.AddSingleton<SourceWatcherRegistry>();
+builder.Services.AddSingleton<MissingSourcePolicy>();
 builder.Services.AddSingleton<IndexCoordinator>();
 builder.Services.AddSingleton<IIndexCoordinator>(services => services.GetRequiredService<IndexCoordinator>());
 builder.Services.AddSingleton<IRagSearchService, RagSearchService>();

@@ -9,6 +9,7 @@ public sealed partial class StartupInitializationService(
     IndexJobStore jobs,
     SourceWatcherRegistry watchers,
     IIndexCoordinator coordinator,
+    MissingSourcePolicy missingSourcePolicy,
     ILogger<StartupInitializationService> logger) : IHostedService
 {
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -21,7 +22,21 @@ public sealed partial class StartupInitializationService(
         {
             if (!Directory.Exists(source.CanonicalRootPath))
             {
-                await sources.SetStatusAsync(source.SourceId, SourceStatus.Degraded, "Source root is no longer accessible.", cancellationToken);
+                if (missingSourcePolicy.ShouldCleanup(source, DateTimeOffset.UtcNow))
+                {
+                    try
+                    {
+                        await coordinator.RemoveSourceAsync(source.SourceId, cancellationToken);
+                    }
+                    catch (Exception exception) when (exception is not OperationCanceledException)
+                    {
+                        LogMissingSourceCleanupFailed(logger, exception, source.SourceId);
+                    }
+                }
+                else if (!string.Equals(source.LastError, MissingSourcePolicy.MissingRootMessage, StringComparison.Ordinal))
+                {
+                    await sources.SetStatusAsync(source.SourceId, SourceStatus.Degraded, MissingSourcePolicy.MissingRootMessage, cancellationToken);
+                }
                 continue;
             }
             watchers.Track(source);
@@ -34,4 +49,7 @@ public sealed partial class StartupInitializationService(
 
     [LoggerMessage(EventId = 1, Level = LogLevel.Information, Message = "Local RAG state initialized.")]
     private static partial void LogInitialized(ILogger logger);
+
+    [LoggerMessage(EventId = 2, Level = LogLevel.Warning, Message = "Could not remove stale source {SourceId}; cleanup will be retried.")]
+    private static partial void LogMissingSourceCleanupFailed(ILogger logger, Exception exception, string sourceId);
 }

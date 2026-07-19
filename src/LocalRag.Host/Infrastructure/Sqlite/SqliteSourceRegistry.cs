@@ -109,10 +109,16 @@ public sealed class SqliteSourceRegistry(SqliteDatabase database, IOptions<Local
     public async Task RemoveAsync(string sourceId, CancellationToken cancellationToken)
     {
         await using var connection = await database.OpenAsync(cancellationToken);
+        await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
         await using var command = connection.CreateCommand();
-        command.CommandText = "DELETE FROM Sources WHERE SourceId = $id;";
+        command.Transaction = (SqliteTransaction)transaction;
+        command.CommandText = """
+            DELETE FROM DeadLetterJobs WHERE SourceId = $id;
+            DELETE FROM Sources WHERE SourceId = $id;
+            """;
         command.Parameters.AddWithValue("$id", sourceId);
         await command.ExecuteNonQueryAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
     }
 
     public async Task SetStatusAsync(string sourceId, SourceStatus status, string? failureMessage, CancellationToken cancellationToken)

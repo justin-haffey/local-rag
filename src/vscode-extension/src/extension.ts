@@ -4,15 +4,7 @@ import * as path from "node:path";
 import { ChildProcess, spawn } from "node:child_process";
 import * as vscode from "vscode";
 import { resolveInstallerConfiguration } from "./installerSettings";
-
-interface SourceResponse {
-    sourceId: string;
-    displayName: string;
-    status: string;
-    lastScanUtc?: string;
-    lastSuccessfulIndexUtc?: string;
-    lastError?: string;
-}
+import { isMissingSource, rootPathHash, SourceState } from "./sourceState";
 
 interface BackendDiscovery {
     endpoint: string;
@@ -21,6 +13,33 @@ interface BackendDiscovery {
 }
 
 let backend: ChildProcess | undefined;
+const sourceStateKey = "localRag.sourceState";
+
+class SourceDecorationProvider implements vscode.FileDecorationProvider {
+    private readonly changed = new vscode.EventEmitter<vscode.Uri | vscode.Uri[] | undefined>();
+    private registeredRoots = new Set<string>();
+
+    public readonly onDidChangeFileDecorations = this.changed.event;
+
+    public update(sources: readonly SourceState[]): void {
+        this.registeredRoots = new Set(sources.map(source => source.rootPathHash));
+        this.changed.fire(undefined);
+    }
+
+    public provideFileDecoration(uri: vscode.Uri): vscode.ProviderResult<vscode.FileDecoration> {
+        if (uri.scheme !== "file" || !this.registeredRoots.has(rootPathHash(uri.fsPath))) return undefined;
+        return {
+            badge: "R",
+            tooltip: "Local RAG source",
+            color: new vscode.ThemeColor("gitDecoration.addedResourceForeground"),
+            propagate: false
+        };
+    }
+
+    public dispose(): void {
+        this.changed.dispose();
+    }
+}
 
 export function activate(context: vscode.ExtensionContext): void {
     const status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
@@ -30,18 +49,48 @@ export function activate(context: vscode.ExtensionContext): void {
     status.show();
     context.subscriptions.push(status);
 
+    const decorations = new SourceDecorationProvider();
+    decorations.update(context.globalState.get<SourceState[]>(sourceStateKey, []));
+    context.subscriptions.push(decorations, vscode.window.registerFileDecorationProvider(decorations));
+
     context.subscriptions.push(vscode.commands.registerCommand("localRag.markAsSource", async (uri?: vscode.Uri) => {
         const folder = await resolveFolder(uri);
         if (!folder) return;
         const client = await ensureBackend(context, status);
-        const source = await client.post<SourceResponse>("/api/v1/sources", { rootPath: folder.fsPath });
+        const sources = await refreshSourceState(context, decorations, client);
+        const existing = sources.find(source => source.rootPathHash === rootPathHash(folder.fsPath));
+        if (existing) {
+            await client.delete(`/api/v1/sources/${encodeURIComponent(existing.sourceId)}`);
+            await refreshSourceState(context, decorations, client);
+            vscode.window.showInformationMessage(`Removed ${existing.displayName} from Local RAG.`);
+            return;
+        }
+
+        const source = await client.post<SourceState>("/api/v1/sources", { rootPath: folder.fsPath });
+        const refreshed = await refreshSourceState(context, decorations, client);
         vscode.window.showInformationMessage(`Local RAG is indexing ${source.displayName}.`);
+        const stale = refreshed.filter(candidate =>
+            candidate.sourceId !== source.sourceId &&
+            candidate.displayName.localeCompare(source.displayName, undefined, { sensitivity: "accent" }) === 0 &&
+            isMissingSource(candidate));
+        if (stale.length > 0) {
+            const action = await vscode.window.showWarningMessage(
+                `Local RAG found ${stale.length} stale index${stale.length === 1 ? "" : "es"} for a previous location of ${source.displayName}.`,
+                "Remove stale index");
+            if (action === "Remove stale index") {
+                for (const candidate of stale) {
+                    await client.delete(`/api/v1/sources/${encodeURIComponent(candidate.sourceId)}`);
+                }
+                await refreshSourceState(context, decorations, client);
+            }
+        }
     }));
     context.subscriptions.push(vscode.commands.registerCommand("localRag.removeSource", async () => {
         const client = await ensureBackend(context, status);
         const source = await pickSource(client);
         if (!source) return;
         await client.delete(`/api/v1/sources/${encodeURIComponent(source.sourceId)}`);
+        await refreshSourceState(context, decorations, client);
         vscode.window.showInformationMessage(`Removed ${source.displayName} from Local RAG.`);
     }));
     context.subscriptions.push(vscode.commands.registerCommand("localRag.reindexSource", async () => {
@@ -53,15 +102,42 @@ export function activate(context: vscode.ExtensionContext): void {
     }));
     context.subscriptions.push(vscode.commands.registerCommand("localRag.showSourceStatus", async () => {
         const client = await ensureBackend(context, status);
-        const sources = await client.get<SourceResponse[]>("/api/v1/sources");
+        const sources = await refreshSourceState(context, decorations, client);
         if (sources.length === 0) {
             vscode.window.showInformationMessage("No Local RAG sources are registered.");
             return;
         }
         const selected = await pickSource(client, sources);
-        if (selected) vscode.window.showInformationMessage(`${selected.displayName}: ${selected.status}${selected.lastError ? ` — ${selected.lastError}` : ""}`);
+        if (!selected) return;
+        if (isMissingSource(selected)) {
+            const action = await vscode.window.showWarningMessage(
+                `${selected.displayName}: ${selected.status} — ${selected.lastError}`,
+                "Remove stale source");
+            if (action === "Remove stale source") {
+                await client.delete(`/api/v1/sources/${encodeURIComponent(selected.sourceId)}`);
+                await refreshSourceState(context, decorations, client);
+            }
+            return;
+        }
+        vscode.window.showInformationMessage(`${selected.displayName}: ${selected.status}${selected.lastError ? ` — ${selected.lastError}` : ""}`);
     }));
     context.subscriptions.push({ dispose: () => backend?.kill() });
+
+    void ensureBackend(context, status)
+        .then(client => refreshSourceState(context, decorations, client))
+        .catch(error => {
+            status.tooltip = error instanceof Error ? error.message : String(error);
+        });
+}
+
+async function refreshSourceState(
+    context: vscode.ExtensionContext,
+    decorations: SourceDecorationProvider,
+    client: LocalRagClient): Promise<SourceState[]> {
+    const sources = await client.get<SourceState[]>("/api/v1/sources");
+    decorations.update(sources);
+    await context.globalState.update(sourceStateKey, sources);
+    return sources;
 }
 
 async function ensureBackend(context: vscode.ExtensionContext, status: vscode.StatusBarItem): Promise<LocalRagClient> {
@@ -126,8 +202,8 @@ async function resolveFolder(uri?: vscode.Uri): Promise<vscode.Uri | undefined> 
     return undefined;
 }
 
-async function pickSource(client: LocalRagClient, sources?: SourceResponse[]): Promise<SourceResponse | undefined> {
-    const values = sources ?? await client.get<SourceResponse[]>("/api/v1/sources");
+async function pickSource(client: LocalRagClient, sources?: SourceState[]): Promise<SourceState | undefined> {
+    const values = sources ?? await client.get<SourceState[]>("/api/v1/sources");
     const picks = values.map(source => ({ label: source.displayName, description: source.status, source }));
     return (await vscode.window.showQuickPick(picks, { placeHolder: "Select a Local RAG source" }))?.source;
 }

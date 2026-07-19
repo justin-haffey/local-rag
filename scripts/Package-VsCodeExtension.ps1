@@ -133,11 +133,19 @@ if (-not $SkipInstall) {
     Invoke-NativeCommand -Command $codeCommand -Arguments @('--install-extension', $artifact.FullName, '--force')
 
     $extensionId = "$($packageJson.publisher).$($packageJson.name)"
-    $installedExtensions = & $codeCommand --list-extensions --show-versions
-    if ($LASTEXITCODE -ne 0) {
-        throw 'VS Code could not list installed extensions after installation.'
+    $installed = $false
+    for ($attempt = 0; $attempt -lt 10; $attempt++) {
+        $installedExtensions = & $codeCommand --list-extensions --show-versions
+        if ($LASTEXITCODE -ne 0) {
+            throw 'VS Code could not list installed extensions after installation.'
+        }
+        if ($installedExtensions -match "(?im)^$([regex]::Escape($extensionId))@$([regex]::Escape($packageJson.version))$") {
+            $installed = $true
+            break
+        }
+        Start-Sleep -Milliseconds 500
     }
-    if ($installedExtensions -notmatch "(?im)^$([regex]::Escape($extensionId))@$([regex]::Escape($packageJson.version))$") {
+    if (-not $installed) {
         throw "VS Code did not report $extensionId@$($packageJson.version) after installation."
     }
 

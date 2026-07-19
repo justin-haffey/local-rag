@@ -25,6 +25,7 @@ public sealed class McpContractTests
     {
         var names = typeof(SourceResponse).GetProperties().Select(property => property.Name).ToHashSet(StringComparer.Ordinal);
         Assert.DoesNotContain("CanonicalRootPath", names);
+        Assert.Contains("RootPathHash", names);
         Assert.Contains("LastError", names);
     }
 }

@@ -44,7 +44,7 @@ public sealed partial class IndexCoordinator(
         if (source is null || source.Status == SourceStatus.Paused) return true;
         if (!Directory.Exists(source.CanonicalRootPath))
         {
-            await sources.SetStatusAsync(sourceId, SourceStatus.Degraded, "Source root is no longer accessible.", cancellationToken);
+            await sources.SetStatusAsync(sourceId, SourceStatus.Degraded, MissingSourcePolicy.MissingRootMessage, cancellationToken);
             return false;
         }
 

@@ -40,6 +40,8 @@ public sealed class IndexingOptions
     public int StabilityIntervalMilliseconds { get; init; } = 1500;
     public int MaxConcurrentFiles { get; init; } = 4;
     public int ReconciliationIntervalMinutes { get; init; } = 30;
+    /// <summary>How long an inaccessible source may remain degraded before its index and registry record are removed.</summary>
+    public int MissingSourceCleanupGraceMinutes { get; init; } = 60;
     public int MaxRetryAttempts { get; init; } = 5;
     public int RetryBaseDelaySeconds { get; init; } = 2;
 }

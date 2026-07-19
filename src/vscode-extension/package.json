@@ -7,6 +7,7 @@
   "engines": { "vscode": "^1.95.0" },
   "categories": ["Other"],
   "activationEvents": [
+    "onStartupFinished",
     "onCommand:localRag.markAsSource",
     "onCommand:localRag.removeSource",
     "onCommand:localRag.reindexSource",
@@ -15,7 +16,7 @@
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
-      { "command": "localRag.markAsSource", "title": "Local RAG: Mark as RAG Source" },
+      { "command": "localRag.markAsSource", "title": "Local RAG: Toggle RAG Source" },
       { "command": "localRag.removeSource", "title": "Local RAG: Remove Source" },
       { "command": "localRag.reindexSource", "title": "Local RAG: Reindex Source" },
       { "command": "localRag.showSourceStatus", "title": "Local RAG: Show Source Status" }
