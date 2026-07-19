@@ -61,7 +61,7 @@ function Assert-FileHashAndLength {
 }
 
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
-$packageJsonPath = Join-Path $repositoryRoot 'vscode-extension\package.json'
+$packageJsonPath = Join-Path $repositoryRoot 'src\vscode-extension\package.json'
 $packageJson = Get-Content -Raw -LiteralPath $packageJsonPath | ConvertFrom-Json
 $version = [string]$packageJson.version
 if ($version -notmatch '^\d+\.\d+\.\d+$') { throw "Installer builds require a three-part numeric extension version; found '$version'." }
@@ -81,7 +81,7 @@ $publishScript = Join-Path $PSScriptRoot 'Publish-Backend.ps1'
 $packageScript = Join-Path $PSScriptRoot 'Package-VsCodeExtension.ps1'
 $modelInstallScript = Join-Path $PSScriptRoot 'Install-LocalRagEmbeddingModel.ps1'
 $manifestPath = Join-Path $PSScriptRoot 'embedding-model.manifest.json'
-$issPath = Join-Path $repositoryRoot 'installer\LocalRag.iss'
+$issPath = Join-Path $repositoryRoot 'src\installer\LocalRag.iss'
 $hostPublishDirectory = Join-Path $repositoryRoot 'src\LocalRag.Host\bin\win-x64'
 $vsixPath = Join-Path $OutputDirectory "local-rag-$version.vsix"
 $stageDirectory = Join-Path $OutputDirectory ('.installer-stage-' + [guid]::NewGuid().ToString('N'))

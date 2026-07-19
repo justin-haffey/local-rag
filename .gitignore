@@ -47,7 +47,7 @@ _ReSharper*/
 appsettings.Local.json
 
 # VS Code extension output
-vscode-extension/node_modules/
-vscode-extension/out/
-vscode-extension/bin/
+src/vscode-extension/node_modules/
+src/vscode-extension/out/
+src/vscode-extension/bin/
 *.vsix

@@ -4,7 +4,7 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocalRag.Host", "src\LocalRag.Host\LocalRag.Host.csproj", "{7140B2A2-3A18-4E88-A0A1-8D1D87FAD1E4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocalRag.Host.Tests", "tests\LocalRag.Host.Tests\LocalRag.Host.Tests.csproj", "{D230BDF8-B250-48BF-B6F7-FAFB0F11340C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocalRag.Host.Tests", "src\tests\LocalRag.Host.Tests\LocalRag.Host.Tests.csproj", "{D230BDF8-B250-48BF-B6F7-FAFB0F11340C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

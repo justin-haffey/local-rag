@@ -36,7 +36,7 @@ function Invoke-NativeCommand {
 }
 
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
-$extensionDirectory = Join-Path $repositoryRoot 'vscode-extension'
+$extensionDirectory = Join-Path $repositoryRoot 'src\vscode-extension'
 $packageJsonPath = Join-Path $extensionDirectory 'package.json'
 
 if (-not (Test-Path -LiteralPath $packageJsonPath -PathType Leaf)) {

@@ -34,7 +34,7 @@ Important options:
 - `-SkipTests` skips the extension lint/test phase.
 - `-OutputPath` selects the VSIX output path; relative paths are resolved from the repository root.
 
-The installer build produces a **host-free** VSIX. The extension discovers the separately installed host through `%LOCALAPPDATA%\LocalRag\installation.json`; `vscode-extension\.vscodeignore` excludes `bin\**` as a safety measure so stale local build output cannot be shipped accidentally.
+The installer build produces a **host-free** VSIX. The extension discovers the separately installed host through `%LOCALAPPDATA%\LocalRag\installation.json`; `src\vscode-extension\.vscodeignore` excludes `bin\**` as a safety measure so stale local build output cannot be shipped accidentally.
 
 ### `Install-LocalRagEmbeddingModel.ps1`
 
@@ -49,7 +49,7 @@ The default model directory is `%LOCALAPPDATA%\LocalRag\models\bge-small-en-v1.5
 
 ### `Build-Installer.ps1`
 
-Builds the complete per-user Windows setup executable. It publishes the host into the host project's `bin` directory, validates the required host files, builds a host-free VSIX, verifies the VSIX layout, validates and stages the model assets, compiles `installer\LocalRag.iss` with Inno Setup 6, and writes the setup executable plus an adjacent SHA-256 sidecar file.
+Builds the complete per-user Windows setup executable. It publishes the host into the host project's `bin` directory, validates the required host files, builds a host-free VSIX, verifies the VSIX layout, validates and stages the model assets, compiles `src\installer\LocalRag.iss` with Inno Setup 6, and writes the setup executable plus an adjacent SHA-256 sidecar file.
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Build-Installer.ps1
