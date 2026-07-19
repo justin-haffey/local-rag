@@ -1,0 +1,40 @@
+---
+name: new-agent
+description: Create project-scoped Codex agents with standardized metadata, registry entries, and MCP wiring in this repository.
+---
+
+# Purpose
+
+Create a new local agent under `.codex/agents/<folder>/` using the official Codex custom-agent schema and the repo's existing agent patterns.
+
+## When To Use
+
+- Use when a user wants to scaffold a new agent from a name, folder, and purpose.
+- Use when the change needs a standardized TOML shape, registry updates, or MCP server wiring.
+- Do not use when the user wants a skill scaffold, a Copilot package, or a normal code feature change.
+
+## Flags
+
+The call to the `new-agent` skill may include the following flags:
+
+- `-folder <folder>` specifies the file system folder `.codex/agents/<folder>/` to create the agent within.
+- `-instructions` | `-purpose` provides creation instructions or defines the purpose of the agent.
+
+### Example
+
+`$new-agent` `-folder` "core" `-instructions` """create a testing agent  that..."""
+
+## Workflow
+
+1. Inspect the current Codex custom-agent docs and at least two representative agents, including one from the target folder and one from the other folder, to learn the local pattern.
+2. Draft the agent definition before writing files. Use `references/agent-authoring.md` as the canonical structure for identity, scope, runtime, tooling, registry, and validation.
+3. Normalize the agent name to lowercase hyphen-case and the registry key to snake_case.
+4. Write the agent TOML using the repo's canonical field order and required metadata. Keep `name` as the source of truth; match the filename to the name when practical.
+5. Add the agent to `.codex/config.toml` with a `[agents.<key>]` entry that points at the new file. If the agent lives under `.codex/agents/copilot/`, also update `.codex/agents/copilot/AGENTS.override.md`.
+6. Decide MCP server placement explicitly. Put shared servers in the registry file when the repo should expose them broadly; keep agent-local servers in the agent TOML when they are only for that agent.
+7. Add `skills.config` entries only for skills the agent truly needs, using repo-relative paths for checked-in skills and absolute paths for user-level skills when that matches the local pattern.
+8. Validate the TOML syntax, registry alignment, and folder/file naming before finishing.
+
+## References
+
+- `references/agent-authoring.md`

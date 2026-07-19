@@ -1,0 +1,48 @@
+---
+name: new-skill
+description: Create or refine a project-local Codex skill under `.codex/skills/`. Use when the user asks to create a skill, scaffold a skill, convert a project workflow into a Codex Skill, run the old `/new-skill` command behavior, or maintain this repository's checked-in skill catalog.
+---
+
+# New Skill
+
+Create project-local Codex skills that follow this repository's `.codex/skills/<skill-name>/` contract.
+
+## Workflow
+
+1. Read `.codex/skills/README.md` and inspect nearby skills before choosing structure.
+2. Normalize the requested skill name to lowercase hyphen-case.
+3. Use the built-in `skill-creator` skill to scaffold and shape the new project-local skill instead of relying on a repo script path.
+4. Treat `skill-creator` as the scaffolding baseline, then refine the generated files to match this repository's local conventions.
+5. Replace scaffold TODOs in `SKILL.md`; do not leave template guidance in finished skills.
+6. Keep `SKILL.md` concise and instruction-first. Move detailed reference material to `references/` only when it is likely to be loaded selectively.
+7. Create scripts only when deterministic reuse is worth the maintenance cost. Test added scripts before finishing.
+8. Keep `agents/openai.yaml` aligned with the finished skill:
+   - `display_name`: human-facing title.
+   - `short_description`: one-line user-facing summary.
+   - `default_prompt`: practical starter prompt.
+   - include `policy.allow_implicit_invocation: true` and `dependencies.tools: []` unless there is a concrete reason not to.
+9. Update `.codex/skills/README.md` when adding a checked-in project skill.
+
+## Naming Rules
+
+- Use lowercase letters, digits, and hyphens.
+- Keep names short and action-oriented.
+- Do not create skill folders whose names start with `_`; those are reserved for templates and scaffolding.
+
+## Validation
+
+Run the system validator before finishing:
+
+```powershell
+python C:\Users\JustinHaffey\.codex\skills\.system\skill-creator\scripts\quick_validate.py .codex\skills\<skill-name>
+```
+
+If validation fails, fix the reported frontmatter, naming, or structure issue and rerun it.
+
+## Output
+
+Report:
+- created or modified skill path
+- whether metadata, scripts, references, or assets were added
+- validation result
+- any assumptions made from incomplete input

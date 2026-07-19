@@ -1,0 +1,10 @@
+interface:
+  display_name: "New Skill"
+  short_description: "Create, upgrade, and validate Codex skills"
+  default_prompt: "Use $new-skill to create, upgrade, or validate a Codex skill for this repository workflow."
+
+policy:
+  allow_implicit_invocation: true
+
+dependencies:
+  tools: []

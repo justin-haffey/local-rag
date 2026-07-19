@@ -1,0 +1,56 @@
+{
+  "name": "local-rag",
+  "displayName": "Local RAG",
+  "description": "Register local folders for private RAG indexing.",
+  "version": "0.1.0",
+  "publisher": "starlinx-llc",
+  "engines": { "vscode": "^1.95.0" },
+  "categories": ["Other"],
+  "activationEvents": [
+    "onCommand:localRag.markAsSource",
+    "onCommand:localRag.removeSource",
+    "onCommand:localRag.reindexSource",
+    "onCommand:localRag.showSourceStatus"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      { "command": "localRag.markAsSource", "title": "Local RAG: Mark as RAG Source" },
+      { "command": "localRag.removeSource", "title": "Local RAG: Remove Source" },
+      { "command": "localRag.reindexSource", "title": "Local RAG: Reindex Source" },
+      { "command": "localRag.showSourceStatus", "title": "Local RAG: Show Source Status" }
+    ],
+    "menus": {
+      "explorer/context": [
+        { "command": "localRag.markAsSource", "when": "resourceScheme == file", "group": "navigation@50" }
+      ]
+    },
+    "configuration": {
+      "title": "Local RAG",
+      "properties": {
+        "localRag.backendEndpoint": {
+          "type": "string",
+          "default": "http://127.0.0.1:5198",
+          "description": "Loopback endpoint used by the extension-managed Local RAG backend."
+        },
+        "localRag.weaviateEndpoint": {
+          "type": "string",
+          "default": "http://127.0.0.1:8080",
+          "description": "Endpoint for the separately deployed local Weaviate instance."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "lint": "tsc -p ./ --noEmit",
+    "vscode:prepublish": "npm run compile",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/vscode": "^1.95.0",
+    "@vscode/vsce": "^3.2.1",
+    "typescript": "^5.7.2"
+  }
+}

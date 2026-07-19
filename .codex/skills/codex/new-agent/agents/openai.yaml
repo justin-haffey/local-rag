@@ -1,0 +1,10 @@
+interface:
+  display_name: "New Agent"
+  short_description: "Create, upgrade, and validate Codex agents"
+  default_prompt: "Use $new-agent to create, upgrade, or validate a Codex custom agent for this repository workflow."
+
+policy:
+  allow_implicit_invocation: true
+
+dependencies:
+  tools: []

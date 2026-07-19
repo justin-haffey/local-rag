@@ -1,0 +1,19 @@
+{
+  "profileId": "bge-small-en-v1.5-384",
+  "repository": "BAAI/bge-small-en-v1.5",
+  "revision": "5c38ec7",
+  "files": [
+    {
+      "path": "model.onnx",
+      "url": "https://huggingface.co/BAAI/bge-small-en-v1.5/resolve/5c38ec7/onnx/model.onnx",
+      "sha256": "828E1496D7FABB79CFA4DCD84FA38625C0D3D21DA474A00F08DB0F559940CF35",
+      "sizeBytes": 133093490
+    },
+    {
+      "path": "vocab.txt",
+      "url": "https://huggingface.co/BAAI/bge-small-en-v1.5/resolve/5c38ec7/vocab.txt",
+      "sha256": "07ECED375CEC144D27C900241F3E339478DEC958F92FDDBC551F295C992038A3",
+      "sizeBytes": 231508
+    }
+  ]
+}

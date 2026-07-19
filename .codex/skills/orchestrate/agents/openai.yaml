@@ -1,0 +1,4 @@
+interface:
+  display_name: "Orchestrate"
+  short_description: "Coordinate multi-step work with scoped agents and validation."
+  default_prompt: "Use $orchestrate to coordinate this multi-step task with the right agents and validation."
