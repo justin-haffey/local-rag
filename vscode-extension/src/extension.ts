@@ -3,6 +3,7 @@ import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { ChildProcess, spawn } from "node:child_process";
 import * as vscode from "vscode";
+import { resolveInstallerConfiguration } from "./installerSettings";
 
 interface SourceResponse {
     sourceId: string;
@@ -66,10 +67,11 @@ export function activate(context: vscode.ExtensionContext): void {
 async function ensureBackend(context: vscode.ExtensionContext, status: vscode.StatusBarItem): Promise<LocalRagClient> {
     const settings = vscode.workspace.getConfiguration("localRag");
     const endpoint = settings.get<string>("backendEndpoint", "http://127.0.0.1:5198").replace(/\/$/, "");
+    const installed = await resolveInstallerConfiguration(settings, process.env.LOCALAPPDATA);
     const token = await getOrCreateToken(context);
     const client = new LocalRagClient(endpoint, token);
     if (!await client.isLive()) {
-        await launchBackend(context, endpoint, token, settings.get<string>("weaviateEndpoint", "http://127.0.0.1:8080"));
+        await launchBackend(context, installed.hostExecutable, endpoint, token, installed.weaviateEndpoint);
     }
     await waitForReady(client);
     status.text = "$(database) Local RAG";
@@ -77,11 +79,10 @@ async function ensureBackend(context: vscode.ExtensionContext, status: vscode.St
     return client;
 }
 
-async function launchBackend(context: vscode.ExtensionContext, endpoint: string, token: string, weaviateEndpoint: string): Promise<void> {
+async function launchBackend(context: vscode.ExtensionContext, executable: string, endpoint: string, token: string, weaviateEndpoint: string): Promise<void> {
     if (backend && !backend.killed) return;
-    const executable = path.join(context.extensionPath, "bin", "win32-x64", "LocalRag.Host.exe");
     try { await fs.access(executable); } catch {
-        throw new Error(`Local RAG backend was not packaged at ${executable}. Run scripts/Publish-Backend.ps1 before installing the extension.`);
+        throw new Error(`Local RAG standalone host was not found at ${executable}. Repair or reinstall Local RAG.`);
     }
     backend = spawn(executable, [], {
         windowsHide: true,

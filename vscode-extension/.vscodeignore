@@ -9,4 +9,5 @@ tsconfig.json
 **/*.ts
 **/*.pdb
 node_modules/**
+bin/**
 artifacts/**

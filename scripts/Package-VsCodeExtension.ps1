@@ -1,8 +1,6 @@
 [CmdletBinding()]
 param(
-    [string]$Configuration = 'Release',
     [string]$OutputPath,
-    [switch]$SkipBackendPublish,
     [switch]$SkipDependencyRestore,
     [switch]$SkipTests,
     [switch]$SkipInstall
@@ -40,7 +38,6 @@ function Invoke-NativeCommand {
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
 $extensionDirectory = Join-Path $repositoryRoot 'vscode-extension'
 $packageJsonPath = Join-Path $extensionDirectory 'package.json'
-$publishBackendScript = Join-Path $PSScriptRoot 'Publish-Backend.ps1'
 
 if (-not (Test-Path -LiteralPath $packageJsonPath -PathType Leaf)) {
     throw "VS Code extension package.json was not found at $packageJsonPath."
@@ -92,16 +89,6 @@ Push-Location $extensionDirectory
 try {
     if (-not $SkipDependencyRestore) {
         Invoke-NativeCommand -Command $npmCommand -Arguments @('ci')
-    }
-
-    if (-not $SkipBackendPublish) {
-        if (-not (Test-Path -LiteralPath $publishBackendScript -PathType Leaf)) {
-            throw "Backend publishing script was not found at $publishBackendScript."
-        }
-        & $publishBackendScript -Configuration $Configuration
-        if ($LASTEXITCODE -ne 0) {
-            throw "Backend publishing failed with exit code $LASTEXITCODE."
-        }
     }
 
     Invoke-NativeCommand -Command $npmCommand -Arguments @('run', 'compile')

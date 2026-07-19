@@ -1,10 +1,19 @@
 # Local RAG MVP
 
-The application indexes approved local folders using a local ONNX embedding model and stores externally generated vectors in a separately deployed Weaviate instance. It never starts, stops, or configures Docker.
+Supercharge your agentic coding agents **Local RAG** **indexes approved local folders** using a local **ONNX** **embedding model** and stores externally generated vectors in a separately deployed Weaviate instance. It never starts, stops, or configures Docker.
 
-## About
+## Components
 
-[todo: insert a brief marketing overview of the solution. Explain the use case and tought the top benefits]
+* **Windows Host App -** Hosts the MCP Server and the ONNX embedding model runtime
+* **VSIX - VS Code Extension -** `Right click -> Mark as RAG Source` any project folder to index code and create a knowledge base.
+
+## Local-First Agentic RAG for Developers
+
+Built by **Justin Haffey**, an independent agentic engineer, this project is a local-first Retrieval-Augmented Generation platform designed for developers who want their coding assistants and autonomous agents to understand real repositories without surrendering source code to a cloud service. Developers can register folders directly from Visual Studio Code, where the system continuously discovers, parses, chunks, embeds, and indexes source files, documentation, configuration, and project metadata. The platform is built on C#/.NET, ASP.NET Core, SQLite, Weaviate, Docker, and local embedding models, giving engineers a practical foundation for semantic, lexical, and hybrid search across everything from small applications to multi-gigabyte monorepos.
+
+The core architecture is intentionally agent-ready: a hosted C# Model Context Protocol (MCP) server exposes structured, read-only tools for source discovery, hybrid search, chunk retrieval, similarity search, context expansion, and index health. AI coding assistants and external agent hosts can retrieve precise, source-scoped context with file paths, symbols, line ranges, scores, hashes, and neighboring chunks—without receiving direct access to the file system or vector database. REST, MCP, VS Code, CLI, and automation clients all share the same application services, ensuring consistent ranking, authorization, filtering, and response contracts across every integration surface.
+
+Engineers can extend the platform through pluggable parsers, language-aware chunkers, embedding providers, vector stores, retrieval policies, and deployment modes. Resilient file watchers, reconciliation scans, deterministic chunk identities, bounded processing queues, embedding caches, incremental updates, and recoverable indexing jobs make the system suitable for serious development workflows—not just demos. With loopback-only defaults, explicit remote opt-in, source-level authorization, secret filtering, path redaction, and read-only MCP capabilities, the project provides a secure and production-minded starting point for building developer tools, coding copilots, repository intelligence systems, and multi-agent engineering workflows.
 
 ## Prerequisites
 

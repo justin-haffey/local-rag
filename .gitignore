@@ -16,6 +16,7 @@
 bin/
 debug/
 release/
+*.exe*
 
 # Node
 node_modules/
