@@ -1,0 +1,13 @@
+interface:
+  display_name: "Local RAG Evidence Retrieval"
+  short_description: "Build a cited Local RAG evidence set"
+  default_prompt: "Use $local-rag-evidence-retrieval to collect the indexed evidence needed to answer this coding question."
+
+policy:
+  allow_implicit_invocation: true
+
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "local_rag"
+      description: "Existing repository-configured Local RAG MCP server"

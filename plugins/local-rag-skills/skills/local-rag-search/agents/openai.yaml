@@ -1,0 +1,13 @@
+interface:
+  display_name: "Local RAG Search"
+  short_description: "Search indexed developer folders"
+  default_prompt: "Use $local-rag-search to find indexed code and documentation relevant to this question."
+
+policy:
+  allow_implicit_invocation: true
+
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "local_rag"
+      description: "Existing repository-configured Local RAG MCP server"

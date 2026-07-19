@@ -1,0 +1,13 @@
+interface:
+  display_name: "Local RAG Get Chunk"
+  short_description: "Retrieve one indexed chunk by ID"
+  default_prompt: "Use $local-rag-get-chunk to retrieve the full Local RAG chunk for this stable chunk ID."
+
+policy:
+  allow_implicit_invocation: true
+
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "local_rag"
+      description: "Existing repository-configured Local RAG MCP server"

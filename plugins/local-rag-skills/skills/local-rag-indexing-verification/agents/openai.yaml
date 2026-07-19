@@ -1,0 +1,13 @@
+interface:
+  display_name: "Local RAG Indexing Verification"
+  short_description: "Verify source status and retrievability"
+  default_prompt: "Use $local-rag-indexing-verification to verify that this source is indexed and returns expected content."
+
+policy:
+  allow_implicit_invocation: true
+
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "local_rag"
+      description: "Existing repository-configured Local RAG MCP server"

@@ -1,0 +1,13 @@
+interface:
+  display_name: "Local RAG Repository Reconnaissance"
+  short_description: "Map an unfamiliar indexed repository"
+  default_prompt: "Use $local-rag-repository-reconnaissance to map the code paths and tests relevant to this task."
+
+policy:
+  allow_implicit_invocation: true
+
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "local_rag"
+      description: "Existing repository-configured Local RAG MCP server"

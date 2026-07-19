@@ -1,0 +1,13 @@
+interface:
+  display_name: "Local RAG List Sources"
+  short_description: "List sources visible to Local RAG"
+  default_prompt: "Use $local-rag-list-sources to list the developer folders currently visible to Local RAG."
+
+policy:
+  allow_implicit_invocation: true
+
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "local_rag"
+      description: "Existing repository-configured Local RAG MCP server"

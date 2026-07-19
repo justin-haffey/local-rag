@@ -1,0 +1,13 @@
+interface:
+  display_name: "Local RAG Source Triage"
+  short_description: "Triage indexed source readiness"
+  default_prompt: "Use $local-rag-source-triage to identify ready and blocked Local RAG sources before searching."
+
+policy:
+  allow_implicit_invocation: true
+
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "local_rag"
+      description: "Existing repository-configured Local RAG MCP server"

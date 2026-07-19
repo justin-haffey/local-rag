@@ -14,9 +14,9 @@ Engineers can extend the platform through pluggable parsers, language-aware chun
 
 ## Installation
 
-## Components
+### Components
 
-- **Windows Host App -**Hosts the Synchronization engine, MCP Server and ONNX embedding model runtime.
+- **Windows Host App -** Hosts the Synchronization engine, MCP Server and ONNX embedding model runtime.
 - **VS Code Extension (VSIX) -** `Right-click → Toggle RAG Source` turns any project folder into an agent-aware, searchable knowledge source without disrupting the developer workflow.
 - **Weaviate -** Stored chunked vectors in a local Weaviate database (Docker hosted container or Weaviate cloud).
 
@@ -96,6 +96,7 @@ The extension manages only the packaged backend process. If Weaviate or model as
 
 ### Agents
 
+* **Codex Plugin.** Wraps MCP tools exposing basic search and advanced repo mapping functionality through codex skills.
 * **Agent-Ready MCP Server.** A hosted C# Model Context Protocol server exposes structured, read-only tools for repository search, chunk retrieval, similarity discovery, context expansion, and index inspection.
 * **Structured Results.** Agents receive source-scoped results with file paths, symbols, line ranges, relevance scores, content hashes, and indexing metadata.
 * **Read-Only by Default.** MCP clients can search and inspect indexed content without receiving unrestricted file-system, database, or repository write access.

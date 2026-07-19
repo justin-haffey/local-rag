@@ -1,0 +1,13 @@
+interface:
+  display_name: "Local RAG Source Status"
+  short_description: "Inspect one source indexing status"
+  default_prompt: "Use $local-rag-source-status to check the indexing status of this Local RAG source ID."
+
+policy:
+  allow_implicit_invocation: true
+
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "local_rag"
+      description: "Existing repository-configured Local RAG MCP server"
