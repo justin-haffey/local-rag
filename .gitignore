@@ -23,6 +23,7 @@ node_modules/
 
 # Local Dev
 .swe/
+*.log
 
 # Test results and coverage
 [Tt]est[Rr]esult*/
