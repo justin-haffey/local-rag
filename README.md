@@ -104,6 +104,7 @@ The extension manages only the packaged backend process. If Weaviate or model as
 ### Indexing
 
 * **Continuous Incremental Indexing.** File-system monitoring, content hashing, debounce controls, and reconciliation scans keep the index synchronized as files are created, modified, renamed, or deleted.
+* **Microsoft Word Indexing.** Modern `.docx` files are extracted locally from bounded Open XML parts, including body text, tables, headers, footers, notes, and comments, without executing macros or following external relationships.
 * **Efficient Reprocessing.** Unchanged files and chunks are not re-embedded unnecessarily, reducing indexing time and compute usage.
 * **Repository Scale.** Bounded processing queues, batch operations, retry policies, and recoverable jobs support large repositories and multi-gigabyte monorepos.
 

@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 
 namespace LocalRag.Infrastructure.Indexing;
 
-public sealed partial class SourceWatcherRegistry(IndexWorkChannel queue, ISourceRegistry sources, IOptions<LocalRagOptions> options, ILogger<SourceWatcherRegistry> logger) : IDisposable
+public sealed partial class SourceWatcherRegistry(IndexWorkChannel queue, IndexJobStore jobs, ISourceRegistry sources, IOptions<LocalRagOptions> options, ILogger<SourceWatcherRegistry> logger) : IDisposable
 {
     private readonly ConcurrentDictionary<string, FileSystemWatcher> _watchers = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, CancellationTokenSource> _debounces = new(StringComparer.Ordinal);
@@ -59,6 +59,7 @@ public sealed partial class SourceWatcherRegistry(IndexWorkChannel queue, ISourc
         try
         {
             await Task.Delay(_options.DebounceMilliseconds + _options.StabilityIntervalMilliseconds, cancellationToken);
+            await jobs.QueueAsync(sourceId, cancellationToken);
             await queue.EnqueueAsync(sourceId, cancellationToken);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)

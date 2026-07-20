@@ -1,0 +1,1818 @@
+﻿2026-07-19 22:54:53.876   Log opened. (Time zone: UTC-04:00)
+2026-07-19 22:54:53.876   Setup version: Inno Setup version 6.7.3
+2026-07-19 22:54:53.876   Original Setup EXE: C:\Users\justin\Source\local-rag\artifacts\LocalRag-Setup-0.1.0.exe
+2026-07-19 22:54:53.876   Setup command line: /SL5="$2B02C6,100567020,893952,C:\Users\justin\Source\local-rag\artifacts\LocalRag-Setup-0.1.0.exe" /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /WEAVIATEBASEURL=http://localhost /WEAVIATEPORT=8080 /LOG=C:\Users\justin\Source\local-rag\artifacts\watcher-fix-install.log 
+2026-07-19 22:54:53.876   Windows version: 10.0.26200
+2026-07-19 22:54:53.884   Windows architecture: x64 (64-bit)
+2026-07-19 22:54:53.884   Machine types supported by system: x86 x64
+2026-07-19 22:54:53.884   User privileges: None
+2026-07-19 22:54:53.889   Administrative install mode: No
+2026-07-19 22:54:53.889   Install mode root key: HKEY_CURRENT_USER
+2026-07-19 22:54:53.889   64-bit install mode: Yes
+2026-07-19 22:54:53.889   RedirectionGuard status for current process: Enabled in enforcing mode
+2026-07-19 22:54:53.889   Created temporary directory: C:\Users\justin\AppData\Local\Temp\is-Y6BR2C9NT0.tmp
+2026-07-19 22:54:53.948   Starting the installation process.
+2026-07-19 22:54:53.949   Creating directory: C:\Users\justin\AppData\Local\Programs\LocalRag
+2026-07-19 22:54:53.949   Directory for uninstall files: C:\Users\justin\AppData\Local\Programs\LocalRag
+2026-07-19 22:54:53.949   Creating new uninstall log: C:\Users\justin\AppData\Local\Programs\LocalRag\unins000.dat
+2026-07-19 22:54:53.952   -- File entry --
+2026-07-19 22:54:53.952   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\unins000.exe
+2026-07-19 22:54:53.952   Non-default bitness: 32-bit
+2026-07-19 22:54:53.954   Time stamp of our file: 2026-07-19 22:54:53.539
+2026-07-19 22:54:53.954   Installing the file.
+2026-07-19 22:54:53.958   Successfully installed the file.
+2026-07-19 22:54:53.958   -- File entry --
+2026-07-19 22:54:53.958   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\appsettings.json
+2026-07-19 22:54:53.958   Time stamp of our file: 2026-07-19 21:52:16.000
+2026-07-19 22:54:53.958   Installing the file.
+2026-07-19 22:54:53.958   Creating directory: C:\Users\justin\AppData\Local\Programs\LocalRag\Host
+2026-07-19 22:54:53.958   Creating directory: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0
+2026-07-19 22:54:53.958   Successfully installed the file.
+2026-07-19 22:54:53.958   -- File entry --
+2026-07-19 22:54:53.958   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\aspnetcorev2_inprocess.dll
+2026-07-19 22:54:53.958   Time stamp of our file: 2026-06-26 16:56:46.000
+2026-07-19 22:54:53.958   Installing the file.
+2026-07-19 22:54:53.964   Successfully installed the file.
+2026-07-19 22:54:53.964   -- File entry --
+2026-07-19 22:54:53.964   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\clretwrc.dll
+2026-07-19 22:54:53.964   Time stamp of our file: 2026-06-26 15:22:08.000
+2026-07-19 22:54:53.964   Installing the file.
+2026-07-19 22:54:53.983   Successfully installed the file.
+2026-07-19 22:54:53.983   -- File entry --
+2026-07-19 22:54:53.983   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\clrgc.dll
+2026-07-19 22:54:53.984   Time stamp of our file: 2026-06-26 15:21:42.000
+2026-07-19 22:54:53.984   Installing the file.
+2026-07-19 22:54:53.999   Successfully installed the file.
+2026-07-19 22:54:53.999   -- File entry --
+2026-07-19 22:54:53.999   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\clrgcexp.dll
+2026-07-19 22:54:53.999   Time stamp of our file: 2026-06-26 15:21:42.000
+2026-07-19 22:54:53.999   Installing the file.
+2026-07-19 22:54:54.010   Successfully installed the file.
+2026-07-19 22:54:54.010   -- File entry --
+2026-07-19 22:54:54.010   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\clrjit.dll
+2026-07-19 22:54:54.010   Time stamp of our file: 2026-06-26 15:22:42.000
+2026-07-19 22:54:54.010   Installing the file.
+2026-07-19 22:54:54.058   Successfully installed the file.
+2026-07-19 22:54:54.058   -- File entry --
+2026-07-19 22:54:54.058   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\coreclr.dll
+2026-07-19 22:54:54.062   Time stamp of our file: 2026-06-26 15:23:28.000
+2026-07-19 22:54:54.062   Installing the file.
+2026-07-19 22:54:54.170   Successfully installed the file.
+2026-07-19 22:54:54.170   -- File entry --
+2026-07-19 22:54:54.170   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\createdump.exe
+2026-07-19 22:54:54.171   Time stamp of our file: 2026-06-26 15:22:14.000
+2026-07-19 22:54:54.171   Installing the file.
+2026-07-19 22:54:54.173   Successfully installed the file.
+2026-07-19 22:54:54.173   -- File entry --
+2026-07-19 22:54:54.173   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\e_sqlite3.dll
+2026-07-19 22:54:54.173   Time stamp of our file: 2026-07-06 22:11:30.000
+2026-07-19 22:54:54.173   Installing the file.
+2026-07-19 22:54:54.220   Successfully installed the file.
+2026-07-19 22:54:54.220   -- File entry --
+2026-07-19 22:54:54.220   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\hostfxr.dll
+2026-07-19 22:54:54.220   Time stamp of our file: 2026-06-26 15:39:12.000
+2026-07-19 22:54:54.220   Installing the file.
+2026-07-19 22:54:54.228   Successfully installed the file.
+2026-07-19 22:54:54.228   -- File entry --
+2026-07-19 22:54:54.228   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\hostpolicy.dll
+2026-07-19 22:54:54.228   Time stamp of our file: 2026-06-26 15:39:14.000
+2026-07-19 22:54:54.228   Installing the file.
+2026-07-19 22:54:54.228   Successfully installed the file.
+2026-07-19 22:54:54.228   -- File entry --
+2026-07-19 22:54:54.228   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\LocalRag.Host.deps.json
+2026-07-19 22:54:54.228   Time stamp of our file: 2026-07-19 22:51:00.000
+2026-07-19 22:54:54.228   Installing the file.
+2026-07-19 22:54:54.228   Successfully installed the file.
+2026-07-19 22:54:54.228   -- File entry --
+2026-07-19 22:54:54.237   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\LocalRag.Host.dll
+2026-07-19 22:54:54.237   Time stamp of our file: 2026-07-19 22:51:00.000
+2026-07-19 22:54:54.237   Installing the file.
+2026-07-19 22:54:54.237   Successfully installed the file.
+2026-07-19 22:54:54.237   -- File entry --
+2026-07-19 22:54:54.237   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\LocalRag.Host.exe
+2026-07-19 22:54:54.237   Time stamp of our file: 2026-07-19 22:51:00.000
+2026-07-19 22:54:54.237   Installing the file.
+2026-07-19 22:54:54.237   Successfully installed the file.
+2026-07-19 22:54:54.237   -- File entry --
+2026-07-19 22:54:54.237   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\LocalRag.Host.pdb
+2026-07-19 22:54:54.237   Time stamp of our file: 2026-07-19 22:51:00.000
+2026-07-19 22:54:54.237   Installing the file.
+2026-07-19 22:54:54.246   Successfully installed the file.
+2026-07-19 22:54:54.246   -- File entry --
+2026-07-19 22:54:54.246   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\LocalRag.Host.runtimeconfig.json
+2026-07-19 22:54:54.246   Time stamp of our file: 2026-07-19 22:51:00.000
+2026-07-19 22:54:54.246   Installing the file.
+2026-07-19 22:54:54.246   Successfully installed the file.
+2026-07-19 22:54:54.246   -- File entry --
+2026-07-19 22:54:54.246   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\LocalRag.Host.staticwebassets.endpoints.json
+2026-07-19 22:54:54.246   Time stamp of our file: 2026-07-18 22:31:50.000
+2026-07-19 22:54:54.246   Installing the file.
+2026-07-19 22:54:54.248   Successfully installed the file.
+2026-07-19 22:54:54.248   -- File entry --
+2026-07-19 22:54:54.248   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Antiforgery.dll
+2026-07-19 22:54:54.248   Time stamp of our file: 2026-06-26 17:02:52.000
+2026-07-19 22:54:54.248   Installing the file.
+2026-07-19 22:54:54.248   Successfully installed the file.
+2026-07-19 22:54:54.248   -- File entry --
+2026-07-19 22:54:54.248   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Authentication.Abstractions.dll
+2026-07-19 22:54:54.248   Time stamp of our file: 2026-06-26 17:02:54.000
+2026-07-19 22:54:54.248   Installing the file.
+2026-07-19 22:54:54.253   Successfully installed the file.
+2026-07-19 22:54:54.253   -- File entry --
+2026-07-19 22:54:54.253   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Authentication.BearerToken.dll
+2026-07-19 22:54:54.253   Time stamp of our file: 2026-06-26 17:02:54.000
+2026-07-19 22:54:54.253   Installing the file.
+2026-07-19 22:54:54.258   Successfully installed the file.
+2026-07-19 22:54:54.258   -- File entry --
+2026-07-19 22:54:54.258   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Authentication.Cookies.dll
+2026-07-19 22:54:54.258   Time stamp of our file: 2026-06-26 17:02:54.000
+2026-07-19 22:54:54.258   Installing the file.
+2026-07-19 22:54:54.265   Successfully installed the file.
+2026-07-19 22:54:54.265   -- File entry --
+2026-07-19 22:54:54.265   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Authentication.Core.dll
+2026-07-19 22:54:54.265   Time stamp of our file: 2026-06-26 17:02:54.000
+2026-07-19 22:54:54.265   Installing the file.
+2026-07-19 22:54:54.269   Successfully installed the file.
+2026-07-19 22:54:54.269   -- File entry --
+2026-07-19 22:54:54.269   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Authentication.dll
+2026-07-19 22:54:54.269   Time stamp of our file: 2026-06-26 17:02:54.000
+2026-07-19 22:54:54.269   Installing the file.
+2026-07-19 22:54:54.269   Successfully installed the file.
+2026-07-19 22:54:54.269   -- File entry --
+2026-07-19 22:54:54.269   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Authentication.OAuth.dll
+2026-07-19 22:54:54.269   Time stamp of our file: 2026-06-26 17:02:54.000
+2026-07-19 22:54:54.269   Installing the file.
+2026-07-19 22:54:54.276   Successfully installed the file.
+2026-07-19 22:54:54.276   -- File entry --
+2026-07-19 22:54:54.276   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Authorization.dll
+2026-07-19 22:54:54.276   Time stamp of our file: 2026-06-26 17:02:54.000
+2026-07-19 22:54:54.276   Installing the file.
+2026-07-19 22:54:54.280   Successfully installed the file.
+2026-07-19 22:54:54.280   -- File entry --
+2026-07-19 22:54:54.280   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Authorization.Policy.dll
+2026-07-19 22:54:54.280   Time stamp of our file: 2026-06-26 17:02:54.000
+2026-07-19 22:54:54.280   Installing the file.
+2026-07-19 22:54:54.282   Successfully installed the file.
+2026-07-19 22:54:54.282   -- File entry --
+2026-07-19 22:54:54.282   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Components.Authorization.dll
+2026-07-19 22:54:54.282   Time stamp of our file: 2026-06-26 17:02:56.000
+2026-07-19 22:54:54.282   Installing the file.
+2026-07-19 22:54:54.285   Successfully installed the file.
+2026-07-19 22:54:54.285   -- File entry --
+2026-07-19 22:54:54.285   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Components.dll
+2026-07-19 22:54:54.285   Time stamp of our file: 2026-06-26 17:02:56.000
+2026-07-19 22:54:54.285   Installing the file.
+2026-07-19 22:54:54.305   Successfully installed the file.
+2026-07-19 22:54:54.305   -- File entry --
+2026-07-19 22:54:54.305   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Components.Endpoints.dll
+2026-07-19 22:54:54.305   Time stamp of our file: 2026-06-26 17:02:56.000
+2026-07-19 22:54:54.305   Installing the file.
+2026-07-19 22:54:54.316   Successfully installed the file.
+2026-07-19 22:54:54.316   -- File entry --
+2026-07-19 22:54:54.316   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Components.Forms.dll
+2026-07-19 22:54:54.316   Time stamp of our file: 2026-06-26 17:02:56.000
+2026-07-19 22:54:54.316   Installing the file.
+2026-07-19 22:54:54.316   Successfully installed the file.
+2026-07-19 22:54:54.316   -- File entry --
+2026-07-19 22:54:54.316   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Components.Server.dll
+2026-07-19 22:54:54.316   Time stamp of our file: 2026-06-26 17:02:56.000
+2026-07-19 22:54:54.316   Installing the file.
+2026-07-19 22:54:54.332   Successfully installed the file.
+2026-07-19 22:54:54.332   -- File entry --
+2026-07-19 22:54:54.332   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Components.Web.dll
+2026-07-19 22:54:54.332   Time stamp of our file: 2026-06-26 17:02:56.000
+2026-07-19 22:54:54.332   Installing the file.
+2026-07-19 22:54:54.349   Successfully installed the file.
+2026-07-19 22:54:54.349   -- File entry --
+2026-07-19 22:54:54.349   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Connections.Abstractions.dll
+2026-07-19 22:54:54.349   Time stamp of our file: 2026-06-26 17:02:58.000
+2026-07-19 22:54:54.349   Installing the file.
+2026-07-19 22:54:54.355   Successfully installed the file.
+2026-07-19 22:54:54.355   -- File entry --
+2026-07-19 22:54:54.355   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.CookiePolicy.dll
+2026-07-19 22:54:54.355   Time stamp of our file: 2026-06-26 17:02:58.000
+2026-07-19 22:54:54.355   Installing the file.
+2026-07-19 22:54:54.357   Successfully installed the file.
+2026-07-19 22:54:54.357   -- File entry --
+2026-07-19 22:54:54.357   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Cors.dll
+2026-07-19 22:54:54.357   Time stamp of our file: 2026-06-26 17:02:58.000
+2026-07-19 22:54:54.357   Installing the file.
+2026-07-19 22:54:54.357   Successfully installed the file.
+2026-07-19 22:54:54.357   -- File entry --
+2026-07-19 22:54:54.357   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Cryptography.Internal.dll
+2026-07-19 22:54:54.357   Time stamp of our file: 2026-06-26 17:02:58.000
+2026-07-19 22:54:54.357   Installing the file.
+2026-07-19 22:54:54.361   Successfully installed the file.
+2026-07-19 22:54:54.361   -- File entry --
+2026-07-19 22:54:54.361   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Cryptography.KeyDerivation.dll
+2026-07-19 22:54:54.361   Time stamp of our file: 2026-06-26 17:02:58.000
+2026-07-19 22:54:54.361   Installing the file.
+2026-07-19 22:54:54.364   Successfully installed the file.
+2026-07-19 22:54:54.364   -- File entry --
+2026-07-19 22:54:54.364   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.DataProtection.Abstractions.dll
+2026-07-19 22:54:54.364   Time stamp of our file: 2026-06-26 17:02:58.000
+2026-07-19 22:54:54.364   Installing the file.
+2026-07-19 22:54:54.374   Successfully installed the file.
+2026-07-19 22:54:54.374   -- File entry --
+2026-07-19 22:54:54.374   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.DataProtection.dll
+2026-07-19 22:54:54.374   Time stamp of our file: 2026-06-26 17:02:58.000
+2026-07-19 22:54:54.374   Installing the file.
+2026-07-19 22:54:54.386   Successfully installed the file.
+2026-07-19 22:54:54.386   -- File entry --
+2026-07-19 22:54:54.386   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.DataProtection.Extensions.dll
+2026-07-19 22:54:54.386   Time stamp of our file: 2026-06-26 17:02:58.000
+2026-07-19 22:54:54.386   Installing the file.
+2026-07-19 22:54:54.388   Successfully installed the file.
+2026-07-19 22:54:54.388   -- File entry --
+2026-07-19 22:54:54.388   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Diagnostics.Abstractions.dll
+2026-07-19 22:54:54.388   Time stamp of our file: 2026-06-26 17:02:58.000
+2026-07-19 22:54:54.388   Installing the file.
+2026-07-19 22:54:54.389   Successfully installed the file.
+2026-07-19 22:54:54.389   -- File entry --
+2026-07-19 22:54:54.389   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Diagnostics.dll
+2026-07-19 22:54:54.389   Time stamp of our file: 2026-06-26 17:03:00.000
+2026-07-19 22:54:54.389   Installing the file.
+2026-07-19 22:54:54.399   Successfully installed the file.
+2026-07-19 22:54:54.399   -- File entry --
+2026-07-19 22:54:54.399   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Diagnostics.HealthChecks.dll
+2026-07-19 22:54:54.399   Time stamp of our file: 2026-06-26 17:03:00.000
+2026-07-19 22:54:54.399   Installing the file.
+2026-07-19 22:54:54.400   Successfully installed the file.
+2026-07-19 22:54:54.400   -- File entry --
+2026-07-19 22:54:54.400   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.dll
+2026-07-19 22:54:54.400   Time stamp of our file: 2026-06-26 17:03:00.000
+2026-07-19 22:54:54.400   Installing the file.
+2026-07-19 22:54:54.400   Successfully installed the file.
+2026-07-19 22:54:54.400   -- File entry --
+2026-07-19 22:54:54.400   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.HostFiltering.dll
+2026-07-19 22:54:54.400   Time stamp of our file: 2026-06-26 17:03:00.000
+2026-07-19 22:54:54.400   Installing the file.
+2026-07-19 22:54:54.405   Successfully installed the file.
+2026-07-19 22:54:54.405   -- File entry --
+2026-07-19 22:54:54.405   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Hosting.Abstractions.dll
+2026-07-19 22:54:54.407   Time stamp of our file: 2026-06-26 17:03:00.000
+2026-07-19 22:54:54.407   Installing the file.
+2026-07-19 22:54:54.407   Successfully installed the file.
+2026-07-19 22:54:54.407   -- File entry --
+2026-07-19 22:54:54.407   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Hosting.dll
+2026-07-19 22:54:54.407   Time stamp of our file: 2026-06-26 17:03:02.000
+2026-07-19 22:54:54.407   Installing the file.
+2026-07-19 22:54:54.411   Successfully installed the file.
+2026-07-19 22:54:54.411   -- File entry --
+2026-07-19 22:54:54.411   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Hosting.Server.Abstractions.dll
+2026-07-19 22:54:54.411   Time stamp of our file: 2026-06-26 17:03:02.000
+2026-07-19 22:54:54.411   Installing the file.
+2026-07-19 22:54:54.411   Successfully installed the file.
+2026-07-19 22:54:54.411   -- File entry --
+2026-07-19 22:54:54.411   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Html.Abstractions.dll
+2026-07-19 22:54:54.411   Time stamp of our file: 2026-06-26 17:03:02.000
+2026-07-19 22:54:54.411   Installing the file.
+2026-07-19 22:54:54.429   Successfully installed the file.
+2026-07-19 22:54:54.429   -- File entry --
+2026-07-19 22:54:54.429   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Http.Abstractions.dll
+2026-07-19 22:54:54.429   Time stamp of our file: 2026-06-26 17:03:02.000
+2026-07-19 22:54:54.429   Installing the file.
+2026-07-19 22:54:54.437   Successfully installed the file.
+2026-07-19 22:54:54.437   -- File entry --
+2026-07-19 22:54:54.437   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Http.Connections.Common.dll
+2026-07-19 22:54:54.437   Time stamp of our file: 2026-06-26 17:03:02.000
+2026-07-19 22:54:54.437   Installing the file.
+2026-07-19 22:54:54.438   Successfully installed the file.
+2026-07-19 22:54:54.438   -- File entry --
+2026-07-19 22:54:54.438   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Http.Connections.dll
+2026-07-19 22:54:54.438   Time stamp of our file: 2026-06-26 17:03:02.000
+2026-07-19 22:54:54.438   Installing the file.
+2026-07-19 22:54:54.443   Successfully installed the file.
+2026-07-19 22:54:54.443   -- File entry --
+2026-07-19 22:54:54.443   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Http.dll
+2026-07-19 22:54:54.443   Time stamp of our file: 2026-06-26 17:03:02.000
+2026-07-19 22:54:54.443   Installing the file.
+2026-07-19 22:54:54.459   Successfully installed the file.
+2026-07-19 22:54:54.459   -- File entry --
+2026-07-19 22:54:54.459   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Http.Extensions.dll
+2026-07-19 22:54:54.459   Time stamp of our file: 2026-06-26 17:03:02.000
+2026-07-19 22:54:54.459   Installing the file.
+2026-07-19 22:54:54.464   Successfully installed the file.
+2026-07-19 22:54:54.464   -- File entry --
+2026-07-19 22:54:54.464   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Http.Features.dll
+2026-07-19 22:54:54.464   Time stamp of our file: 2026-06-26 17:03:02.000
+2026-07-19 22:54:54.464   Installing the file.
+2026-07-19 22:54:54.474   Successfully installed the file.
+2026-07-19 22:54:54.474   -- File entry --
+2026-07-19 22:54:54.474   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Http.Results.dll
+2026-07-19 22:54:54.474   Time stamp of our file: 2026-06-26 17:03:04.000
+2026-07-19 22:54:54.474   Installing the file.
+2026-07-19 22:54:54.477   Successfully installed the file.
+2026-07-19 22:54:54.477   -- File entry --
+2026-07-19 22:54:54.477   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.HttpLogging.dll
+2026-07-19 22:54:54.477   Time stamp of our file: 2026-06-26 17:03:04.000
+2026-07-19 22:54:54.477   Installing the file.
+2026-07-19 22:54:54.477   Successfully installed the file.
+2026-07-19 22:54:54.477   -- File entry --
+2026-07-19 22:54:54.477   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.HttpOverrides.dll
+2026-07-19 22:54:54.477   Time stamp of our file: 2026-06-26 17:03:04.000
+2026-07-19 22:54:54.477   Installing the file.
+2026-07-19 22:54:54.477   Successfully installed the file.
+2026-07-19 22:54:54.477   -- File entry --
+2026-07-19 22:54:54.477   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.HttpsPolicy.dll
+2026-07-19 22:54:54.477   Time stamp of our file: 2026-06-26 17:03:04.000
+2026-07-19 22:54:54.477   Installing the file.
+2026-07-19 22:54:54.490   Successfully installed the file.
+2026-07-19 22:54:54.490   -- File entry --
+2026-07-19 22:54:54.490   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Identity.dll
+2026-07-19 22:54:54.490   Time stamp of our file: 2026-06-26 17:03:04.000
+2026-07-19 22:54:54.490   Installing the file.
+2026-07-19 22:54:54.510   Successfully installed the file.
+2026-07-19 22:54:54.510   -- File entry --
+2026-07-19 22:54:54.510   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Localization.dll
+2026-07-19 22:54:54.510   Time stamp of our file: 2026-06-26 17:03:04.000
+2026-07-19 22:54:54.510   Installing the file.
+2026-07-19 22:54:54.513   Successfully installed the file.
+2026-07-19 22:54:54.513   -- File entry --
+2026-07-19 22:54:54.513   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Localization.Routing.dll
+2026-07-19 22:54:54.513   Time stamp of our file: 2026-06-26 17:03:06.000
+2026-07-19 22:54:54.513   Installing the file.
+2026-07-19 22:54:54.515   Successfully installed the file.
+2026-07-19 22:54:54.515   -- File entry --
+2026-07-19 22:54:54.515   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Metadata.dll
+2026-07-19 22:54:54.515   Time stamp of our file: 2026-06-26 16:59:18.000
+2026-07-19 22:54:54.515   Installing the file.
+2026-07-19 22:54:54.516   Successfully installed the file.
+2026-07-19 22:54:54.516   -- File entry --
+2026-07-19 22:54:54.516   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Mvc.Abstractions.dll
+2026-07-19 22:54:54.516   Time stamp of our file: 2026-06-26 17:03:06.000
+2026-07-19 22:54:54.516   Installing the file.
+2026-07-19 22:54:54.522   Successfully installed the file.
+2026-07-19 22:54:54.522   -- File entry --
+2026-07-19 22:54:54.522   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Mvc.ApiExplorer.dll
+2026-07-19 22:54:54.522   Time stamp of our file: 2026-06-26 17:03:06.000
+2026-07-19 22:54:54.522   Installing the file.
+2026-07-19 22:54:54.526   Successfully installed the file.
+2026-07-19 22:54:54.526   -- File entry --
+2026-07-19 22:54:54.527   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Mvc.Core.dll
+2026-07-19 22:54:54.527   Time stamp of our file: 2026-06-26 17:03:06.000
+2026-07-19 22:54:54.527   Installing the file.
+2026-07-19 22:54:54.570   Successfully installed the file.
+2026-07-19 22:54:54.571   -- File entry --
+2026-07-19 22:54:54.571   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Mvc.Cors.dll
+2026-07-19 22:54:54.571   Time stamp of our file: 2026-06-26 17:03:08.000
+2026-07-19 22:54:54.571   Installing the file.
+2026-07-19 22:54:54.572   Successfully installed the file.
+2026-07-19 22:54:54.572   -- File entry --
+2026-07-19 22:54:54.572   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Mvc.DataAnnotations.dll
+2026-07-19 22:54:54.572   Time stamp of our file: 2026-06-26 17:03:08.000
+2026-07-19 22:54:54.572   Installing the file.
+2026-07-19 22:54:54.576   Successfully installed the file.
+2026-07-19 22:54:54.576   -- File entry --
+2026-07-19 22:54:54.576   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Mvc.dll
+2026-07-19 22:54:54.576   Time stamp of our file: 2026-06-26 17:03:08.000
+2026-07-19 22:54:54.576   Installing the file.
+2026-07-19 22:54:54.577   Successfully installed the file.
+2026-07-19 22:54:54.577   -- File entry --
+2026-07-19 22:54:54.577   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Mvc.Formatters.Json.dll
+2026-07-19 22:54:54.577   Time stamp of our file: 2026-06-26 17:02:18.000
+2026-07-19 22:54:54.577   Installing the file.
+2026-07-19 22:54:54.578   Successfully installed the file.
+2026-07-19 22:54:54.578   -- File entry --
+2026-07-19 22:54:54.578   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Mvc.Formatters.Xml.dll
+2026-07-19 22:54:54.578   Time stamp of our file: 2026-06-26 17:03:08.000
+2026-07-19 22:54:54.578   Installing the file.
+2026-07-19 22:54:54.581   Successfully installed the file.
+2026-07-19 22:54:54.581   -- File entry --
+2026-07-19 22:54:54.581   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Mvc.Localization.dll
+2026-07-19 22:54:54.581   Time stamp of our file: 2026-06-26 17:03:08.000
+2026-07-19 22:54:54.581   Installing the file.
+2026-07-19 22:54:54.591   Successfully installed the file.
+2026-07-19 22:54:54.591   -- File entry --
+2026-07-19 22:54:54.591   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Mvc.Razor.dll
+2026-07-19 22:54:54.591   Time stamp of our file: 2026-06-26 17:03:10.000
+2026-07-19 22:54:54.591   Installing the file.
+2026-07-19 22:54:54.597   Successfully installed the file.
+2026-07-19 22:54:54.597   -- File entry --
+2026-07-19 22:54:54.597   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Mvc.RazorPages.dll
+2026-07-19 22:54:54.597   Time stamp of our file: 2026-06-26 17:03:10.000
+2026-07-19 22:54:54.597   Installing the file.
+2026-07-19 22:54:54.608   Successfully installed the file.
+2026-07-19 22:54:54.608   -- File entry --
+2026-07-19 22:54:54.608   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Mvc.TagHelpers.dll
+2026-07-19 22:54:54.608   Time stamp of our file: 2026-06-26 17:03:10.000
+2026-07-19 22:54:54.608   Installing the file.
+2026-07-19 22:54:54.615   Successfully installed the file.
+2026-07-19 22:54:54.615   -- File entry --
+2026-07-19 22:54:54.615   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Mvc.ViewFeatures.dll
+2026-07-19 22:54:54.615   Time stamp of our file: 2026-06-26 17:03:10.000
+2026-07-19 22:54:54.615   Installing the file.
+2026-07-19 22:54:54.631   Successfully installed the file.
+2026-07-19 22:54:54.631   -- File entry --
+2026-07-19 22:54:54.631   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.OutputCaching.dll
+2026-07-19 22:54:54.631   Time stamp of our file: 2026-06-26 17:03:10.000
+2026-07-19 22:54:54.631   Installing the file.
+2026-07-19 22:54:54.638   Successfully installed the file.
+2026-07-19 22:54:54.638   -- File entry --
+2026-07-19 22:54:54.638   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.RateLimiting.dll
+2026-07-19 22:54:54.638   Time stamp of our file: 2026-06-26 17:03:10.000
+2026-07-19 22:54:54.638   Installing the file.
+2026-07-19 22:54:54.641   Successfully installed the file.
+2026-07-19 22:54:54.641   -- File entry --
+2026-07-19 22:54:54.641   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Razor.dll
+2026-07-19 22:54:54.641   Time stamp of our file: 2026-06-26 17:03:10.000
+2026-07-19 22:54:54.641   Installing the file.
+2026-07-19 22:54:54.643   Successfully installed the file.
+2026-07-19 22:54:54.643   -- File entry --
+2026-07-19 22:54:54.643   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Razor.Runtime.dll
+2026-07-19 22:54:54.643   Time stamp of our file: 2026-06-26 17:03:10.000
+2026-07-19 22:54:54.643   Installing the file.
+2026-07-19 22:54:54.645   Successfully installed the file.
+2026-07-19 22:54:54.645   -- File entry --
+2026-07-19 22:54:54.645   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.RequestDecompression.dll
+2026-07-19 22:54:54.645   Time stamp of our file: 2026-06-26 17:03:12.000
+2026-07-19 22:54:54.645   Installing the file.
+2026-07-19 22:54:54.646   Successfully installed the file.
+2026-07-19 22:54:54.646   -- File entry --
+2026-07-19 22:54:54.646   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.ResponseCaching.Abstractions.dll
+2026-07-19 22:54:54.646   Time stamp of our file: 2026-06-26 16:59:18.000
+2026-07-19 22:54:54.647   Installing the file.
+2026-07-19 22:54:54.655   Successfully installed the file.
+2026-07-19 22:54:54.656   -- File entry --
+2026-07-19 22:54:54.656   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.ResponseCaching.dll
+2026-07-19 22:54:54.656   Time stamp of our file: 2026-06-26 17:03:12.000
+2026-07-19 22:54:54.656   Installing the file.
+2026-07-19 22:54:54.659   Successfully installed the file.
+2026-07-19 22:54:54.659   -- File entry --
+2026-07-19 22:54:54.660   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.ResponseCompression.dll
+2026-07-19 22:54:54.660   Time stamp of our file: 2026-06-26 17:03:12.000
+2026-07-19 22:54:54.660   Installing the file.
+2026-07-19 22:54:54.662   Successfully installed the file.
+2026-07-19 22:54:54.662   -- File entry --
+2026-07-19 22:54:54.662   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Rewrite.dll
+2026-07-19 22:54:54.662   Time stamp of our file: 2026-06-26 17:03:12.000
+2026-07-19 22:54:54.662   Installing the file.
+2026-07-19 22:54:54.667   Successfully installed the file.
+2026-07-19 22:54:54.667   -- File entry --
+2026-07-19 22:54:54.667   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Routing.Abstractions.dll
+2026-07-19 22:54:54.667   Time stamp of our file: 2026-06-26 17:03:12.000
+2026-07-19 22:54:54.667   Installing the file.
+2026-07-19 22:54:54.669   Successfully installed the file.
+2026-07-19 22:54:54.669   -- File entry --
+2026-07-19 22:54:54.669   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Routing.dll
+2026-07-19 22:54:54.669   Time stamp of our file: 2026-06-26 17:03:12.000
+2026-07-19 22:54:54.669   Installing the file.
+2026-07-19 22:54:54.689   Successfully installed the file.
+2026-07-19 22:54:54.689   -- File entry --
+2026-07-19 22:54:54.689   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Server.HttpSys.dll
+2026-07-19 22:54:54.689   Time stamp of our file: 2026-06-26 17:03:12.000
+2026-07-19 22:54:54.689   Installing the file.
+2026-07-19 22:54:54.705   Successfully installed the file.
+2026-07-19 22:54:54.705   -- File entry --
+2026-07-19 22:54:54.705   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Server.IIS.dll
+2026-07-19 22:54:54.709   Time stamp of our file: 2026-06-26 17:03:14.000
+2026-07-19 22:54:54.709   Installing the file.
+2026-07-19 22:54:54.721   Successfully installed the file.
+2026-07-19 22:54:54.721   -- File entry --
+2026-07-19 22:54:54.722   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Server.IISIntegration.dll
+2026-07-19 22:54:54.722   Time stamp of our file: 2026-06-26 17:03:14.000
+2026-07-19 22:54:54.722   Installing the file.
+2026-07-19 22:54:54.723   Successfully installed the file.
+2026-07-19 22:54:54.723   -- File entry --
+2026-07-19 22:54:54.723   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Server.Kestrel.Core.dll
+2026-07-19 22:54:54.723   Time stamp of our file: 2026-06-26 17:03:14.000
+2026-07-19 22:54:54.723   Installing the file.
+2026-07-19 22:54:54.774   Successfully installed the file.
+2026-07-19 22:54:54.774   -- File entry --
+2026-07-19 22:54:54.774   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Server.Kestrel.dll
+2026-07-19 22:54:54.774   Time stamp of our file: 2026-06-26 17:03:14.000
+2026-07-19 22:54:54.774   Installing the file.
+2026-07-19 22:54:54.775   Successfully installed the file.
+2026-07-19 22:54:54.775   -- File entry --
+2026-07-19 22:54:54.775   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.dll
+2026-07-19 22:54:54.775   Time stamp of our file: 2026-06-26 17:03:14.000
+2026-07-19 22:54:54.775   Installing the file.
+2026-07-19 22:54:54.776   Successfully installed the file.
+2026-07-19 22:54:54.776   -- File entry --
+2026-07-19 22:54:54.776   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.dll
+2026-07-19 22:54:54.780   Time stamp of our file: 2026-06-26 17:03:14.000
+2026-07-19 22:54:54.780   Installing the file.
+2026-07-19 22:54:54.780   Successfully installed the file.
+2026-07-19 22:54:54.780   -- File entry --
+2026-07-19 22:54:54.780   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.dll
+2026-07-19 22:54:54.780   Time stamp of our file: 2026-06-26 17:03:16.000
+2026-07-19 22:54:54.780   Installing the file.
+2026-07-19 22:54:54.788   Successfully installed the file.
+2026-07-19 22:54:54.789   -- File entry --
+2026-07-19 22:54:54.789   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.Session.dll
+2026-07-19 22:54:54.789   Time stamp of our file: 2026-06-26 17:03:16.000
+2026-07-19 22:54:54.789   Installing the file.
+2026-07-19 22:54:54.791   Successfully installed the file.
+2026-07-19 22:54:54.791   -- File entry --
+2026-07-19 22:54:54.792   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.SignalR.Common.dll
+2026-07-19 22:54:54.792   Time stamp of our file: 2026-06-26 17:03:16.000
+2026-07-19 22:54:54.792   Installing the file.
+2026-07-19 22:54:54.794   Successfully installed the file.
+2026-07-19 22:54:54.794   -- File entry --
+2026-07-19 22:54:54.794   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.SignalR.Core.dll
+2026-07-19 22:54:54.794   Time stamp of our file: 2026-06-26 17:03:16.000
+2026-07-19 22:54:54.794   Installing the file.
+2026-07-19 22:54:54.806   Successfully installed the file.
+2026-07-19 22:54:54.806   -- File entry --
+2026-07-19 22:54:54.806   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.SignalR.dll
+2026-07-19 22:54:54.806   Time stamp of our file: 2026-06-26 17:03:16.000
+2026-07-19 22:54:54.806   Installing the file.
+2026-07-19 22:54:54.808   Successfully installed the file.
+2026-07-19 22:54:54.808   -- File entry --
+2026-07-19 22:54:54.808   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.SignalR.Protocols.Json.dll
+2026-07-19 22:54:54.808   Time stamp of our file: 2026-06-26 17:03:16.000
+2026-07-19 22:54:54.808   Installing the file.
+2026-07-19 22:54:54.810   Successfully installed the file.
+2026-07-19 22:54:54.810   -- File entry --
+2026-07-19 22:54:54.810   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.StaticAssets.dll
+2026-07-19 22:54:54.810   Time stamp of our file: 2026-06-26 17:03:18.000
+2026-07-19 22:54:54.810   Installing the file.
+2026-07-19 22:54:54.814   Successfully installed the file.
+2026-07-19 22:54:54.814   -- File entry --
+2026-07-19 22:54:54.815   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.StaticFiles.dll
+2026-07-19 22:54:54.815   Time stamp of our file: 2026-06-26 17:03:18.000
+2026-07-19 22:54:54.815   Installing the file.
+2026-07-19 22:54:54.818   Successfully installed the file.
+2026-07-19 22:54:54.818   -- File entry --
+2026-07-19 22:54:54.818   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.WebSockets.dll
+2026-07-19 22:54:54.818   Time stamp of our file: 2026-06-26 17:03:18.000
+2026-07-19 22:54:54.818   Installing the file.
+2026-07-19 22:54:54.820   Successfully installed the file.
+2026-07-19 22:54:54.820   -- File entry --
+2026-07-19 22:54:54.820   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.AspNetCore.WebUtilities.dll
+2026-07-19 22:54:54.820   Time stamp of our file: 2026-06-26 17:03:18.000
+2026-07-19 22:54:54.821   Installing the file.
+2026-07-19 22:54:54.827   Successfully installed the file.
+2026-07-19 22:54:54.827   -- File entry --
+2026-07-19 22:54:54.827   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.CSharp.dll
+2026-07-19 22:54:54.827   Time stamp of our file: 2026-06-26 15:55:04.000
+2026-07-19 22:54:54.827   Installing the file.
+2026-07-19 22:54:54.852   Successfully installed the file.
+2026-07-19 22:54:54.852   -- File entry --
+2026-07-19 22:54:54.853   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Data.Sqlite.dll
+2026-07-19 22:54:54.853   Time stamp of our file: 2026-06-26 16:25:36.000
+2026-07-19 22:54:54.853   Installing the file.
+2026-07-19 22:54:54.862   Successfully installed the file.
+2026-07-19 22:54:54.862   -- File entry --
+2026-07-19 22:54:54.862   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.DiaSymReader.Native.amd64.dll
+2026-07-19 22:54:54.863   Time stamp of our file: 2024-11-27 00:18:14.000
+2026-07-19 22:54:54.863   Installing the file.
+2026-07-19 22:54:54.910   Successfully installed the file.
+2026-07-19 22:54:54.910   -- File entry --
+2026-07-19 22:54:54.910   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.AI.Abstractions.dll
+2026-07-19 22:54:54.910   Time stamp of our file: 2026-05-05 13:53:18.000
+2026-07-19 22:54:54.910   Installing the file.
+2026-07-19 22:54:54.924   Successfully installed the file.
+2026-07-19 22:54:54.924   -- File entry --
+2026-07-19 22:54:54.924   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Caching.Abstractions.dll
+2026-07-19 22:54:54.924   Time stamp of our file: 2026-06-26 17:02:42.000
+2026-07-19 22:54:54.924   Installing the file.
+2026-07-19 22:54:54.927   Successfully installed the file.
+2026-07-19 22:54:54.927   -- File entry --
+2026-07-19 22:54:54.927   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Caching.Memory.dll
+2026-07-19 22:54:54.927   Time stamp of our file: 2026-06-26 17:02:44.000
+2026-07-19 22:54:54.927   Installing the file.
+2026-07-19 22:54:54.930   Successfully installed the file.
+2026-07-19 22:54:54.930   -- File entry --
+2026-07-19 22:54:54.930   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Configuration.Abstractions.dll
+2026-07-19 22:54:54.930   Time stamp of our file: 2026-06-26 17:02:44.000
+2026-07-19 22:54:54.930   Installing the file.
+2026-07-19 22:54:54.931   Successfully installed the file.
+2026-07-19 22:54:54.932   -- File entry --
+2026-07-19 22:54:54.932   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Configuration.Binder.dll
+2026-07-19 22:54:54.932   Time stamp of our file: 2026-06-26 17:02:44.000
+2026-07-19 22:54:54.932   Installing the file.
+2026-07-19 22:54:54.934   Successfully installed the file.
+2026-07-19 22:54:54.934   -- File entry --
+2026-07-19 22:54:54.934   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Configuration.CommandLine.dll
+2026-07-19 22:54:54.934   Time stamp of our file: 2026-06-26 17:02:44.000
+2026-07-19 22:54:54.934   Installing the file.
+2026-07-19 22:54:54.935   Successfully installed the file.
+2026-07-19 22:54:54.935   -- File entry --
+2026-07-19 22:54:54.935   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Configuration.dll
+2026-07-19 22:54:54.935   Time stamp of our file: 2026-06-26 17:02:44.000
+2026-07-19 22:54:54.935   Installing the file.
+2026-07-19 22:54:54.937   Successfully installed the file.
+2026-07-19 22:54:54.938   -- File entry --
+2026-07-19 22:54:54.938   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Configuration.EnvironmentVariables.dll
+2026-07-19 22:54:54.938   Time stamp of our file: 2026-06-26 17:02:44.000
+2026-07-19 22:54:54.938   Installing the file.
+2026-07-19 22:54:54.939   Successfully installed the file.
+2026-07-19 22:54:54.940   -- File entry --
+2026-07-19 22:54:54.940   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Configuration.FileExtensions.dll
+2026-07-19 22:54:54.940   Time stamp of our file: 2026-06-26 17:02:44.000
+2026-07-19 22:54:54.940   Installing the file.
+2026-07-19 22:54:54.941   Successfully installed the file.
+2026-07-19 22:54:54.941   -- File entry --
+2026-07-19 22:54:54.941   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Configuration.Ini.dll
+2026-07-19 22:54:54.941   Time stamp of our file: 2026-06-26 17:02:44.000
+2026-07-19 22:54:54.941   Installing the file.
+2026-07-19 22:54:54.942   Successfully installed the file.
+2026-07-19 22:54:54.942   -- File entry --
+2026-07-19 22:54:54.942   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Configuration.Json.dll
+2026-07-19 22:54:54.942   Time stamp of our file: 2026-06-26 17:02:44.000
+2026-07-19 22:54:54.942   Installing the file.
+2026-07-19 22:54:54.944   Successfully installed the file.
+2026-07-19 22:54:54.944   -- File entry --
+2026-07-19 22:54:54.944   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Configuration.KeyPerFile.dll
+2026-07-19 22:54:54.945   Time stamp of our file: 2026-06-26 17:03:18.000
+2026-07-19 22:54:54.945   Installing the file.
+2026-07-19 22:54:54.946   Successfully installed the file.
+2026-07-19 22:54:54.946   -- File entry --
+2026-07-19 22:54:54.946   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Configuration.UserSecrets.dll
+2026-07-19 22:54:54.946   Time stamp of our file: 2026-06-26 17:02:44.000
+2026-07-19 22:54:54.946   Installing the file.
+2026-07-19 22:54:54.947   Successfully installed the file.
+2026-07-19 22:54:54.947   -- File entry --
+2026-07-19 22:54:54.947   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Configuration.Xml.dll
+2026-07-19 22:54:54.947   Time stamp of our file: 2026-06-26 17:02:44.000
+2026-07-19 22:54:54.947   Installing the file.
+2026-07-19 22:54:54.949   Successfully installed the file.
+2026-07-19 22:54:54.949   -- File entry --
+2026-07-19 22:54:54.949   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll
+2026-07-19 22:54:54.949   Time stamp of our file: 2026-06-26 17:02:46.000
+2026-07-19 22:54:54.949   Installing the file.
+2026-07-19 22:54:54.952   Successfully installed the file.
+2026-07-19 22:54:54.952   -- File entry --
+2026-07-19 22:54:54.952   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.DependencyInjection.dll
+2026-07-19 22:54:54.952   Time stamp of our file: 2026-06-26 17:02:46.000
+2026-07-19 22:54:54.952   Installing the file.
+2026-07-19 22:54:54.958   Successfully installed the file.
+2026-07-19 22:54:54.958   -- File entry --
+2026-07-19 22:54:54.958   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Diagnostics.Abstractions.dll
+2026-07-19 22:54:54.958   Time stamp of our file: 2026-06-26 17:02:46.000
+2026-07-19 22:54:54.958   Installing the file.
+2026-07-19 22:54:54.959   Successfully installed the file.
+2026-07-19 22:54:54.959   -- File entry --
+2026-07-19 22:54:54.960   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Diagnostics.dll
+2026-07-19 22:54:54.960   Time stamp of our file: 2026-06-26 17:02:46.000
+2026-07-19 22:54:54.960   Installing the file.
+2026-07-19 22:54:54.962   Successfully installed the file.
+2026-07-19 22:54:54.962   -- File entry --
+2026-07-19 22:54:54.962   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions.dll
+2026-07-19 22:54:54.962   Time stamp of our file: 2026-06-26 17:03:18.000
+2026-07-19 22:54:54.962   Installing the file.
+2026-07-19 22:54:54.963   Successfully installed the file.
+2026-07-19 22:54:54.963   -- File entry --
+2026-07-19 22:54:54.963   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Diagnostics.HealthChecks.dll
+2026-07-19 22:54:54.963   Time stamp of our file: 2026-06-26 17:03:18.000
+2026-07-19 22:54:54.963   Installing the file.
+2026-07-19 22:54:54.967   Successfully installed the file.
+2026-07-19 22:54:54.967   -- File entry --
+2026-07-19 22:54:54.967   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Features.dll
+2026-07-19 22:54:54.967   Time stamp of our file: 2026-06-26 17:03:18.000
+2026-07-19 22:54:54.967   Installing the file.
+2026-07-19 22:54:54.969   Successfully installed the file.
+2026-07-19 22:54:54.969   -- File entry --
+2026-07-19 22:54:54.969   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.FileProviders.Abstractions.dll
+2026-07-19 22:54:54.969   Time stamp of our file: 2026-06-26 17:02:46.000
+2026-07-19 22:54:54.969   Installing the file.
+2026-07-19 22:54:54.970   Successfully installed the file.
+2026-07-19 22:54:54.970   -- File entry --
+2026-07-19 22:54:54.970   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.FileProviders.Composite.dll
+2026-07-19 22:54:54.970   Time stamp of our file: 2026-06-26 17:02:46.000
+2026-07-19 22:54:54.970   Installing the file.
+2026-07-19 22:54:54.972   Successfully installed the file.
+2026-07-19 22:54:54.972   -- File entry --
+2026-07-19 22:54:54.972   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.FileProviders.Embedded.dll
+2026-07-19 22:54:54.972   Time stamp of our file: 2026-06-26 17:03:18.000
+2026-07-19 22:54:54.972   Installing the file.
+2026-07-19 22:54:54.975   Successfully installed the file.
+2026-07-19 22:54:54.975   -- File entry --
+2026-07-19 22:54:54.975   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.FileProviders.Physical.dll
+2026-07-19 22:54:54.975   Time stamp of our file: 2026-06-26 17:02:46.000
+2026-07-19 22:54:54.975   Installing the file.
+2026-07-19 22:54:54.977   Successfully installed the file.
+2026-07-19 22:54:54.977   -- File entry --
+2026-07-19 22:54:54.978   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.FileSystemGlobbing.dll
+2026-07-19 22:54:54.978   Time stamp of our file: 2026-06-26 17:02:48.000
+2026-07-19 22:54:54.978   Installing the file.
+2026-07-19 22:54:54.980   Successfully installed the file.
+2026-07-19 22:54:54.980   -- File entry --
+2026-07-19 22:54:54.981   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Hosting.Abstractions.dll
+2026-07-19 22:54:54.981   Time stamp of our file: 2026-06-26 17:02:48.000
+2026-07-19 22:54:54.981   Installing the file.
+2026-07-19 22:54:54.983   Successfully installed the file.
+2026-07-19 22:54:54.983   -- File entry --
+2026-07-19 22:54:54.983   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Hosting.dll
+2026-07-19 22:54:54.983   Time stamp of our file: 2026-06-26 17:02:48.000
+2026-07-19 22:54:54.983   Installing the file.
+2026-07-19 22:54:54.987   Successfully installed the file.
+2026-07-19 22:54:54.987   -- File entry --
+2026-07-19 22:54:54.988   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Http.dll
+2026-07-19 22:54:54.988   Time stamp of our file: 2026-06-26 17:02:48.000
+2026-07-19 22:54:54.988   Installing the file.
+2026-07-19 22:54:54.994   Successfully installed the file.
+2026-07-19 22:54:54.994   -- File entry --
+2026-07-19 22:54:54.994   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Identity.Core.dll
+2026-07-19 22:54:54.994   Time stamp of our file: 2026-06-26 17:03:18.000
+2026-07-19 22:54:54.994   Installing the file.
+2026-07-19 22:54:55.006   Successfully installed the file.
+2026-07-19 22:54:55.006   -- File entry --
+2026-07-19 22:54:55.006   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Identity.Stores.dll
+2026-07-19 22:54:55.006   Time stamp of our file: 2026-06-26 17:03:20.000
+2026-07-19 22:54:55.006   Installing the file.
+2026-07-19 22:54:55.009   Successfully installed the file.
+2026-07-19 22:54:55.009   -- File entry --
+2026-07-19 22:54:55.009   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Localization.Abstractions.dll
+2026-07-19 22:54:55.009   Time stamp of our file: 2026-06-26 17:03:20.000
+2026-07-19 22:54:55.009   Installing the file.
+2026-07-19 22:54:55.010   Successfully installed the file.
+2026-07-19 22:54:55.010   -- File entry --
+2026-07-19 22:54:55.010   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Localization.dll
+2026-07-19 22:54:55.010   Time stamp of our file: 2026-06-26 17:03:20.000
+2026-07-19 22:54:55.010   Installing the file.
+2026-07-19 22:54:55.013   Successfully installed the file.
+2026-07-19 22:54:55.013   -- File entry --
+2026-07-19 22:54:55.013   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Logging.Abstractions.dll
+2026-07-19 22:54:55.013   Time stamp of our file: 2026-06-26 17:02:48.000
+2026-07-19 22:54:55.013   Installing the file.
+2026-07-19 22:54:55.016   Successfully installed the file.
+2026-07-19 22:54:55.016   -- File entry --
+2026-07-19 22:54:55.017   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Logging.Configuration.dll
+2026-07-19 22:54:55.017   Time stamp of our file: 2026-06-26 17:02:48.000
+2026-07-19 22:54:55.017   Installing the file.
+2026-07-19 22:54:55.019   Successfully installed the file.
+2026-07-19 22:54:55.019   -- File entry --
+2026-07-19 22:54:55.019   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Logging.Console.dll
+2026-07-19 22:54:55.019   Time stamp of our file: 2026-06-26 17:02:50.000
+2026-07-19 22:54:55.019   Installing the file.
+2026-07-19 22:54:55.024   Successfully installed the file.
+2026-07-19 22:54:55.024   -- File entry --
+2026-07-19 22:54:55.024   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Logging.Debug.dll
+2026-07-19 22:54:55.024   Time stamp of our file: 2026-06-26 17:02:50.000
+2026-07-19 22:54:55.024   Installing the file.
+2026-07-19 22:54:55.025   Successfully installed the file.
+2026-07-19 22:54:55.025   -- File entry --
+2026-07-19 22:54:55.025   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Logging.dll
+2026-07-19 22:54:55.025   Time stamp of our file: 2026-06-26 17:02:48.000
+2026-07-19 22:54:55.025   Installing the file.
+2026-07-19 22:54:55.028   Successfully installed the file.
+2026-07-19 22:54:55.028   -- File entry --
+2026-07-19 22:54:55.028   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Logging.EventLog.dll
+2026-07-19 22:54:55.028   Time stamp of our file: 2026-06-26 17:02:50.000
+2026-07-19 22:54:55.028   Installing the file.
+2026-07-19 22:54:55.030   Successfully installed the file.
+2026-07-19 22:54:55.030   -- File entry --
+2026-07-19 22:54:55.030   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Logging.EventSource.dll
+2026-07-19 22:54:55.030   Time stamp of our file: 2026-06-26 17:02:50.000
+2026-07-19 22:54:55.030   Installing the file.
+2026-07-19 22:54:55.034   Successfully installed the file.
+2026-07-19 22:54:55.034   -- File entry --
+2026-07-19 22:54:55.034   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Logging.TraceSource.dll
+2026-07-19 22:54:55.034   Time stamp of our file: 2026-06-26 17:02:50.000
+2026-07-19 22:54:55.034   Installing the file.
+2026-07-19 22:54:55.035   Successfully installed the file.
+2026-07-19 22:54:55.035   -- File entry --
+2026-07-19 22:54:55.036   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.ObjectPool.dll
+2026-07-19 22:54:55.036   Time stamp of our file: 2026-06-26 17:03:20.000
+2026-07-19 22:54:55.036   Installing the file.
+2026-07-19 22:54:55.037   Successfully installed the file.
+2026-07-19 22:54:55.037   -- File entry --
+2026-07-19 22:54:55.037   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Options.ConfigurationExtensions.dll
+2026-07-19 22:54:55.037   Time stamp of our file: 2026-06-26 17:02:52.000
+2026-07-19 22:54:55.038   Installing the file.
+2026-07-19 22:54:55.039   Successfully installed the file.
+2026-07-19 22:54:55.039   -- File entry --
+2026-07-19 22:54:55.039   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Options.DataAnnotations.dll
+2026-07-19 22:54:55.039   Time stamp of our file: 2026-06-26 17:02:52.000
+2026-07-19 22:54:55.039   Installing the file.
+2026-07-19 22:54:55.051   Successfully installed the file.
+2026-07-19 22:54:55.051   -- File entry --
+2026-07-19 22:54:55.051   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Options.dll
+2026-07-19 22:54:55.051   Time stamp of our file: 2026-06-26 17:02:50.000
+2026-07-19 22:54:55.051   Installing the file.
+2026-07-19 22:54:55.054   Successfully installed the file.
+2026-07-19 22:54:55.054   -- File entry --
+2026-07-19 22:54:55.055   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Primitives.dll
+2026-07-19 22:54:55.055   Time stamp of our file: 2026-06-26 17:02:52.000
+2026-07-19 22:54:55.055   Installing the file.
+2026-07-19 22:54:55.058   Successfully installed the file.
+2026-07-19 22:54:55.058   -- File entry --
+2026-07-19 22:54:55.058   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.Validation.dll
+2026-07-19 22:54:55.059   Time stamp of our file: 2026-06-26 17:03:20.000
+2026-07-19 22:54:55.059   Installing the file.
+2026-07-19 22:54:55.061   Successfully installed the file.
+2026-07-19 22:54:55.061   -- File entry --
+2026-07-19 22:54:55.061   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Extensions.WebEncoders.dll
+2026-07-19 22:54:55.061   Time stamp of our file: 2026-06-26 17:03:20.000
+2026-07-19 22:54:55.061   Installing the file.
+2026-07-19 22:54:55.061   Successfully installed the file.
+2026-07-19 22:54:55.064   -- File entry --
+2026-07-19 22:54:55.064   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.JSInterop.dll
+2026-07-19 22:54:55.064   Time stamp of our file: 2026-06-26 17:03:20.000
+2026-07-19 22:54:55.064   Installing the file.
+2026-07-19 22:54:55.064   Successfully installed the file.
+2026-07-19 22:54:55.064   -- File entry --
+2026-07-19 22:54:55.064   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.ML.OnnxRuntime.dll
+2026-07-19 22:54:55.064   Time stamp of our file: 2026-07-09 15:00:14.000
+2026-07-19 22:54:55.064   Installing the file.
+2026-07-19 22:54:55.074   Successfully installed the file.
+2026-07-19 22:54:55.075   -- File entry --
+2026-07-19 22:54:55.075   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Net.Http.Headers.dll
+2026-07-19 22:54:55.075   Time stamp of our file: 2026-06-26 17:03:20.000
+2026-07-19 22:54:55.075   Installing the file.
+2026-07-19 22:54:55.079   Successfully installed the file.
+2026-07-19 22:54:55.079   -- File entry --
+2026-07-19 22:54:55.081   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.VisualBasic.Core.dll
+2026-07-19 22:54:55.081   Time stamp of our file: 2026-06-26 15:55:04.000
+2026-07-19 22:54:55.081   Installing the file.
+2026-07-19 22:54:55.113   Successfully installed the file.
+2026-07-19 22:54:55.113   -- File entry --
+2026-07-19 22:54:55.113   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.VisualBasic.dll
+2026-07-19 22:54:55.113   Time stamp of our file: 2026-06-26 15:43:44.000
+2026-07-19 22:54:55.113   Installing the file.
+2026-07-19 22:54:55.114   Successfully installed the file.
+2026-07-19 22:54:55.114   -- File entry --
+2026-07-19 22:54:55.114   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Win32.Primitives.dll
+2026-07-19 22:54:55.114   Time stamp of our file: 2026-06-26 15:40:12.000
+2026-07-19 22:54:55.114   Installing the file.
+2026-07-19 22:54:55.115   Successfully installed the file.
+2026-07-19 22:54:55.115   -- File entry --
+2026-07-19 22:54:55.115   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\Microsoft.Win32.Registry.dll
+2026-07-19 22:54:55.115   Time stamp of our file: 2026-06-26 15:55:04.000
+2026-07-19 22:54:55.115   Installing the file.
+2026-07-19 22:54:55.118   Successfully installed the file.
+2026-07-19 22:54:55.118   -- File entry --
+2026-07-19 22:54:55.118   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\ModelContextProtocol.AspNetCore.dll
+2026-07-19 22:54:55.118   Time stamp of our file: 2026-07-08 20:43:08.000
+2026-07-19 22:54:55.118   Installing the file.
+2026-07-19 22:54:55.121   Successfully installed the file.
+2026-07-19 22:54:55.121   -- File entry --
+2026-07-19 22:54:55.122   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\ModelContextProtocol.Core.dll
+2026-07-19 22:54:55.122   Time stamp of our file: 2026-07-08 20:43:00.000
+2026-07-19 22:54:55.122   Installing the file.
+2026-07-19 22:54:55.143   Successfully installed the file.
+2026-07-19 22:54:55.143   -- File entry --
+2026-07-19 22:54:55.143   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\ModelContextProtocol.dll
+2026-07-19 22:54:55.143   Time stamp of our file: 2026-07-08 20:43:06.000
+2026-07-19 22:54:55.143   Installing the file.
+2026-07-19 22:54:55.153   Successfully installed the file.
+2026-07-19 22:54:55.154   -- File entry --
+2026-07-19 22:54:55.154   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\mscordaccore.dll
+2026-07-19 22:54:55.154   Time stamp of our file: 2026-06-26 15:21:26.000
+2026-07-19 22:54:55.154   Installing the file.
+2026-07-19 22:54:55.182   Successfully installed the file.
+2026-07-19 22:54:55.182   -- File entry --
+2026-07-19 22:54:55.182   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\mscordaccore_amd64_amd64_10.0.1026.32716.dll
+2026-07-19 22:54:55.182   Time stamp of our file: 2026-06-26 15:21:26.000
+2026-07-19 22:54:55.182   Installing the file.
+2026-07-19 22:54:55.194   Successfully installed the file.
+2026-07-19 22:54:55.194   -- File entry --
+2026-07-19 22:54:55.194   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\mscordbi.dll
+2026-07-19 22:54:55.194   Time stamp of our file: 2026-06-26 15:20:52.000
+2026-07-19 22:54:55.194   Installing the file.
+2026-07-19 22:54:55.207   Successfully installed the file.
+2026-07-19 22:54:55.207   -- File entry --
+2026-07-19 22:54:55.207   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\mscorlib.dll
+2026-07-19 22:54:55.207   Time stamp of our file: 2026-06-26 15:44:06.000
+2026-07-19 22:54:55.207   Installing the file.
+2026-07-19 22:54:55.207   Successfully installed the file.
+2026-07-19 22:54:55.207   -- File entry --
+2026-07-19 22:54:55.207   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\mscorrc.dll
+2026-07-19 22:54:55.207   Time stamp of our file: 2026-06-26 15:22:14.000
+2026-07-19 22:54:55.207   Installing the file.
+2026-07-19 22:54:55.207   Successfully installed the file.
+2026-07-19 22:54:55.207   -- File entry --
+2026-07-19 22:54:55.207   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\msquic.dll
+2026-07-19 22:54:55.207   Time stamp of our file: 2026-04-14 18:05:00.000
+2026-07-19 22:54:55.207   Installing the file.
+2026-07-19 22:54:55.234   Successfully installed the file.
+2026-07-19 22:54:55.234   -- File entry --
+2026-07-19 22:54:55.234   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\netstandard.dll
+2026-07-19 22:54:55.234   Time stamp of our file: 2026-06-26 15:44:28.000
+2026-07-19 22:54:55.234   Installing the file.
+2026-07-19 22:54:55.236   Successfully installed the file.
+2026-07-19 22:54:55.236   -- File entry --
+2026-07-19 22:54:55.236   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\onnxruntime.dll
+2026-07-19 22:54:55.236   Time stamp of our file: 2026-07-09 13:49:18.000
+2026-07-19 22:54:55.236   Installing the file.
+2026-07-19 22:54:55.489   Successfully installed the file.
+2026-07-19 22:54:55.489   -- File entry --
+2026-07-19 22:54:55.489   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\onnxruntime.lib
+2026-07-19 22:54:55.489   Time stamp of our file: 2026-07-09 13:35:34.000
+2026-07-19 22:54:55.489   Installing the file.
+2026-07-19 22:54:55.491   Successfully installed the file.
+2026-07-19 22:54:55.491   -- File entry --
+2026-07-19 22:54:55.491   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\onnxruntime_providers_shared.dll
+2026-07-19 22:54:55.491   Time stamp of our file: 2026-07-09 13:49:58.000
+2026-07-19 22:54:55.491   Installing the file.
+2026-07-19 22:54:55.491   Successfully installed the file.
+2026-07-19 22:54:55.491   -- File entry --
+2026-07-19 22:54:55.491   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\onnxruntime_providers_shared.lib
+2026-07-19 22:54:55.491   Time stamp of our file: 2026-07-09 13:34:48.000
+2026-07-19 22:54:55.491   Installing the file.
+2026-07-19 22:54:55.493   Successfully installed the file.
+2026-07-19 22:54:55.493   -- File entry --
+2026-07-19 22:54:55.493   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\SQLitePCLRaw.batteries_v2.dll
+2026-07-19 22:54:55.494   Time stamp of our file: 2025-03-07 15:46:32.000
+2026-07-19 22:54:55.494   Installing the file.
+2026-07-19 22:54:55.494   Successfully installed the file.
+2026-07-19 22:54:55.494   -- File entry --
+2026-07-19 22:54:55.494   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\SQLitePCLRaw.core.dll
+2026-07-19 22:54:55.494   Time stamp of our file: 2025-03-07 15:45:06.000
+2026-07-19 22:54:55.494   Installing the file.
+2026-07-19 22:54:55.495   Successfully installed the file.
+2026-07-19 22:54:55.495   -- File entry --
+2026-07-19 22:54:55.495   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\SQLitePCLRaw.provider.e_sqlite3.dll
+2026-07-19 22:54:55.495   Time stamp of our file: 2025-03-07 15:45:18.000
+2026-07-19 22:54:55.495   Installing the file.
+2026-07-19 22:54:55.497   Successfully installed the file.
+2026-07-19 22:54:55.497   -- File entry --
+2026-07-19 22:54:55.497   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.AppContext.dll
+2026-07-19 22:54:55.497   Time stamp of our file: 2026-06-26 15:43:34.000
+2026-07-19 22:54:55.497   Installing the file.
+2026-07-19 22:54:55.498   Successfully installed the file.
+2026-07-19 22:54:55.498   -- File entry --
+2026-07-19 22:54:55.498   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Buffers.dll
+2026-07-19 22:54:55.498   Time stamp of our file: 2026-06-26 15:43:30.000
+2026-07-19 22:54:55.498   Installing the file.
+2026-07-19 22:54:55.499   Successfully installed the file.
+2026-07-19 22:54:55.499   -- File entry --
+2026-07-19 22:54:55.499   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Collections.Concurrent.dll
+2026-07-19 22:54:55.499   Time stamp of our file: 2026-06-26 15:55:04.000
+2026-07-19 22:54:55.499   Installing the file.
+2026-07-19 22:54:55.505   Successfully installed the file.
+2026-07-19 22:54:55.505   -- File entry --
+2026-07-19 22:54:55.505   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Collections.dll
+2026-07-19 22:54:55.505   Time stamp of our file: 2026-06-26 15:55:04.000
+2026-07-19 22:54:55.505   Installing the file.
+2026-07-19 22:54:55.514   Successfully installed the file.
+2026-07-19 22:54:55.514   -- File entry --
+2026-07-19 22:54:55.514   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Collections.Immutable.dll
+2026-07-19 22:54:55.514   Time stamp of our file: 2026-06-26 15:55:06.000
+2026-07-19 22:54:55.514   Installing the file.
+2026-07-19 22:54:55.536   Successfully installed the file.
+2026-07-19 22:54:55.536   -- File entry --
+2026-07-19 22:54:55.536   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Collections.NonGeneric.dll
+2026-07-19 22:54:55.536   Time stamp of our file: 2026-06-26 15:55:06.000
+2026-07-19 22:54:55.536   Installing the file.
+2026-07-19 22:54:55.538   Successfully installed the file.
+2026-07-19 22:54:55.538   -- File entry --
+2026-07-19 22:54:55.538   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Collections.Specialized.dll
+2026-07-19 22:54:55.538   Time stamp of our file: 2026-06-26 15:55:06.000
+2026-07-19 22:54:55.538   Installing the file.
+2026-07-19 22:54:55.538   Successfully installed the file.
+2026-07-19 22:54:55.538   -- File entry --
+2026-07-19 22:54:55.538   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.ComponentModel.Annotations.dll
+2026-07-19 22:54:55.538   Time stamp of our file: 2026-06-26 15:55:06.000
+2026-07-19 22:54:55.538   Installing the file.
+2026-07-19 22:54:55.547   Successfully installed the file.
+2026-07-19 22:54:55.547   -- File entry --
+2026-07-19 22:54:55.547   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.ComponentModel.DataAnnotations.dll
+2026-07-19 22:54:55.547   Time stamp of our file: 2026-06-26 15:44:08.000
+2026-07-19 22:54:55.547   Installing the file.
+2026-07-19 22:54:55.549   Successfully installed the file.
+2026-07-19 22:54:55.549   -- File entry --
+2026-07-19 22:54:55.549   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.ComponentModel.dll
+2026-07-19 22:54:55.549   Time stamp of our file: 2026-06-26 15:55:06.000
+2026-07-19 22:54:55.549   Installing the file.
+2026-07-19 22:54:55.550   Successfully installed the file.
+2026-07-19 22:54:55.550   -- File entry --
+2026-07-19 22:54:55.550   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.ComponentModel.EventBasedAsync.dll
+2026-07-19 22:54:55.550   Time stamp of our file: 2026-06-26 15:55:06.000
+2026-07-19 22:54:55.550   Installing the file.
+2026-07-19 22:54:55.551   Successfully installed the file.
+2026-07-19 22:54:55.551   -- File entry --
+2026-07-19 22:54:55.551   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.ComponentModel.Primitives.dll
+2026-07-19 22:54:55.551   Time stamp of our file: 2026-06-26 15:55:06.000
+2026-07-19 22:54:55.551   Installing the file.
+2026-07-19 22:54:55.552   Successfully installed the file.
+2026-07-19 22:54:55.552   -- File entry --
+2026-07-19 22:54:55.552   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.ComponentModel.TypeConverter.dll
+2026-07-19 22:54:55.552   Time stamp of our file: 2026-06-26 15:55:06.000
+2026-07-19 22:54:55.552   Installing the file.
+2026-07-19 22:54:55.570   Successfully installed the file.
+2026-07-19 22:54:55.570   -- File entry --
+2026-07-19 22:54:55.570   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Configuration.dll
+2026-07-19 22:54:55.570   Time stamp of our file: 2026-06-26 15:43:38.000
+2026-07-19 22:54:55.570   Installing the file.
+2026-07-19 22:54:55.572   Successfully installed the file.
+2026-07-19 22:54:55.572   -- File entry --
+2026-07-19 22:54:55.572   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Console.dll
+2026-07-19 22:54:55.572   Time stamp of our file: 2026-06-26 15:55:06.000
+2026-07-19 22:54:55.572   Installing the file.
+2026-07-19 22:54:55.577   Successfully installed the file.
+2026-07-19 22:54:55.577   -- File entry --
+2026-07-19 22:54:55.577   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Core.dll
+2026-07-19 22:54:55.577   Time stamp of our file: 2026-06-26 15:43:50.000
+2026-07-19 22:54:55.577   Installing the file.
+2026-07-19 22:54:55.577   Successfully installed the file.
+2026-07-19 22:54:55.577   -- File entry --
+2026-07-19 22:54:55.577   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Data.Common.dll
+2026-07-19 22:54:55.577   Time stamp of our file: 2026-06-26 15:55:08.000
+2026-07-19 22:54:55.577   Installing the file.
+2026-07-19 22:54:55.639   Successfully installed the file.
+2026-07-19 22:54:55.639   -- File entry --
+2026-07-19 22:54:55.639   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Data.DataSetExtensions.dll
+2026-07-19 22:54:55.639   Time stamp of our file: 2026-06-26 15:44:26.000
+2026-07-19 22:54:55.639   Installing the file.
+2026-07-19 22:54:55.639   Successfully installed the file.
+2026-07-19 22:54:55.639   -- File entry --
+2026-07-19 22:54:55.639   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Data.dll
+2026-07-19 22:54:55.639   Time stamp of our file: 2026-06-26 15:44:28.000
+2026-07-19 22:54:55.639   Installing the file.
+2026-07-19 22:54:55.645   Successfully installed the file.
+2026-07-19 22:54:55.645   -- File entry --
+2026-07-19 22:54:55.645   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Diagnostics.Contracts.dll
+2026-07-19 22:54:55.645   Time stamp of our file: 2026-06-26 15:43:34.000
+2026-07-19 22:54:55.645   Installing the file.
+2026-07-19 22:54:55.646   Successfully installed the file.
+2026-07-19 22:54:55.646   -- File entry --
+2026-07-19 22:54:55.646   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Diagnostics.Debug.dll
+2026-07-19 22:54:55.646   Time stamp of our file: 2026-06-26 15:43:34.000
+2026-07-19 22:54:55.646   Installing the file.
+2026-07-19 22:54:55.647   Successfully installed the file.
+2026-07-19 22:54:55.647   -- File entry --
+2026-07-19 22:54:55.647   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Diagnostics.DiagnosticSource.dll
+2026-07-19 22:54:55.647   Time stamp of our file: 2026-06-26 15:55:08.000
+2026-07-19 22:54:55.647   Installing the file.
+2026-07-19 22:54:55.655   Successfully installed the file.
+2026-07-19 22:54:55.655   -- File entry --
+2026-07-19 22:54:55.655   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Diagnostics.EventLog.dll
+2026-07-19 22:54:55.655   Time stamp of our file: 2026-06-26 17:02:52.000
+2026-07-19 22:54:55.655   Installing the file.
+2026-07-19 22:54:55.668   Successfully installed the file.
+2026-07-19 22:54:55.668   -- File entry --
+2026-07-19 22:54:55.668   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Diagnostics.EventLog.Messages.dll
+2026-07-19 22:54:55.668   Time stamp of our file: 2026-06-26 15:46:48.000
+2026-07-19 22:54:55.668   Installing the file.
+2026-07-19 22:54:55.672   Successfully installed the file.
+2026-07-19 22:54:55.672   -- File entry --
+2026-07-19 22:54:55.672   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Diagnostics.FileVersionInfo.dll
+2026-07-19 22:54:55.672   Time stamp of our file: 2026-06-26 15:55:08.000
+2026-07-19 22:54:55.672   Installing the file.
+2026-07-19 22:54:55.672   Successfully installed the file.
+2026-07-19 22:54:55.676   -- File entry --
+2026-07-19 22:54:55.676   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Diagnostics.Process.dll
+2026-07-19 22:54:55.676   Time stamp of our file: 2026-06-26 15:55:08.000
+2026-07-19 22:54:55.676   Installing the file.
+2026-07-19 22:54:55.676   Successfully installed the file.
+2026-07-19 22:54:55.676   -- File entry --
+2026-07-19 22:54:55.676   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Diagnostics.StackTrace.dll
+2026-07-19 22:54:55.676   Time stamp of our file: 2026-06-26 15:55:08.000
+2026-07-19 22:54:55.676   Installing the file.
+2026-07-19 22:54:55.693   Successfully installed the file.
+2026-07-19 22:54:55.693   -- File entry --
+2026-07-19 22:54:55.694   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Diagnostics.TextWriterTraceListener.dll
+2026-07-19 22:54:55.694   Time stamp of our file: 2026-06-26 15:55:08.000
+2026-07-19 22:54:55.694   Installing the file.
+2026-07-19 22:54:55.696   Successfully installed the file.
+2026-07-19 22:54:55.696   -- File entry --
+2026-07-19 22:54:55.696   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Diagnostics.Tools.dll
+2026-07-19 22:54:55.696   Time stamp of our file: 2026-06-26 15:43:34.000
+2026-07-19 22:54:55.696   Installing the file.
+2026-07-19 22:54:55.698   Successfully installed the file.
+2026-07-19 22:54:55.698   -- File entry --
+2026-07-19 22:54:55.698   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Diagnostics.TraceSource.dll
+2026-07-19 22:54:55.698   Time stamp of our file: 2026-06-26 15:55:08.000
+2026-07-19 22:54:55.698   Installing the file.
+2026-07-19 22:54:55.699   Successfully installed the file.
+2026-07-19 22:54:55.702   -- File entry --
+2026-07-19 22:54:55.702   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Diagnostics.Tracing.dll
+2026-07-19 22:54:55.702   Time stamp of our file: 2026-06-26 15:40:12.000
+2026-07-19 22:54:55.702   Installing the file.
+2026-07-19 22:54:55.702   Successfully installed the file.
+2026-07-19 22:54:55.702   -- File entry --
+2026-07-19 22:54:55.702   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.dll
+2026-07-19 22:54:55.702   Time stamp of our file: 2026-06-26 15:44:30.000
+2026-07-19 22:54:55.702   Installing the file.
+2026-07-19 22:54:55.704   Successfully installed the file.
+2026-07-19 22:54:55.704   -- File entry --
+2026-07-19 22:54:55.704   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Drawing.dll
+2026-07-19 22:54:55.704   Time stamp of our file: 2026-06-26 15:44:10.000
+2026-07-19 22:54:55.704   Installing the file.
+2026-07-19 22:54:55.704   Successfully installed the file.
+2026-07-19 22:54:55.704   -- File entry --
+2026-07-19 22:54:55.704   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Drawing.Primitives.dll
+2026-07-19 22:54:55.706   Time stamp of our file: 2026-06-26 15:55:08.000
+2026-07-19 22:54:55.706   Installing the file.
+2026-07-19 22:54:55.708   Successfully installed the file.
+2026-07-19 22:54:55.708   -- File entry --
+2026-07-19 22:54:55.708   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Dynamic.Runtime.dll
+2026-07-19 22:54:55.708   Time stamp of our file: 2026-06-26 15:43:44.000
+2026-07-19 22:54:55.708   Installing the file.
+2026-07-19 22:54:55.710   Successfully installed the file.
+2026-07-19 22:54:55.710   -- File entry --
+2026-07-19 22:54:55.710   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Formats.Asn1.dll
+2026-07-19 22:54:55.710   Time stamp of our file: 2026-06-26 15:55:08.000
+2026-07-19 22:54:55.710   Installing the file.
+2026-07-19 22:54:55.714   Successfully installed the file.
+2026-07-19 22:54:55.714   -- File entry --
+2026-07-19 22:54:55.714   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Formats.Cbor.dll
+2026-07-19 22:54:55.716   Time stamp of our file: 2026-06-26 17:02:52.000
+2026-07-19 22:54:55.716   Installing the file.
+2026-07-19 22:54:55.720   Successfully installed the file.
+2026-07-19 22:54:55.720   -- File entry --
+2026-07-19 22:54:55.720   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Formats.Tar.dll
+2026-07-19 22:54:55.720   Time stamp of our file: 2026-06-26 15:55:08.000
+2026-07-19 22:54:55.720   Installing the file.
+2026-07-19 22:54:55.728   Successfully installed the file.
+2026-07-19 22:54:55.728   -- File entry --
+2026-07-19 22:54:55.728   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Globalization.Calendars.dll
+2026-07-19 22:54:55.728   Time stamp of our file: 2026-06-26 15:43:32.000
+2026-07-19 22:54:55.728   Installing the file.
+2026-07-19 22:54:55.730   Successfully installed the file.
+2026-07-19 22:54:55.730   -- File entry --
+2026-07-19 22:54:55.730   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Globalization.dll
+2026-07-19 22:54:55.730   Time stamp of our file: 2026-06-26 15:43:30.000
+2026-07-19 22:54:55.730   Installing the file.
+2026-07-19 22:54:55.731   Successfully installed the file.
+2026-07-19 22:54:55.731   -- File entry --
+2026-07-19 22:54:55.731   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Globalization.Extensions.dll
+2026-07-19 22:54:55.731   Time stamp of our file: 2026-06-26 15:43:34.000
+2026-07-19 22:54:55.731   Installing the file.
+2026-07-19 22:54:55.732   Successfully installed the file.
+2026-07-19 22:54:55.732   -- File entry --
+2026-07-19 22:54:55.732   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.IO.Compression.Brotli.dll
+2026-07-19 22:54:55.732   Time stamp of our file: 2026-06-26 15:55:08.000
+2026-07-19 22:54:55.732   Installing the file.
+2026-07-19 22:54:55.734   Successfully installed the file.
+2026-07-19 22:54:55.734   -- File entry --
+2026-07-19 22:54:55.734   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.IO.Compression.dll
+2026-07-19 22:54:55.734   Time stamp of our file: 2026-06-26 15:55:10.000
+2026-07-19 22:54:55.734   Installing the file.
+2026-07-19 22:54:55.746   Successfully installed the file.
+2026-07-19 22:54:55.746   -- File entry --
+2026-07-19 22:54:55.746   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.IO.Compression.FileSystem.dll
+2026-07-19 22:54:55.746   Time stamp of our file: 2026-06-26 15:43:38.000
+2026-07-19 22:54:55.746   Installing the file.
+2026-07-19 22:54:55.747   Successfully installed the file.
+2026-07-19 22:54:55.747   -- File entry --
+2026-07-19 22:54:55.747   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.IO.Compression.Native.dll
+2026-07-19 22:54:55.747   Time stamp of our file: 2026-06-26 15:39:46.000
+2026-07-19 22:54:55.747   Installing the file.
+2026-07-19 22:54:55.757   Successfully installed the file.
+2026-07-19 22:54:55.757   -- File entry --
+2026-07-19 22:54:55.757   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.IO.Compression.ZipFile.dll
+2026-07-19 22:54:55.757   Time stamp of our file: 2026-06-26 15:55:10.000
+2026-07-19 22:54:55.757   Installing the file.
+2026-07-19 22:54:55.768   Successfully installed the file.
+2026-07-19 22:54:55.768   -- File entry --
+2026-07-19 22:54:55.768   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.IO.dll
+2026-07-19 22:54:55.768   Time stamp of our file: 2026-06-26 15:43:32.000
+2026-07-19 22:54:55.768   Installing the file.
+2026-07-19 22:54:55.771   Successfully installed the file.
+2026-07-19 22:54:55.771   -- File entry --
+2026-07-19 22:54:55.771   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.IO.FileSystem.AccessControl.dll
+2026-07-19 22:54:55.771   Time stamp of our file: 2026-06-26 15:55:10.000
+2026-07-19 22:54:55.771   Installing the file.
+2026-07-19 22:54:55.773   Successfully installed the file.
+2026-07-19 22:54:55.773   -- File entry --
+2026-07-19 22:54:55.773   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.IO.FileSystem.dll
+2026-07-19 22:54:55.773   Time stamp of our file: 2026-06-26 15:43:36.000
+2026-07-19 22:54:55.773   Installing the file.
+2026-07-19 22:54:55.774   Successfully installed the file.
+2026-07-19 22:54:55.774   -- File entry --
+2026-07-19 22:54:55.774   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.IO.FileSystem.DriveInfo.dll
+2026-07-19 22:54:55.774   Time stamp of our file: 2026-06-26 15:55:10.000
+2026-07-19 22:54:55.774   Installing the file.
+2026-07-19 22:54:55.774   Successfully installed the file.
+2026-07-19 22:54:55.774   -- File entry --
+2026-07-19 22:54:55.774   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.IO.FileSystem.Primitives.dll
+2026-07-19 22:54:55.774   Time stamp of our file: 2026-06-26 15:43:32.000
+2026-07-19 22:54:55.774   Installing the file.
+2026-07-19 22:54:55.777   Successfully installed the file.
+2026-07-19 22:54:55.777   -- File entry --
+2026-07-19 22:54:55.777   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.IO.FileSystem.Watcher.dll
+2026-07-19 22:54:55.777   Time stamp of our file: 2026-06-26 15:55:10.000
+2026-07-19 22:54:55.777   Installing the file.
+2026-07-19 22:54:55.779   Successfully installed the file.
+2026-07-19 22:54:55.779   -- File entry --
+2026-07-19 22:54:55.779   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.IO.IsolatedStorage.dll
+2026-07-19 22:54:55.779   Time stamp of our file: 2026-06-26 15:55:10.000
+2026-07-19 22:54:55.779   Installing the file.
+2026-07-19 22:54:55.781   Successfully installed the file.
+2026-07-19 22:54:55.781   -- File entry --
+2026-07-19 22:54:55.781   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.IO.MemoryMappedFiles.dll
+2026-07-19 22:54:55.781   Time stamp of our file: 2026-06-26 15:55:10.000
+2026-07-19 22:54:55.781   Installing the file.
+2026-07-19 22:54:55.781   Successfully installed the file.
+2026-07-19 22:54:55.781   -- File entry --
+2026-07-19 22:54:55.781   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.IO.Pipelines.dll
+2026-07-19 22:54:55.781   Time stamp of our file: 2026-06-26 15:55:10.000
+2026-07-19 22:54:55.781   Installing the file.
+2026-07-19 22:54:55.781   Successfully installed the file.
+2026-07-19 22:54:55.781   -- File entry --
+2026-07-19 22:54:55.789   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.IO.Pipes.AccessControl.dll
+2026-07-19 22:54:55.789   Time stamp of our file: 2026-06-26 15:41:24.000
+2026-07-19 22:54:55.789   Installing the file.
+2026-07-19 22:54:55.790   Successfully installed the file.
+2026-07-19 22:54:55.790   -- File entry --
+2026-07-19 22:54:55.790   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.IO.Pipes.dll
+2026-07-19 22:54:55.790   Time stamp of our file: 2026-06-26 15:55:10.000
+2026-07-19 22:54:55.790   Installing the file.
+2026-07-19 22:54:55.790   Successfully installed the file.
+2026-07-19 22:54:55.794   -- File entry --
+2026-07-19 22:54:55.794   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.IO.UnmanagedMemoryStream.dll
+2026-07-19 22:54:55.794   Time stamp of our file: 2026-06-26 15:43:42.000
+2026-07-19 22:54:55.794   Installing the file.
+2026-07-19 22:54:55.794   Successfully installed the file.
+2026-07-19 22:54:55.794   -- File entry --
+2026-07-19 22:54:55.794   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Linq.AsyncEnumerable.dll
+2026-07-19 22:54:55.794   Time stamp of our file: 2026-06-26 15:55:10.000
+2026-07-19 22:54:55.794   Installing the file.
+2026-07-19 22:54:55.822   Successfully installed the file.
+2026-07-19 22:54:55.822   -- File entry --
+2026-07-19 22:54:55.822   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Linq.dll
+2026-07-19 22:54:55.822   Time stamp of our file: 2026-06-26 15:55:12.000
+2026-07-19 22:54:55.822   Installing the file.
+2026-07-19 22:54:55.841   Successfully installed the file.
+2026-07-19 22:54:55.841   -- File entry --
+2026-07-19 22:54:55.841   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Linq.Expressions.dll
+2026-07-19 22:54:55.841   Time stamp of our file: 2026-06-26 15:55:12.000
+2026-07-19 22:54:55.841   Installing the file.
+2026-07-19 22:54:55.910   Successfully installed the file.
+2026-07-19 22:54:55.910   -- File entry --
+2026-07-19 22:54:55.910   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Linq.Parallel.dll
+2026-07-19 22:54:55.910   Time stamp of our file: 2026-06-26 15:55:14.000
+2026-07-19 22:54:55.910   Installing the file.
+2026-07-19 22:54:55.926   Successfully installed the file.
+2026-07-19 22:54:55.926   -- File entry --
+2026-07-19 22:54:55.926   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Linq.Queryable.dll
+2026-07-19 22:54:55.926   Time stamp of our file: 2026-06-26 15:55:14.000
+2026-07-19 22:54:55.926   Installing the file.
+2026-07-19 22:54:55.930   Successfully installed the file.
+2026-07-19 22:54:55.930   -- File entry --
+2026-07-19 22:54:55.930   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Memory.dll
+2026-07-19 22:54:55.931   Time stamp of our file: 2026-06-26 15:55:14.000
+2026-07-19 22:54:55.931   Installing the file.
+2026-07-19 22:54:55.935   Successfully installed the file.
+2026-07-19 22:54:55.935   -- File entry --
+2026-07-19 22:54:55.935   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Net.dll
+2026-07-19 22:54:55.935   Time stamp of our file: 2026-06-26 15:44:10.000
+2026-07-19 22:54:55.935   Installing the file.
+2026-07-19 22:54:55.936   Successfully installed the file.
+2026-07-19 22:54:55.936   -- File entry --
+2026-07-19 22:54:55.936   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Net.Http.dll
+2026-07-19 22:54:55.936   Time stamp of our file: 2026-06-26 15:55:14.000
+2026-07-19 22:54:55.936   Installing the file.
+2026-07-19 22:54:55.977   Successfully installed the file.
+2026-07-19 22:54:55.980   -- File entry --
+2026-07-19 22:54:55.980   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Net.Http.Json.dll
+2026-07-19 22:54:55.980   Time stamp of our file: 2026-06-26 15:55:14.000
+2026-07-19 22:54:55.980   Installing the file.
+2026-07-19 22:54:55.980   Successfully installed the file.
+2026-07-19 22:54:55.980   -- File entry --
+2026-07-19 22:54:55.980   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Net.HttpListener.dll
+2026-07-19 22:54:55.980   Time stamp of our file: 2026-06-26 15:55:14.000
+2026-07-19 22:54:55.980   Installing the file.
+2026-07-19 22:54:55.994   Successfully installed the file.
+2026-07-19 22:54:55.994   -- File entry --
+2026-07-19 22:54:55.994   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Net.Mail.dll
+2026-07-19 22:54:55.994   Time stamp of our file: 2026-06-26 15:55:14.000
+2026-07-19 22:54:55.994   Installing the file.
+2026-07-19 22:54:56.011   Successfully installed the file.
+2026-07-19 22:54:56.011   -- File entry --
+2026-07-19 22:54:56.011   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Net.NameResolution.dll
+2026-07-19 22:54:56.013   Time stamp of our file: 2026-06-26 15:55:14.000
+2026-07-19 22:54:56.013   Installing the file.
+2026-07-19 22:54:56.015   Successfully installed the file.
+2026-07-19 22:54:56.015   -- File entry --
+2026-07-19 22:54:56.015   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Net.NetworkInformation.dll
+2026-07-19 22:54:56.015   Time stamp of our file: 2026-06-26 15:55:16.000
+2026-07-19 22:54:56.015   Installing the file.
+2026-07-19 22:54:56.020   Successfully installed the file.
+2026-07-19 22:54:56.020   -- File entry --
+2026-07-19 22:54:56.020   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Net.Ping.dll
+2026-07-19 22:54:56.020   Time stamp of our file: 2026-06-26 15:55:16.000
+2026-07-19 22:54:56.020   Installing the file.
+2026-07-19 22:54:56.022   Successfully installed the file.
+2026-07-19 22:54:56.022   -- File entry --
+2026-07-19 22:54:56.022   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Net.Primitives.dll
+2026-07-19 22:54:56.022   Time stamp of our file: 2026-06-26 15:55:16.000
+2026-07-19 22:54:56.022   Installing the file.
+2026-07-19 22:54:56.027   Successfully installed the file.
+2026-07-19 22:54:56.027   -- File entry --
+2026-07-19 22:54:56.030   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Net.Quic.dll
+2026-07-19 22:54:56.030   Time stamp of our file: 2026-06-26 15:55:16.000
+2026-07-19 22:54:56.030   Installing the file.
+2026-07-19 22:54:56.038   Successfully installed the file.
+2026-07-19 22:54:56.038   -- File entry --
+2026-07-19 22:54:56.038   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Net.Requests.dll
+2026-07-19 22:54:56.038   Time stamp of our file: 2026-06-26 15:55:16.000
+2026-07-19 22:54:56.038   Installing the file.
+2026-07-19 22:54:56.045   Successfully installed the file.
+2026-07-19 22:54:56.045   -- File entry --
+2026-07-19 22:54:56.045   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Net.Security.dll
+2026-07-19 22:54:56.045   Time stamp of our file: 2026-06-26 15:55:16.000
+2026-07-19 22:54:56.045   Installing the file.
+2026-07-19 22:54:56.063   Successfully installed the file.
+2026-07-19 22:54:56.065   -- File entry --
+2026-07-19 22:54:56.065   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Net.ServerSentEvents.dll
+2026-07-19 22:54:56.065   Time stamp of our file: 2026-06-26 15:55:16.000
+2026-07-19 22:54:56.065   Installing the file.
+2026-07-19 22:54:56.068   Successfully installed the file.
+2026-07-19 22:54:56.068   -- File entry --
+2026-07-19 22:54:56.068   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Net.ServicePoint.dll
+2026-07-19 22:54:56.068   Time stamp of our file: 2026-06-26 15:43:36.000
+2026-07-19 22:54:56.068   Installing the file.
+2026-07-19 22:54:56.068   Successfully installed the file.
+2026-07-19 22:54:56.068   -- File entry --
+2026-07-19 22:54:56.068   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Net.Sockets.dll
+2026-07-19 22:54:56.068   Time stamp of our file: 2026-06-26 15:55:16.000
+2026-07-19 22:54:56.068   Installing the file.
+2026-07-19 22:54:56.081   Successfully installed the file.
+2026-07-19 22:54:56.081   -- File entry --
+2026-07-19 22:54:56.083   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Net.WebClient.dll
+2026-07-19 22:54:56.083   Time stamp of our file: 2026-06-26 15:55:16.000
+2026-07-19 22:54:56.083   Installing the file.
+2026-07-19 22:54:56.086   Successfully installed the file.
+2026-07-19 22:54:56.086   -- File entry --
+2026-07-19 22:54:56.086   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Net.WebHeaderCollection.dll
+2026-07-19 22:54:56.086   Time stamp of our file: 2026-06-26 15:55:16.000
+2026-07-19 22:54:56.086   Installing the file.
+2026-07-19 22:54:56.088   Successfully installed the file.
+2026-07-19 22:54:56.088   -- File entry --
+2026-07-19 22:54:56.088   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Net.WebProxy.dll
+2026-07-19 22:54:56.088   Time stamp of our file: 2026-06-26 15:55:16.000
+2026-07-19 22:54:56.088   Installing the file.
+2026-07-19 22:54:56.088   Successfully installed the file.
+2026-07-19 22:54:56.090   -- File entry --
+2026-07-19 22:54:56.090   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Net.WebSockets.Client.dll
+2026-07-19 22:54:56.090   Time stamp of our file: 2026-06-26 15:55:16.000
+2026-07-19 22:54:56.090   Installing the file.
+2026-07-19 22:54:56.092   Successfully installed the file.
+2026-07-19 22:54:56.092   -- File entry --
+2026-07-19 22:54:56.092   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Net.WebSockets.dll
+2026-07-19 22:54:56.092   Time stamp of our file: 2026-06-26 15:55:18.000
+2026-07-19 22:54:56.092   Installing the file.
+2026-07-19 22:54:56.098   Successfully installed the file.
+2026-07-19 22:54:56.098   -- File entry --
+2026-07-19 22:54:56.098   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Numerics.dll
+2026-07-19 22:54:56.098   Time stamp of our file: 2026-06-26 15:43:36.000
+2026-07-19 22:54:56.098   Installing the file.
+2026-07-19 22:54:56.098   Successfully installed the file.
+2026-07-19 22:54:56.098   -- File entry --
+2026-07-19 22:54:56.098   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Numerics.Tensors.dll
+2026-07-19 22:54:56.098   Time stamp of our file: 2024-10-28 22:38:12.000
+2026-07-19 22:54:56.098   Installing the file.
+2026-07-19 22:54:56.107   Successfully installed the file.
+2026-07-19 22:54:56.107   -- File entry --
+2026-07-19 22:54:56.107   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Numerics.Vectors.dll
+2026-07-19 22:54:56.107   Time stamp of our file: 2026-06-26 15:40:12.000
+2026-07-19 22:54:56.107   Installing the file.
+2026-07-19 22:54:56.107   Successfully installed the file.
+2026-07-19 22:54:56.107   -- File entry --
+2026-07-19 22:54:56.107   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.ObjectModel.dll
+2026-07-19 22:54:56.107   Time stamp of our file: 2026-06-26 15:55:18.000
+2026-07-19 22:54:56.107   Installing the file.
+2026-07-19 22:54:56.111   Successfully installed the file.
+2026-07-19 22:54:56.111   -- File entry --
+2026-07-19 22:54:56.111   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Private.CoreLib.dll
+2026-07-19 22:54:56.111   Time stamp of our file: 2026-06-26 15:26:56.000
+2026-07-19 22:54:56.111   Installing the file.
+2026-07-19 22:54:56.479   Successfully installed the file.
+2026-07-19 22:54:56.479   -- File entry --
+2026-07-19 22:54:56.479   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Private.DataContractSerialization.dll
+2026-07-19 22:54:56.479   Time stamp of our file: 2026-06-26 15:55:18.000
+2026-07-19 22:54:56.479   Installing the file.
+2026-07-19 22:54:56.530   Successfully installed the file.
+2026-07-19 22:54:56.530   -- File entry --
+2026-07-19 22:54:56.530   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Private.Uri.dll
+2026-07-19 22:54:56.530   Time stamp of our file: 2026-06-26 15:55:18.000
+2026-07-19 22:54:56.530   Installing the file.
+2026-07-19 22:54:56.535   Successfully installed the file.
+2026-07-19 22:54:56.535   -- File entry --
+2026-07-19 22:54:56.535   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Private.Xml.dll
+2026-07-19 22:54:56.535   Time stamp of our file: 2026-06-26 15:55:20.000
+2026-07-19 22:54:56.535   Installing the file.
+2026-07-19 22:54:56.748   Successfully installed the file.
+2026-07-19 22:54:56.748   -- File entry --
+2026-07-19 22:54:56.748   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Private.Xml.Linq.dll
+2026-07-19 22:54:56.748   Time stamp of our file: 2026-06-26 15:55:20.000
+2026-07-19 22:54:56.748   Installing the file.
+2026-07-19 22:54:56.758   Successfully installed the file.
+2026-07-19 22:54:56.758   -- File entry --
+2026-07-19 22:54:56.759   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Reflection.DispatchProxy.dll
+2026-07-19 22:54:56.759   Time stamp of our file: 2026-06-26 15:55:20.000
+2026-07-19 22:54:56.759   Installing the file.
+2026-07-19 22:54:56.761   Successfully installed the file.
+2026-07-19 22:54:56.761   -- File entry --
+2026-07-19 22:54:56.761   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Reflection.dll
+2026-07-19 22:54:56.761   Time stamp of our file: 2026-06-26 15:43:32.000
+2026-07-19 22:54:56.761   Installing the file.
+2026-07-19 22:54:56.762   Successfully installed the file.
+2026-07-19 22:54:56.762   -- File entry --
+2026-07-19 22:54:56.762   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Reflection.Emit.dll
+2026-07-19 22:54:56.762   Time stamp of our file: 2026-06-26 15:55:20.000
+2026-07-19 22:54:56.762   Installing the file.
+2026-07-19 22:54:56.771   Successfully installed the file.
+2026-07-19 22:54:56.772   -- File entry --
+2026-07-19 22:54:56.772   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Reflection.Emit.ILGeneration.dll
+2026-07-19 22:54:56.772   Time stamp of our file: 2026-06-26 15:40:26.000
+2026-07-19 22:54:56.772   Installing the file.
+2026-07-19 22:54:56.773   Successfully installed the file.
+2026-07-19 22:54:56.773   -- File entry --
+2026-07-19 22:54:56.774   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Reflection.Emit.Lightweight.dll
+2026-07-19 22:54:56.774   Time stamp of our file: 2026-06-26 15:40:26.000
+2026-07-19 22:54:56.774   Installing the file.
+2026-07-19 22:54:56.774   Successfully installed the file.
+2026-07-19 22:54:56.774   -- File entry --
+2026-07-19 22:54:56.774   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Reflection.Extensions.dll
+2026-07-19 22:54:56.774   Time stamp of our file: 2026-06-26 15:43:32.000
+2026-07-19 22:54:56.774   Installing the file.
+2026-07-19 22:54:56.774   Successfully installed the file.
+2026-07-19 22:54:56.774   -- File entry --
+2026-07-19 22:54:56.774   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Reflection.Metadata.dll
+2026-07-19 22:54:56.774   Time stamp of our file: 2026-06-26 15:55:22.000
+2026-07-19 22:54:56.774   Installing the file.
+2026-07-19 22:54:56.805   Successfully installed the file.
+2026-07-19 22:54:56.805   -- File entry --
+2026-07-19 22:54:56.805   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Reflection.Primitives.dll
+2026-07-19 22:54:56.805   Time stamp of our file: 2026-06-26 15:40:16.000
+2026-07-19 22:54:56.805   Installing the file.
+2026-07-19 22:54:56.805   Successfully installed the file.
+2026-07-19 22:54:56.805   -- File entry --
+2026-07-19 22:54:56.805   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Reflection.TypeExtensions.dll
+2026-07-19 22:54:56.805   Time stamp of our file: 2026-06-26 15:55:22.000
+2026-07-19 22:54:56.805   Installing the file.
+2026-07-19 22:54:56.805   Successfully installed the file.
+2026-07-19 22:54:56.805   -- File entry --
+2026-07-19 22:54:56.805   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Resources.Reader.dll
+2026-07-19 22:54:56.805   Time stamp of our file: 2026-06-26 15:43:32.000
+2026-07-19 22:54:56.805   Installing the file.
+2026-07-19 22:54:56.805   Successfully installed the file.
+2026-07-19 22:54:56.805   -- File entry --
+2026-07-19 22:54:56.805   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Resources.ResourceManager.dll
+2026-07-19 22:54:56.805   Time stamp of our file: 2026-06-26 15:43:34.000
+2026-07-19 22:54:56.805   Installing the file.
+2026-07-19 22:54:56.813   Successfully installed the file.
+2026-07-19 22:54:56.813   -- File entry --
+2026-07-19 22:54:56.813   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Resources.Writer.dll
+2026-07-19 22:54:56.813   Time stamp of our file: 2026-06-26 15:55:22.000
+2026-07-19 22:54:56.813   Installing the file.
+2026-07-19 22:54:56.815   Successfully installed the file.
+2026-07-19 22:54:56.815   -- File entry --
+2026-07-19 22:54:56.815   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Runtime.CompilerServices.Unsafe.dll
+2026-07-19 22:54:56.815   Time stamp of our file: 2026-06-26 15:43:32.000
+2026-07-19 22:54:56.815   Installing the file.
+2026-07-19 22:54:56.815   Successfully installed the file.
+2026-07-19 22:54:56.815   -- File entry --
+2026-07-19 22:54:56.815   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Runtime.CompilerServices.VisualC.dll
+2026-07-19 22:54:56.815   Time stamp of our file: 2026-06-26 15:55:22.000
+2026-07-19 22:54:56.815   Installing the file.
+2026-07-19 22:54:56.817   Successfully installed the file.
+2026-07-19 22:54:56.817   -- File entry --
+2026-07-19 22:54:56.817   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Runtime.dll
+2026-07-19 22:54:56.817   Time stamp of our file: 2026-06-26 15:40:18.000
+2026-07-19 22:54:56.817   Installing the file.
+2026-07-19 22:54:56.817   Successfully installed the file.
+2026-07-19 22:54:56.817   -- File entry --
+2026-07-19 22:54:56.819   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Runtime.Extensions.dll
+2026-07-19 22:54:56.819   Time stamp of our file: 2026-06-26 15:43:36.000
+2026-07-19 22:54:56.819   Installing the file.
+2026-07-19 22:54:56.819   Successfully installed the file.
+2026-07-19 22:54:56.819   -- File entry --
+2026-07-19 22:54:56.819   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Runtime.Handles.dll
+2026-07-19 22:54:56.819   Time stamp of our file: 2026-06-26 15:43:34.000
+2026-07-19 22:54:56.819   Installing the file.
+2026-07-19 22:54:56.821   Successfully installed the file.
+2026-07-19 22:54:56.821   -- File entry --
+2026-07-19 22:54:56.821   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Runtime.InteropServices.dll
+2026-07-19 22:54:56.821   Time stamp of our file: 2026-06-26 15:55:22.000
+2026-07-19 22:54:56.821   Installing the file.
+2026-07-19 22:54:56.823   Successfully installed the file.
+2026-07-19 22:54:56.825   -- File entry --
+2026-07-19 22:54:56.825   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Runtime.InteropServices.JavaScript.dll
+2026-07-19 22:54:56.825   Time stamp of our file: 2026-06-26 15:55:22.000
+2026-07-19 22:54:56.825   Installing the file.
+2026-07-19 22:54:56.827   Successfully installed the file.
+2026-07-19 22:54:56.827   -- File entry --
+2026-07-19 22:54:56.827   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Runtime.InteropServices.RuntimeInformation.dll
+2026-07-19 22:54:56.827   Time stamp of our file: 2026-06-26 15:43:32.000
+2026-07-19 22:54:56.827   Installing the file.
+2026-07-19 22:54:56.828   Successfully installed the file.
+2026-07-19 22:54:56.828   -- File entry --
+2026-07-19 22:54:56.828   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Runtime.Intrinsics.dll
+2026-07-19 22:54:56.828   Time stamp of our file: 2026-06-26 15:40:28.000
+2026-07-19 22:54:56.828   Installing the file.
+2026-07-19 22:54:56.828   Successfully installed the file.
+2026-07-19 22:54:56.828   -- File entry --
+2026-07-19 22:54:56.828   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Runtime.Loader.dll
+2026-07-19 22:54:56.828   Time stamp of our file: 2026-06-26 15:40:28.000
+2026-07-19 22:54:56.828   Installing the file.
+2026-07-19 22:54:56.828   Successfully installed the file.
+2026-07-19 22:54:56.828   -- File entry --
+2026-07-19 22:54:56.828   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Runtime.Numerics.dll
+2026-07-19 22:54:56.828   Time stamp of our file: 2026-06-26 15:55:22.000
+2026-07-19 22:54:56.828   Installing the file.
+2026-07-19 22:54:56.837   Successfully installed the file.
+2026-07-19 22:54:56.837   -- File entry --
+2026-07-19 22:54:56.837   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Runtime.Serialization.dll
+2026-07-19 22:54:56.837   Time stamp of our file: 2026-06-26 15:44:08.000
+2026-07-19 22:54:56.837   Installing the file.
+2026-07-19 22:54:56.837   Successfully installed the file.
+2026-07-19 22:54:56.837   -- File entry --
+2026-07-19 22:54:56.837   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Runtime.Serialization.Formatters.dll
+2026-07-19 22:54:56.837   Time stamp of our file: 2026-06-26 15:55:22.000
+2026-07-19 22:54:56.837   Installing the file.
+2026-07-19 22:54:56.837   Successfully installed the file.
+2026-07-19 22:54:56.837   -- File entry --
+2026-07-19 22:54:56.837   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Runtime.Serialization.Json.dll
+2026-07-19 22:54:56.837   Time stamp of our file: 2026-06-26 15:44:04.000
+2026-07-19 22:54:56.837   Installing the file.
+2026-07-19 22:54:56.837   Successfully installed the file.
+2026-07-19 22:54:56.837   -- File entry --
+2026-07-19 22:54:56.837   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Runtime.Serialization.Primitives.dll
+2026-07-19 22:54:56.837   Time stamp of our file: 2026-06-26 15:55:22.000
+2026-07-19 22:54:56.837   Installing the file.
+2026-07-19 22:54:56.837   Successfully installed the file.
+2026-07-19 22:54:56.837   -- File entry --
+2026-07-19 22:54:56.837   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Runtime.Serialization.Xml.dll
+2026-07-19 22:54:56.837   Time stamp of our file: 2026-06-26 15:44:04.000
+2026-07-19 22:54:56.837   Installing the file.
+2026-07-19 22:54:56.837   Successfully installed the file.
+2026-07-19 22:54:56.837   -- File entry --
+2026-07-19 22:54:56.837   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Security.AccessControl.dll
+2026-07-19 22:54:56.837   Time stamp of our file: 2026-06-26 15:55:22.000
+2026-07-19 22:54:56.837   Installing the file.
+2026-07-19 22:54:56.856   Successfully installed the file.
+2026-07-19 22:54:56.856   -- File entry --
+2026-07-19 22:54:56.856   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Security.Claims.dll
+2026-07-19 22:54:56.856   Time stamp of our file: 2026-06-26 15:55:22.000
+2026-07-19 22:54:56.856   Installing the file.
+2026-07-19 22:54:56.856   Successfully installed the file.
+2026-07-19 22:54:56.856   -- File entry --
+2026-07-19 22:54:56.856   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Security.Cryptography.Algorithms.dll
+2026-07-19 22:54:56.856   Time stamp of our file: 2026-06-26 15:43:36.000
+2026-07-19 22:54:56.856   Installing the file.
+2026-07-19 22:54:56.856   Successfully installed the file.
+2026-07-19 22:54:56.856   -- File entry --
+2026-07-19 22:54:56.856   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Security.Cryptography.Cng.dll
+2026-07-19 22:54:56.865   Time stamp of our file: 2026-06-26 15:43:38.000
+2026-07-19 22:54:56.865   Installing the file.
+2026-07-19 22:54:56.865   Successfully installed the file.
+2026-07-19 22:54:56.865   -- File entry --
+2026-07-19 22:54:56.865   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Security.Cryptography.Csp.dll
+2026-07-19 22:54:56.865   Time stamp of our file: 2026-06-26 15:43:36.000
+2026-07-19 22:54:56.865   Installing the file.
+2026-07-19 22:54:56.865   Successfully installed the file.
+2026-07-19 22:54:56.865   -- File entry --
+2026-07-19 22:54:56.865   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Security.Cryptography.dll
+2026-07-19 22:54:56.865   Time stamp of our file: 2026-06-26 15:55:24.000
+2026-07-19 22:54:56.865   Installing the file.
+2026-07-19 22:54:56.925   Successfully installed the file.
+2026-07-19 22:54:56.925   -- File entry --
+2026-07-19 22:54:56.925   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Security.Cryptography.Encoding.dll
+2026-07-19 22:54:56.925   Time stamp of our file: 2026-06-26 15:43:38.000
+2026-07-19 22:54:56.925   Installing the file.
+2026-07-19 22:54:56.925   Successfully installed the file.
+2026-07-19 22:54:56.925   -- File entry --
+2026-07-19 22:54:56.925   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Security.Cryptography.OpenSsl.dll
+2026-07-19 22:54:56.925   Time stamp of our file: 2026-06-26 15:43:36.000
+2026-07-19 22:54:56.925   Installing the file.
+2026-07-19 22:54:56.927   Successfully installed the file.
+2026-07-19 22:54:56.927   -- File entry --
+2026-07-19 22:54:56.927   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Security.Cryptography.Pkcs.dll
+2026-07-19 22:54:56.927   Time stamp of our file: 2026-06-26 17:02:52.000
+2026-07-19 22:54:56.927   Installing the file.
+2026-07-19 22:54:56.943   Successfully installed the file.
+2026-07-19 22:54:56.943   -- File entry --
+2026-07-19 22:54:56.943   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Security.Cryptography.Primitives.dll
+2026-07-19 22:54:56.943   Time stamp of our file: 2026-06-26 15:43:36.000
+2026-07-19 22:54:56.943   Installing the file.
+2026-07-19 22:54:56.945   Successfully installed the file.
+2026-07-19 22:54:56.945   -- File entry --
+2026-07-19 22:54:56.945   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Security.Cryptography.X509Certificates.dll
+2026-07-19 22:54:56.945   Time stamp of our file: 2026-06-26 15:43:38.000
+2026-07-19 22:54:56.945   Installing the file.
+2026-07-19 22:54:56.945   Successfully installed the file.
+2026-07-19 22:54:56.945   -- File entry --
+2026-07-19 22:54:56.945   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Security.Cryptography.Xml.dll
+2026-07-19 22:54:56.945   Time stamp of our file: 2026-06-26 17:02:52.000
+2026-07-19 22:54:56.945   Installing the file.
+2026-07-19 22:54:56.953   Successfully installed the file.
+2026-07-19 22:54:56.958   -- File entry --
+2026-07-19 22:54:56.958   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Security.dll
+2026-07-19 22:54:56.958   Time stamp of our file: 2026-06-26 15:43:44.000
+2026-07-19 22:54:56.958   Installing the file.
+2026-07-19 22:54:56.958   Successfully installed the file.
+2026-07-19 22:54:56.958   -- File entry --
+2026-07-19 22:54:56.958   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Security.Principal.dll
+2026-07-19 22:54:56.958   Time stamp of our file: 2026-06-26 15:43:34.000
+2026-07-19 22:54:56.958   Installing the file.
+2026-07-19 22:54:56.960   Successfully installed the file.
+2026-07-19 22:54:56.960   -- File entry --
+2026-07-19 22:54:56.960   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Security.Principal.Windows.dll
+2026-07-19 22:54:56.960   Time stamp of our file: 2026-06-26 15:55:24.000
+2026-07-19 22:54:56.960   Installing the file.
+2026-07-19 22:54:56.968   Successfully installed the file.
+2026-07-19 22:54:56.968   -- File entry --
+2026-07-19 22:54:56.968   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Security.SecureString.dll
+2026-07-19 22:54:56.968   Time stamp of our file: 2026-06-26 15:43:36.000
+2026-07-19 22:54:56.968   Installing the file.
+2026-07-19 22:54:56.973   Successfully installed the file.
+2026-07-19 22:54:56.973   -- File entry --
+2026-07-19 22:54:56.973   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.ServiceModel.Web.dll
+2026-07-19 22:54:56.973   Time stamp of our file: 2026-06-26 15:44:04.000
+2026-07-19 22:54:56.973   Installing the file.
+2026-07-19 22:54:56.973   Successfully installed the file.
+2026-07-19 22:54:56.973   -- File entry --
+2026-07-19 22:54:56.973   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.ServiceProcess.dll
+2026-07-19 22:54:56.973   Time stamp of our file: 2026-06-26 15:43:42.000
+2026-07-19 22:54:56.973   Installing the file.
+2026-07-19 22:54:56.976   Successfully installed the file.
+2026-07-19 22:54:56.976   -- File entry --
+2026-07-19 22:54:56.976   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Text.Encoding.CodePages.dll
+2026-07-19 22:54:56.976   Time stamp of our file: 2026-06-26 15:55:24.000
+2026-07-19 22:54:56.976   Installing the file.
+2026-07-19 22:54:56.995   Successfully installed the file.
+2026-07-19 22:54:56.995   -- File entry --
+2026-07-19 22:54:56.995   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Text.Encoding.dll
+2026-07-19 22:54:56.995   Time stamp of our file: 2026-06-26 15:43:32.000
+2026-07-19 22:54:56.995   Installing the file.
+2026-07-19 22:54:56.996   Successfully installed the file.
+2026-07-19 22:54:56.996   -- File entry --
+2026-07-19 22:54:56.996   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Text.Encoding.Extensions.dll
+2026-07-19 22:54:56.996   Time stamp of our file: 2026-06-26 15:40:26.000
+2026-07-19 22:54:56.996   Installing the file.
+2026-07-19 22:54:56.998   Successfully installed the file.
+2026-07-19 22:54:56.998   -- File entry --
+2026-07-19 22:54:56.998   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Text.Encodings.Web.dll
+2026-07-19 22:54:56.998   Time stamp of our file: 2026-06-26 15:55:24.000
+2026-07-19 22:54:56.998   Installing the file.
+2026-07-19 22:54:57.001   Successfully installed the file.
+2026-07-19 22:54:57.001   -- File entry --
+2026-07-19 22:54:57.001   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Text.Json.dll
+2026-07-19 22:54:57.001   Time stamp of our file: 2026-06-26 15:55:24.000
+2026-07-19 22:54:57.001   Installing the file.
+2026-07-19 22:54:57.050   Successfully installed the file.
+2026-07-19 22:54:57.050   -- File entry --
+2026-07-19 22:54:57.050   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Text.RegularExpressions.dll
+2026-07-19 22:54:57.050   Time stamp of our file: 2026-06-26 15:55:24.000
+2026-07-19 22:54:57.050   Installing the file.
+2026-07-19 22:54:57.089   Successfully installed the file.
+2026-07-19 22:54:57.089   -- File entry --
+2026-07-19 22:54:57.089   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Threading.AccessControl.dll
+2026-07-19 22:54:57.089   Time stamp of our file: 2026-06-26 15:55:24.000
+2026-07-19 22:54:57.089   Installing the file.
+2026-07-19 22:54:57.093   Successfully installed the file.
+2026-07-19 22:54:57.093   -- File entry --
+2026-07-19 22:54:57.093   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Threading.Channels.dll
+2026-07-19 22:54:57.093   Time stamp of our file: 2026-06-26 15:55:24.000
+2026-07-19 22:54:57.093   Installing the file.
+2026-07-19 22:54:57.102   Successfully installed the file.
+2026-07-19 22:54:57.102   -- File entry --
+2026-07-19 22:54:57.102   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Threading.dll
+2026-07-19 22:54:57.102   Time stamp of our file: 2026-06-26 15:55:24.000
+2026-07-19 22:54:57.102   Installing the file.
+2026-07-19 22:54:57.105   Successfully installed the file.
+2026-07-19 22:54:57.105   -- File entry --
+2026-07-19 22:54:57.105   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Threading.Overlapped.dll
+2026-07-19 22:54:57.105   Time stamp of our file: 2026-06-26 15:40:26.000
+2026-07-19 22:54:57.105   Installing the file.
+2026-07-19 22:54:57.108   Successfully installed the file.
+2026-07-19 22:54:57.108   -- File entry --
+2026-07-19 22:54:57.108   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Threading.RateLimiting.dll
+2026-07-19 22:54:57.108   Time stamp of our file: 2026-06-26 17:02:52.000
+2026-07-19 22:54:57.108   Installing the file.
+2026-07-19 22:54:57.114   Successfully installed the file.
+2026-07-19 22:54:57.114   -- File entry --
+2026-07-19 22:54:57.114   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Threading.Tasks.Dataflow.dll
+2026-07-19 22:54:57.114   Time stamp of our file: 2026-06-26 15:55:26.000
+2026-07-19 22:54:57.114   Installing the file.
+2026-07-19 22:54:57.135   Successfully installed the file.
+2026-07-19 22:54:57.135   -- File entry --
+2026-07-19 22:54:57.135   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Threading.Tasks.dll
+2026-07-19 22:54:57.135   Time stamp of our file: 2026-06-26 15:43:34.000
+2026-07-19 22:54:57.135   Installing the file.
+2026-07-19 22:54:57.137   Successfully installed the file.
+2026-07-19 22:54:57.137   -- File entry --
+2026-07-19 22:54:57.137   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Threading.Tasks.Extensions.dll
+2026-07-19 22:54:57.137   Time stamp of our file: 2026-06-26 15:43:32.000
+2026-07-19 22:54:57.137   Installing the file.
+2026-07-19 22:54:57.138   Successfully installed the file.
+2026-07-19 22:54:57.138   -- File entry --
+2026-07-19 22:54:57.138   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Threading.Tasks.Parallel.dll
+2026-07-19 22:54:57.138   Time stamp of our file: 2026-06-26 15:55:26.000
+2026-07-19 22:54:57.138   Installing the file.
+2026-07-19 22:54:57.144   Successfully installed the file.
+2026-07-19 22:54:57.145   -- File entry --
+2026-07-19 22:54:57.145   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Threading.Thread.dll
+2026-07-19 22:54:57.145   Time stamp of our file: 2026-06-26 15:40:28.000
+2026-07-19 22:54:57.145   Installing the file.
+2026-07-19 22:54:57.147   Successfully installed the file.
+2026-07-19 22:54:57.147   -- File entry --
+2026-07-19 22:54:57.147   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Threading.ThreadPool.dll
+2026-07-19 22:54:57.147   Time stamp of our file: 2026-06-26 15:40:24.000
+2026-07-19 22:54:57.147   Installing the file.
+2026-07-19 22:54:57.149   Successfully installed the file.
+2026-07-19 22:54:57.149   -- File entry --
+2026-07-19 22:54:57.149   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Threading.Timer.dll
+2026-07-19 22:54:57.149   Time stamp of our file: 2026-06-26 15:43:32.000
+2026-07-19 22:54:57.149   Installing the file.
+2026-07-19 22:54:57.151   Successfully installed the file.
+2026-07-19 22:54:57.151   -- File entry --
+2026-07-19 22:54:57.152   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Transactions.dll
+2026-07-19 22:54:57.152   Time stamp of our file: 2026-06-26 15:43:40.000
+2026-07-19 22:54:57.152   Installing the file.
+2026-07-19 22:54:57.153   Successfully installed the file.
+2026-07-19 22:54:57.153   -- File entry --
+2026-07-19 22:54:57.153   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Transactions.Local.dll
+2026-07-19 22:54:57.153   Time stamp of our file: 2026-06-26 15:55:26.000
+2026-07-19 22:54:57.153   Installing the file.
+2026-07-19 22:54:57.173   Successfully installed the file.
+2026-07-19 22:54:57.173   -- File entry --
+2026-07-19 22:54:57.173   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.ValueTuple.dll
+2026-07-19 22:54:57.173   Time stamp of our file: 2026-06-26 15:43:32.000
+2026-07-19 22:54:57.173   Installing the file.
+2026-07-19 22:54:57.173   Successfully installed the file.
+2026-07-19 22:54:57.173   -- File entry --
+2026-07-19 22:54:57.173   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Web.dll
+2026-07-19 22:54:57.173   Time stamp of our file: 2026-06-26 15:43:48.000
+2026-07-19 22:54:57.173   Installing the file.
+2026-07-19 22:54:57.180   Successfully installed the file.
+2026-07-19 22:54:57.180   -- File entry --
+2026-07-19 22:54:57.180   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Web.HttpUtility.dll
+2026-07-19 22:54:57.180   Time stamp of our file: 2026-06-26 15:55:26.000
+2026-07-19 22:54:57.180   Installing the file.
+2026-07-19 22:54:57.183   Successfully installed the file.
+2026-07-19 22:54:57.183   -- File entry --
+2026-07-19 22:54:57.183   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Windows.dll
+2026-07-19 22:54:57.183   Time stamp of our file: 2026-06-26 15:43:36.000
+2026-07-19 22:54:57.183   Installing the file.
+2026-07-19 22:54:57.183   Successfully installed the file.
+2026-07-19 22:54:57.183   -- File entry --
+2026-07-19 22:54:57.183   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Xml.dll
+2026-07-19 22:54:57.183   Time stamp of our file: 2026-06-26 15:43:44.000
+2026-07-19 22:54:57.183   Installing the file.
+2026-07-19 22:54:57.183   Successfully installed the file.
+2026-07-19 22:54:57.183   -- File entry --
+2026-07-19 22:54:57.183   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Xml.Linq.dll
+2026-07-19 22:54:57.183   Time stamp of our file: 2026-06-26 15:43:46.000
+2026-07-19 22:54:57.183   Installing the file.
+2026-07-19 22:54:57.183   Successfully installed the file.
+2026-07-19 22:54:57.183   -- File entry --
+2026-07-19 22:54:57.183   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Xml.ReaderWriter.dll
+2026-07-19 22:54:57.183   Time stamp of our file: 2026-06-26 15:43:16.000
+2026-07-19 22:54:57.183   Installing the file.
+2026-07-19 22:54:57.192   Successfully installed the file.
+2026-07-19 22:54:57.192   -- File entry --
+2026-07-19 22:54:57.192   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Xml.Serialization.dll
+2026-07-19 22:54:57.192   Time stamp of our file: 2026-06-26 15:43:42.000
+2026-07-19 22:54:57.192   Installing the file.
+2026-07-19 22:54:57.193   Successfully installed the file.
+2026-07-19 22:54:57.193   -- File entry --
+2026-07-19 22:54:57.195   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Xml.XDocument.dll
+2026-07-19 22:54:57.195   Time stamp of our file: 2026-06-26 15:43:44.000
+2026-07-19 22:54:57.195   Installing the file.
+2026-07-19 22:54:57.195   Successfully installed the file.
+2026-07-19 22:54:57.195   -- File entry --
+2026-07-19 22:54:57.195   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Xml.XmlDocument.dll
+2026-07-19 22:54:57.195   Time stamp of our file: 2026-06-26 15:43:38.000
+2026-07-19 22:54:57.195   Installing the file.
+2026-07-19 22:54:57.199   Successfully installed the file.
+2026-07-19 22:54:57.199   -- File entry --
+2026-07-19 22:54:57.199   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Xml.XmlSerializer.dll
+2026-07-19 22:54:57.199   Time stamp of our file: 2026-06-26 15:43:40.000
+2026-07-19 22:54:57.199   Installing the file.
+2026-07-19 22:54:57.202   Successfully installed the file.
+2026-07-19 22:54:57.202   -- File entry --
+2026-07-19 22:54:57.202   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Xml.XPath.dll
+2026-07-19 22:54:57.202   Time stamp of our file: 2026-06-26 15:43:38.000
+2026-07-19 22:54:57.202   Installing the file.
+2026-07-19 22:54:57.204   Successfully installed the file.
+2026-07-19 22:54:57.204   -- File entry --
+2026-07-19 22:54:57.205   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\System.Xml.XPath.XDocument.dll
+2026-07-19 22:54:57.205   Time stamp of our file: 2026-06-26 15:55:26.000
+2026-07-19 22:54:57.205   Installing the file.
+2026-07-19 22:54:57.205   Successfully installed the file.
+2026-07-19 22:54:57.207   -- File entry --
+2026-07-19 22:54:57.207   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\web.config
+2026-07-19 22:54:57.207   Time stamp of our file: 2026-07-19 22:51:02.000
+2026-07-19 22:54:57.207   Installing the file.
+2026-07-19 22:54:57.207   Successfully installed the file.
+2026-07-19 22:54:57.207   -- File entry --
+2026-07-19 22:54:57.207   Dest filename: C:\Users\justin\AppData\Local\Programs\LocalRag\Host\0.1.0\WindowsBase.dll
+2026-07-19 22:54:57.207   Time stamp of our file: 2026-06-26 15:43:38.000
+2026-07-19 22:54:57.207   Installing the file.
+2026-07-19 22:54:57.208   Successfully installed the file.
+2026-07-19 22:54:57.210   -- File entry --
+2026-07-19 22:54:57.210   Dest filename: C:\Users\justin\AppData\Local\Temp\is-Y6BR2C9NT0.tmp\local-rag-0.1.0.vsix
+2026-07-19 22:54:57.210   Time stamp of our file: 2026-07-19 22:51:08.000
+2026-07-19 22:54:57.210   Installing the file.
+2026-07-19 22:54:57.212   Successfully installed the file.
+2026-07-19 22:54:57.212   -- File entry --
+2026-07-19 22:54:57.212   Dest filename: C:\Users\justin\AppData\Local\LocalRag\models\bge-small-en-v1.5\model.onnx
+2026-07-19 22:54:57.212   Time stamp of our file: 2026-07-18 22:20:56.000
+2026-07-19 22:54:57.212   Dest file exists.
+2026-07-19 22:54:57.212   Time stamp of existing file: 2026-07-18 22:20:56.000
+2026-07-19 22:54:57.212   Installing the file.
+2026-07-19 22:55:00.851   Successfully installed the file.
+2026-07-19 22:55:00.851   -- File entry --
+2026-07-19 22:55:00.851   Dest filename: C:\Users\justin\AppData\Local\LocalRag\models\bge-small-en-v1.5\vocab.txt
+2026-07-19 22:55:00.851   Time stamp of our file: 2026-07-18 22:20:56.000
+2026-07-19 22:55:00.851   Dest file exists.
+2026-07-19 22:55:00.851   Time stamp of existing file: 2026-07-18 22:20:56.000
+2026-07-19 22:55:00.851   Installing the file.
+2026-07-19 22:55:00.851   Successfully installed the file.
+2026-07-19 22:55:00.851   Saving uninstall information.
+2026-07-19 22:55:00.851   Creating new uninstall key: HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Uninstall\{BC34EB80-D1CA-483A-BF52-CC6D421A67A6}_is1
+2026-07-19 22:55:00.851   Writing uninstall key values.
+2026-07-19 22:55:00.851   Detected previous administrative 64-bit install? No
+2026-07-19 22:55:00.851   Detected previous administrative 32-bit install? No
+2026-07-19 22:55:00.877   Installation process succeeded.
+2026-07-19 22:55:03.617   Need to restart Windows? No
+2026-07-19 22:55:03.618   Deinitializing Setup.
+2026-07-19 22:55:03.622   Log closed.

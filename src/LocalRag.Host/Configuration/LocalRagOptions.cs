@@ -34,6 +34,8 @@ public sealed class IndexingOptions
 {
     /// <summary>Files larger than this byte count are skipped by the indexer.</summary>
     public long MaxFileBytes { get; init; } = 5 * 1024 * 1024;
+    /// <summary>Maximum combined uncompressed size of searchable XML parts read from a packaged document.</summary>
+    public long MaxExpandedDocumentBytes { get; init; } = 50 * 1024 * 1024;
     /// <summary>Quiet period after a file event before indexing is queued.</summary>
     public int DebounceMilliseconds { get; init; } = 5000;
     /// <summary>Interval used to confirm a file has stopped changing before it is read.</summary>

@@ -31,8 +31,12 @@ builder.Services.AddSingleton<SqliteSourceRegistry>();
 builder.Services.AddSingleton<ISourceRegistry>(services => services.GetRequiredService<SqliteSourceRegistry>());
 builder.Services.AddSingleton<SqliteIndexStateStore>();
 builder.Services.AddSingleton<IIndexStateStore>(services => services.GetRequiredService<SqliteIndexStateStore>());
+builder.Services.AddSingleton<IContentExtractor, PlainTextContentExtractor>();
+builder.Services.AddSingleton<IContentExtractor, WordDocumentContentExtractor>();
+builder.Services.AddSingleton<ContentExtractionService>();
 builder.Services.AddSingleton<FilePolicy>();
 builder.Services.AddSingleton<IChunker, GenericChunker>();
+builder.Services.AddSingleton<FileIndexingService>();
 builder.Services.AddSingleton<BgeOnnxEmbeddingService>();
 builder.Services.AddSingleton<IEmbeddingService>(services => services.GetRequiredService<BgeOnnxEmbeddingService>());
 builder.Services.AddHttpClient<IVectorStore, WeaviateVectorStore>((services, client) =>

@@ -75,6 +75,6 @@ public sealed class GenericChunker(IOptions<LocalRagOptions> options) : IChunker
         ".py" => "python", ".go" => "go", ".rs" => "rust", ".java" => "java",
         ".json" => "json", ".yml" or ".yaml" => "yaml", ".toml" => "toml",
         ".xml" or ".csproj" or ".props" or ".targets" => "xml", ".md" => "markdown",
-        ".sql" => "sql", ".ps1" or ".sh" => "shell", _ => "text"
+        ".sql" => "sql", ".ps1" or ".sh" => "shell", ".docx" => "word", _ => "text"
     };
 }

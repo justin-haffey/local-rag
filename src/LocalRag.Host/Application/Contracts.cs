@@ -41,6 +41,13 @@ public interface IChunker
     IReadOnlyList<ChunkRecord> Chunk(SourceRecord source, IndexedFile file, string normalizedContent);
 }
 
+/// <summary>Extracts searchable text from one supported file format.</summary>
+public interface IContentExtractor
+{
+    bool Supports(string path);
+    Task<string> ExtractAsync(string path, CancellationToken cancellationToken);
+}
+
 /// <summary>Maintains chunk vectors and executes similarity searches.</summary>
 public interface IVectorStore
 {

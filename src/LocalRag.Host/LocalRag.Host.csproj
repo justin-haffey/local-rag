@@ -9,4 +9,7 @@
     <PackageReference Include="Microsoft.ML.OnnxRuntime" />
     <PackageReference Include="ModelContextProtocol.AspNetCore" />
   </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="LocalRag.Host.Tests" />
+  </ItemGroup>
 </Project>
