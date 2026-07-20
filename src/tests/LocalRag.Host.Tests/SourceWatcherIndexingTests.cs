@@ -16,8 +16,10 @@ namespace LocalRag.Host.Tests;
 
 public sealed class SourceWatcherIndexingTests
 {
-    [Fact]
-    public async Task WatcherIndexesCreatedDocxAndRemovesDeletedDocxFromStateAndVectors()
+    [Theory]
+    [InlineData(".docx", "Watcher DOCX sentinel")]
+    [InlineData(".pdf", "decree")]
+    public async Task WatcherIndexesCreatedDocumentAndRemovesDeletedDocumentFromStateAndVectors(string extension, string sentinel)
     {
         var root = CreateTemporaryDirectory("source");
         var data = CreateTemporaryDirectory("data");
@@ -44,7 +46,11 @@ public sealed class SourceWatcherIndexingTests
         var queue = new IndexWorkChannel();
         using var watchers = new SourceWatcherRegistry(queue, jobs, sources, options, NullLogger<SourceWatcherRegistry>.Instance);
         var vectors = new RecordingVectorStore();
-        var extraction = new ContentExtractionService([new PlainTextContentExtractor(), new WordDocumentContentExtractor(options)]);
+        var extraction = new ContentExtractionService([
+            new PlainTextContentExtractor(),
+            new WordDocumentContentExtractor(options),
+            new PdfContentExtractor(options, new TesseractPdfOcrService(options))
+        ]);
         var fileIndexing = new FileIndexingService(
             indexState,
             new FakeEmbeddingService(),
@@ -72,18 +78,20 @@ public sealed class SourceWatcherIndexingTests
             var source = await sources.RegisterAsync(root, "watcher fixture", CancellationToken.None);
             watchers.Track(source);
 
-            var path = Path.Combine(root, "watched.docx");
-            CreateDocx(path);
+            var relativePath = "watched" + extension;
+            var path = Path.Combine(root, relativePath);
+            if (extension == ".docx") CreateDocx(path);
+            else File.Copy(Path.Combine(AppContext.BaseDirectory, "Final Decree [615749].pdf"), path);
             var createJob = await WaitForJobAsync(queue, jobs);
             Assert.Equal(source.SourceId, createJob.SourceId);
             Assert.True(await coordinator.ProcessAsync(source.SourceId, CancellationToken.None));
             await jobs.CompleteAsync(createJob, CancellationToken.None);
 
-            var indexedFile = await indexState.GetFileAsync(source.SourceId, "watched.docx", CancellationToken.None);
+            var indexedFile = await indexState.GetFileAsync(source.SourceId, relativePath, CancellationToken.None);
             Assert.NotNull(indexedFile);
             var indexedChunks = await indexState.GetChunksForFileAsync(indexedFile.FileId, CancellationToken.None);
             Assert.NotEmpty(indexedChunks);
-            Assert.Contains(indexedChunks, chunk => chunk.Content.Contains("Watcher DOCX sentinel", StringComparison.Ordinal));
+            Assert.Contains(indexedChunks, chunk => chunk.Content.Contains(sentinel, StringComparison.OrdinalIgnoreCase));
             Assert.NotEmpty(vectors.Upserted);
 
             await Task.Delay(100);
@@ -93,8 +101,8 @@ public sealed class SourceWatcherIndexingTests
             Assert.True(await coordinator.ProcessAsync(source.SourceId, CancellationToken.None));
             await jobs.CompleteAsync(deleteJob, CancellationToken.None);
 
-            Assert.Null(await indexState.GetFileAsync(source.SourceId, "watched.docx", CancellationToken.None));
-            Assert.DoesNotContain(await indexState.GetChunksForSourceAsync(source.SourceId, CancellationToken.None), chunk => chunk.RelativePath == "watched.docx");
+            Assert.Null(await indexState.GetFileAsync(source.SourceId, relativePath, CancellationToken.None));
+            Assert.DoesNotContain(await indexState.GetChunksForSourceAsync(source.SourceId, CancellationToken.None), chunk => chunk.RelativePath == relativePath);
             Assert.Equal(indexedChunks.Select(chunk => chunk.ChunkId).Order(), vectors.Deleted.Order());
         }
         finally

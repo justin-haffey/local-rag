@@ -33,6 +33,8 @@ builder.Services.AddSingleton<SqliteIndexStateStore>();
 builder.Services.AddSingleton<IIndexStateStore>(services => services.GetRequiredService<SqliteIndexStateStore>());
 builder.Services.AddSingleton<IContentExtractor, PlainTextContentExtractor>();
 builder.Services.AddSingleton<IContentExtractor, WordDocumentContentExtractor>();
+builder.Services.AddSingleton<IPdfOcrService, TesseractPdfOcrService>();
+builder.Services.AddSingleton<IContentExtractor, PdfContentExtractor>();
 builder.Services.AddSingleton<ContentExtractionService>();
 builder.Services.AddSingleton<FilePolicy>();
 builder.Services.AddSingleton<IChunker, GenericChunker>();

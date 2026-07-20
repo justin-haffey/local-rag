@@ -8,6 +8,10 @@
     <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" />
     <PackageReference Include="Microsoft.ML.OnnxRuntime" />
     <PackageReference Include="ModelContextProtocol.AspNetCore" />
+    <PackageReference Include="PDFtoImage" />
+    <PackageReference Include="PdfPig" />
+    <PackageReference Include="Tesseract.Data.English" />
+    <PackageReference Include="TesseractOCR" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="LocalRag.Host.Tests" />

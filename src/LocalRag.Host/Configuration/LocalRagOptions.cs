@@ -36,6 +36,18 @@ public sealed class IndexingOptions
     public long MaxFileBytes { get; init; } = 5 * 1024 * 1024;
     /// <summary>Maximum combined uncompressed size of searchable XML parts read from a packaged document.</summary>
     public long MaxExpandedDocumentBytes { get; init; } = 50 * 1024 * 1024;
+    /// <summary>Maximum number of pages accepted from one PDF document, including pages with no extractable text.</summary>
+    public int MaxPdfPages { get; init; } = 1_000;
+    /// <summary>Maximum number of extracted characters accepted from one PDF, including page separators.</summary>
+    public int MaxPdfTextCharacters { get; init; } = 10_000_000;
+    /// <summary>Whether pages without embedded text are rendered and passed through local OCR; disabling this leaves such pages empty.</summary>
+    public bool EnablePdfOcr { get; init; } = true;
+    /// <summary>Rasterization resolution used for OCR of scanned PDF pages, in dots per inch (72-600).</summary>
+    public int PdfOcrDpi { get; init; } = 300;
+    /// <summary>Maximum number of image-only pages OCR may process from one PDF.</summary>
+    public int MaxPdfOcrPages { get; init; } = 100;
+    /// <summary>Maximum rendered pixel count accepted for one OCR page at the configured DPI.</summary>
+    public long MaxPdfOcrPixelsPerPage { get; init; } = 20_000_000;
     /// <summary>Quiet period after a file event before indexing is queued.</summary>
     public int DebounceMilliseconds { get; init; } = 5000;
     /// <summary>Interval used to confirm a file has stopped changing before it is read.</summary>

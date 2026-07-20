@@ -7,4 +7,8 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Exhibit A.pdf" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Final Decree [615749].pdf" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>
