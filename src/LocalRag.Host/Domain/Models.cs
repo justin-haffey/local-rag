@@ -10,6 +10,23 @@ public enum SourceStatus
     Failed
 }
 
+public enum ChunkProfileStatus
+{
+    Ready,
+    Reindexing,
+    Failed
+}
+
+/// <summary>Durable source-level chunk profile cutover state.</summary>
+public sealed record ChunkProfileState(
+    string SourceId,
+    string ActiveFingerprint,
+    string? PendingFingerprint,
+    ChunkProfileStatus Status,
+    DateTimeOffset RequestedUtc,
+    DateTimeOffset? CompletedUtc,
+    string? LastError);
+
 /// <summary>Registered filesystem root and its current indexing lifecycle state.</summary>
 public sealed record SourceRecord(
     string SourceId,
@@ -47,7 +64,13 @@ public sealed record ChunkRecord(
     string ContentHash,
     int TokenCount,
     string EmbeddingProfileId,
-    DateTimeOffset LastIndexedUtc);
+    DateTimeOffset LastIndexedUtc,
+    string ChunkKind = "text",
+    string? QualifiedSymbolName = null,
+    string StructuralLocator = "",
+    string ChunkerId = "generic",
+    string ChunkerVersion = "1",
+    string ChunkProfileFingerprint = "legacy-generic-1");
 
 public sealed record VectorDocument(ChunkRecord Chunk, IReadOnlyList<float> Vector);
 
@@ -69,7 +92,13 @@ public sealed record SearchResult(
     double Score,
     string Content,
     string ContentHash,
-    DateTimeOffset LastIndexedUtc);
+    DateTimeOffset LastIndexedUtc,
+    string ChunkKind = "text",
+    string? QualifiedSymbolName = null,
+    string StructuralLocator = "",
+    string ChunkerId = "generic",
+    string ChunkerVersion = "1",
+    string ChunkProfileFingerprint = "legacy-generic-1");
 
 public sealed record SearchResponse(
     string Query,

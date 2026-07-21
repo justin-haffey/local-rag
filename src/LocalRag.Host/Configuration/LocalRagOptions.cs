@@ -67,6 +67,11 @@ public sealed class ChunkingOptions
     public int MaximumTokens { get; init; } = 480;
     /// <summary>Number of trailing tokens repeated in the following chunk for context continuity.</summary>
     public int OverlapTokens { get; init; } = 64;
+    /// <summary>Structural adapters enabled for the active chunk profile.</summary>
+    public string[] EnabledAdapters { get; init; } =
+    [
+        "csharp", "json", "markdown", "python", "toml", "typescript-javascript", "xml", "yaml"
+    ];
 }
 
 public sealed class EmbeddingOptions
@@ -76,6 +81,8 @@ public sealed class EmbeddingOptions
     /// <summary>Expected vector length produced by the configured embedding profile.</summary>
     public int Dimensions { get; init; } = 384;
     public int MaximumTokens { get; init; } = 512;
+    /// <summary>Stable identity of the tokenizer rules used to enforce model limits.</summary>
+    public string TokenizerId { get; init; } = "bert-wordpiece-lowercase-v1";
     public string QueryPrefix { get; init; } = string.Empty;
     public string PassagePrefix { get; init; } = string.Empty;
 }

@@ -1,0 +1,6 @@
+{
+  "TransactionalEmailBatchPolicy": "control transactional email batching",
+  "ThumbnailCacheExpirationPolicy": "expire thumbnail image cache entries",
+  "IdleSessionTimeoutPolicy": "set idle user session timeouts",
+  "ConsentHistoryArchivePolicy": "archive consent history"
+}

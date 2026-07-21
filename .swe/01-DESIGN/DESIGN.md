@@ -575,6 +575,8 @@ Use a layered strategy:
 5. Token-window enforcement.
 6. Optional parent-child chunk relationships.
 
+The accepted Phase 2 boundary is defined by [standalone ADR-001](../02-ADR/ADR-001-language-aware-structural-chunking.md). The host uses one composite selector with bounded in-process adapters for C#, TypeScript/JavaScript, Python, Markdown, JSON, YAML, TOML, and XML-family files. Unsupported or malformed content falls back atomically to the generic line-preserving chunker. Structural and generic chunks share the production BERT WordPiece tokenizer for the final hard-limit proof.
+
 ### Recommended Chunk Metadata
 
 ```text
@@ -586,6 +588,7 @@ Language
 ChunkKind
 SymbolName
 QualifiedSymbolName
+StructuralLocator
 StartLine
 EndLine
 ParentChunkId
@@ -596,6 +599,7 @@ FileContentHash
 TokenCount
 ChunkerId
 ChunkerVersion
+ChunkProfileFingerprint
 EmbeddingProfileId
 LastModifiedUtc
 LastIndexedUtc
@@ -611,7 +615,10 @@ SHA-256(
   sourceId +
   normalizedRelativePath +
   structuralLocator +
-  normalizedChunkContent
+  normalizedChunkContent +
+  chunkerId +
+  chunkerVersion +
+  chunkProfileFingerprint
 )
 ```
 
@@ -621,10 +628,10 @@ A separate logical locator should enable updates when content changes while pres
 
 Configurable defaults:
 
-- Target: 800 tokens.
-- Minimum: 100 tokens.
-- Maximum: 1,500 tokens.
-- Overlap: 10–20% for fallback text chunks.
+- Target: 384 tokens.
+- Maximum chunk setting: 480 tokens.
+- Hard embedding-model limit: 512 tokens, including special tokens.
+- Overlap: 64 tokens for fallback text chunks.
 - Symbol chunks: preserve complete symbols up to the hard maximum.
 - Oversized symbols: split into signature, sections, and bounded continuations.
 
@@ -706,6 +713,7 @@ Use a collection alias or application-level schema version to support migrations
 - `chunkKind`
 - `symbolName`
 - `qualifiedSymbolName`
+- `structuralLocator`
 - `startLine`
 - `endLine`
 - `ordinal`
@@ -717,6 +725,8 @@ Use a collection alias or application-level schema version to support migrations
 - `lastIndexedUtc`
 - `embeddingProfileId`
 - `chunkerVersion`
+- `chunkerId`
+- `chunkProfileFingerprint`
 - `tags`
 - `isGenerated`
 - `isDeleted`
@@ -763,6 +773,8 @@ Recommended stages:
 - Use tombstones or a job generation identifier during large re-indexes.
 - Retry transient database failures.
 - Send permanent failures to a dead-letter queue.
+- Persist one active/pending chunk-profile fingerprint per source. A mismatch creates durable forced reindex work that bypasses unchanged-file shortcuts.
+- Keep a transitioning, interrupted, or failed source out of all search and chunk-retrieval surfaces until stale-vector deletion succeeds and SQLite atomically promotes the pending fingerprint.
 
 ---
 
@@ -1422,6 +1434,12 @@ deploy/
 **Decision:** Combine file-system events with periodic scans.
 
 **Rationale:** Cross-platform watcher behavior is not sufficiently reliable for strict index correctness.
+
+### Phase 2 Decision Record: Language-Aware Structural Chunking
+
+**Decision:** [Standalone ADR-001](../02-ADR/ADR-001-language-aware-structural-chunking.md) governs the approved language corpus, bounded parser strategy, exact tokenizer enforcement, additive provenance, versioned chunk identities, source-level profile cutover, rollback, and paired retrieval evaluation.
+
+**Rationale:** Structural metadata improves symbol/section retrieval, while a durable query-invisible transition prevents old and new chunk semantics from being externally mixed.
 
 ---
 

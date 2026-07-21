@@ -1,0 +1,14 @@
+<Reports>
+  <ResourceBundleReport>
+    <Purpose>list localized resource bundles without compilation</Purpose>
+  </ResourceBundleReport>
+  <DebugSymbolReport>
+    <Purpose>list portable debugging symbols without packaging</Purpose>
+  </DebugSymbolReport>
+  <MigrationReport>
+    <Purpose>report pending database migrations without running them</Purpose>
+  </MigrationReport>
+  <LicenseReport>
+    <Purpose>display third-party licenses without verification</Purpose>
+  </LicenseReport>
+</Reports>

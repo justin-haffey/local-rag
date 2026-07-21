@@ -7,11 +7,9 @@ namespace LocalRag.Host.Tests;
 
 public sealed class OnnxEmbeddingIntegrationTests
 {
-    [Fact]
+    [EnvironmentFact("LOCALRAG_ONNX_TESTS", "1")]
     public async Task PinnedOnnxProfileProducesNormalizedAndSemanticallyUsefulVectorsWhenExplicitlyEnabled()
     {
-        if (!string.Equals(Environment.GetEnvironmentVariable("LOCALRAG_ONNX_TESTS"), "1", StringComparison.Ordinal)) return;
-
         using var embeddings = new BgeOnnxEmbeddingService(Options.Create(new LocalRagOptions()));
         await embeddings.ValidateAsync(CancellationToken.None);
         var query = await embeddings.EmbedQueryAsync("Where is retry backoff configured?", CancellationToken.None);

@@ -1,0 +1,8 @@
+PaymentAuthorizationValidator:
+  purpose: validate payment authorization requests
+BlobPreviewValidator:
+  purpose: validate blob preview dimensions
+TranscodingValidator:
+  purpose: validate media transcoding job inputs
+AccessReviewValidator:
+  purpose: validate access review report filters

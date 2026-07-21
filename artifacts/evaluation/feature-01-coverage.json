@@ -1,0 +1,19 @@
+{
+  "generatedUtc": "2026-07-21T07:24:41.5737246Z",
+  "command": "dotnet test LocalRag.sln -c Release --no-build --no-restore --collect:\"Code Coverage;Format=Cobertura\" --results-directory artifacts/coverage-cobertura --logger \"console;verbosity=minimal\"",
+  "testSummary": {
+    "passed": 92,
+    "failed": 0,
+    "skippedExternalIntegrationTests": 3,
+    "total": 95
+  },
+  "coverage": {
+    "lineRate": 0.7268041237113402,
+    "branchRate": 0.6219030520646319,
+    "linesCovered": 4512,
+    "linesValid": 6208,
+    "branchesCovered": 1732,
+    "branchesValid": 2785
+  },
+  "scopeNote": "Coverage is the deterministic local suite. Real ONNX, live Weaviate, and the paired retrieval evaluation were executed separately with 95 passed, 0 skipped, and 0 failed."
+}

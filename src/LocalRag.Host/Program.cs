@@ -17,7 +17,10 @@ using ModelContextProtocol.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 ConfigureLocalOverridePrecedence(builder.Configuration);
-builder.Services.Configure<LocalRagOptions>(builder.Configuration.GetSection(LocalRagOptions.SectionName));
+builder.Services.AddSingleton<Microsoft.Extensions.Options.IValidateOptions<LocalRagOptions>, LocalRagOptionsValidator>();
+builder.Services.AddOptions<LocalRagOptions>()
+    .Bind(builder.Configuration.GetSection(LocalRagOptions.SectionName))
+    .ValidateOnStart();
 ValidateLocalHosting(builder.Configuration);
 var configuredOptions = builder.Configuration.GetSection(LocalRagOptions.SectionName).Get<LocalRagOptions>() ?? new LocalRagOptions();
 if (string.IsNullOrWhiteSpace(configuredOptions.Authentication.Token))
@@ -31,15 +34,52 @@ builder.Services.AddSingleton<SqliteSourceRegistry>();
 builder.Services.AddSingleton<ISourceRegistry>(services => services.GetRequiredService<SqliteSourceRegistry>());
 builder.Services.AddSingleton<SqliteIndexStateStore>();
 builder.Services.AddSingleton<IIndexStateStore>(services => services.GetRequiredService<SqliteIndexStateStore>());
+builder.Services.AddSingleton<ChunkProfileOperationGate>();
+builder.Services.AddSingleton<IChunkProfileOperationGate>(services => services.GetRequiredService<ChunkProfileOperationGate>());
+builder.Services.AddSingleton<SqliteChunkProfileStateStore>(services => new SqliteChunkProfileStateStore(
+    services.GetRequiredService<SqliteDatabase>(),
+    services.GetRequiredService<IChunkProfileOperationGate>()));
+builder.Services.AddSingleton<IChunkProfileStateStore>(services => services.GetRequiredService<SqliteChunkProfileStateStore>());
 builder.Services.AddSingleton<IContentExtractor, PlainTextContentExtractor>();
 builder.Services.AddSingleton<IContentExtractor, WordDocumentContentExtractor>();
 builder.Services.AddSingleton<IPdfOcrService, TesseractPdfOcrService>();
 builder.Services.AddSingleton<IContentExtractor, PdfContentExtractor>();
 builder.Services.AddSingleton<ContentExtractionService>();
 builder.Services.AddSingleton<FilePolicy>();
-builder.Services.AddSingleton<IChunker, GenericChunker>();
+builder.Services.AddSingleton<IStructuralChunker, CSharpStructuralChunker>();
+builder.Services.AddSingleton<IStructuralChunker, TypeScriptJavaScriptStructuralChunker>();
+builder.Services.AddSingleton<IStructuralChunker, PythonStructuralChunker>();
+builder.Services.AddSingleton<IStructuralChunker, MarkdownStructuralChunker>();
+builder.Services.AddSingleton<IStructuralChunker, JsonStructuralChunker>();
+builder.Services.AddSingleton<IStructuralChunker, YamlStructuralChunker>();
+builder.Services.AddSingleton<IStructuralChunker, TomlStructuralChunker>();
+builder.Services.AddSingleton<IStructuralChunker, XmlStructuralChunker>();
+builder.Services.AddSingleton<ChunkProfileProvider>(services => new ChunkProfileProvider(
+    services.GetServices<IStructuralChunker>(),
+    services.GetRequiredService<Microsoft.Extensions.Options.IOptions<LocalRagOptions>>()));
+builder.Services.AddSingleton<IChunkProfileProvider>(services => services.GetRequiredService<ChunkProfileProvider>());
+builder.Services.AddSingleton<BertWordPieceTokenizer>(services =>
+{
+    var options = services.GetRequiredService<Microsoft.Extensions.Options.IOptions<LocalRagOptions>>().Value;
+    var modelDirectory = Environment.ExpandEnvironmentVariables(options.Embedding.ModelDirectory);
+    return new BertWordPieceTokenizer(Path.Combine(modelDirectory, "vocab.txt"));
+});
+builder.Services.AddSingleton<IChunkTokenCounter>(services => services.GetRequiredService<BertWordPieceTokenizer>());
+builder.Services.AddSingleton<GenericChunker>(services => new GenericChunker(
+    services.GetRequiredService<Microsoft.Extensions.Options.IOptions<LocalRagOptions>>(),
+    services.GetRequiredService<IChunkProfileProvider>(),
+    services.GetRequiredService<IChunkTokenCounter>()));
+builder.Services.AddSingleton<IChunker>(services => new CompositeChunker(
+    services.GetServices<IStructuralChunker>(),
+    services.GetRequiredService<GenericChunker>(),
+    services.GetRequiredService<IChunkProfileProvider>(),
+    services.GetRequiredService<Microsoft.Extensions.Options.IOptions<LocalRagOptions>>(),
+    services.GetRequiredService<IChunkTokenCounter>(),
+    services.GetRequiredService<ILogger<CompositeChunker>>()));
 builder.Services.AddSingleton<FileIndexingService>();
-builder.Services.AddSingleton<BgeOnnxEmbeddingService>();
+builder.Services.AddSingleton<BgeOnnxEmbeddingService>(services => new BgeOnnxEmbeddingService(
+    services.GetRequiredService<Microsoft.Extensions.Options.IOptions<LocalRagOptions>>(),
+    services.GetRequiredService<BertWordPieceTokenizer>()));
 builder.Services.AddSingleton<IEmbeddingService>(services => services.GetRequiredService<BgeOnnxEmbeddingService>());
 builder.Services.AddHttpClient<IVectorStore, WeaviateVectorStore>((services, client) =>
 {

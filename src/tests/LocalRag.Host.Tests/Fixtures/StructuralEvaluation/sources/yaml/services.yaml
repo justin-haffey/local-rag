@@ -1,0 +1,8 @@
+PaymentAuthorizationAutoscaler:
+  purpose: scale payment authorization workers during traffic spikes
+BlobPreviewCacheRefresher:
+  purpose: refresh the blob preview cache
+TranscodingLeaseRenewer:
+  purpose: renew media transcoding job leases
+AccessReviewPublisher:
+  purpose: publish access review reports

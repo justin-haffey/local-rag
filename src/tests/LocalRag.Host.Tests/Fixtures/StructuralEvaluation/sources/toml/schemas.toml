@@ -1,0 +1,8 @@
+[TelemetrySchema]
+purpose = "validate telemetry trace attributes"
+[BackupSchema]
+purpose = "validate database backup names"
+[ProxySchema]
+purpose = "validate outbound proxy addresses"
+[TraceSchema]
+purpose = "validate distributed trace identifiers"

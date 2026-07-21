@@ -1,0 +1,6 @@
+{
+  "TransactionalEmailSchema": "validate transactional email fields",
+  "ThumbnailSchema": "validate thumbnail image dimensions",
+  "SessionSchema": "validate user session identifiers",
+  "ConsentSchema": "validate consent history records"
+}

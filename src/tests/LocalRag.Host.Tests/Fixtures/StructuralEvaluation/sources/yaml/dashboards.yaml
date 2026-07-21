@@ -1,0 +1,8 @@
+PaymentAuthorizationDashboard:
+  purpose: display payment authorization traffic without autoscaling workers
+BlobPreviewDashboard:
+  purpose: display blob preview cache statistics without refresh
+TranscodingDashboard:
+  purpose: display media transcoding jobs without renewing leases
+AccessReviewDashboard:
+  purpose: preview access review reports without publishing

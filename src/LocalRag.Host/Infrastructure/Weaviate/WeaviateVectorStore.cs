@@ -14,13 +14,29 @@ public sealed class WeaviateVectorStore(HttpClient client, IOptions<LocalRagOpti
 {
     private readonly WeaviateOptions _options = options.Value.Weaviate;
     private readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web);
-    private static readonly IReadOnlyDictionary<string, string> RequiredProperties = new Dictionary<string, string>(StringComparer.Ordinal)
-    {
-        ["chunkId"] = "text", ["sourceId"] = "text", ["fileId"] = "text", ["relativePath"] = "text",
-        ["language"] = "text", ["symbolName"] = "text", ["startLine"] = "int", ["endLine"] = "int",
-        ["ordinal"] = "int", ["content"] = "text", ["contentHash"] = "text", ["tokenCount"] = "int",
-        ["embeddingProfileId"] = "text", ["lastIndexedUtc"] = "date"
-    };
+    private static readonly PropertyDefinition[] RequiredProperties =
+    [
+        new("chunkId", "text", true, false),
+        new("sourceId", "text", true, false),
+        new("fileId", "text", true, false),
+        new("relativePath", "text", true, true),
+        new("language", "text", true, true),
+        new("symbolName", "text", true, true),
+        new("chunkKind", "text", true, true),
+        new("qualifiedSymbolName", "text", true, true),
+        new("structuralLocator", "text", true, false),
+        new("chunkerId", "text", true, false),
+        new("chunkerVersion", "text", true, false),
+        new("chunkProfileFingerprint", "text", true, false),
+        new("startLine", "int", false, false),
+        new("endLine", "int", false, false),
+        new("ordinal", "int", false, false),
+        new("content", "text", false, true),
+        new("contentHash", "text", true, false),
+        new("tokenCount", "int", false, false),
+        new("embeddingProfileId", "text", true, false),
+        new("lastIndexedUtc", "date", true, false)
+    ];
 
     public async Task EnsureReadyAsync(CancellationToken cancellationToken)
     {
@@ -58,6 +74,12 @@ public sealed class WeaviateVectorStore(HttpClient client, IOptions<LocalRagOpti
                         relativePath = document.Chunk.RelativePath,
                         language = document.Chunk.Language,
                         symbolName = document.Chunk.SymbolName,
+                        chunkKind = document.Chunk.ChunkKind,
+                        qualifiedSymbolName = document.Chunk.QualifiedSymbolName,
+                        structuralLocator = document.Chunk.StructuralLocator,
+                        chunkerId = document.Chunk.ChunkerId,
+                        chunkerVersion = document.Chunk.ChunkerVersion,
+                        chunkProfileFingerprint = document.Chunk.ChunkProfileFingerprint,
                         startLine = document.Chunk.StartLine,
                         endLine = document.Chunk.EndLine,
                         ordinal = document.Chunk.Ordinal,
@@ -110,7 +132,7 @@ public sealed class WeaviateVectorStore(HttpClient client, IOptions<LocalRagOpti
         var alpha = request.Alpha.ToString(System.Globalization.CultureInfo.InvariantCulture);
         var query = "{ Get { " + _options.Collection +
             "(hybrid: {query: " + QuoteGraphQl(request.Query) + ", vector: [" + vector + "], alpha: " + alpha + "}" + sourceFilter + ", limit: " + request.Limit + ") { " +
-            "chunkId sourceId relativePath language symbolName startLine endLine content contentHash lastIndexedUtc _additional { score }" +
+            "chunkId sourceId relativePath language symbolName chunkKind qualifiedSymbolName structuralLocator chunkerId chunkerVersion chunkProfileFingerprint startLine endLine content contentHash lastIndexedUtc _additional { score }" +
             " } } }";
         using var response = await client.PostAsJsonAsync("v1/graphql", new { query }, _json, cancellationToken);
         await EnsureSuccessAsync(response, cancellationToken);
@@ -121,12 +143,19 @@ public sealed class WeaviateVectorStore(HttpClient client, IOptions<LocalRagOpti
         foreach (var row in rows.EnumerateArray())
         {
             var additional = row.GetProperty("_additional");
+            var startLine = row.GetProperty("startLine").GetInt32();
+            var endLine = row.GetProperty("endLine").GetInt32();
             results.Add(new SearchResult(
                 row.GetProperty("chunkId").GetString()!, row.GetProperty("sourceId").GetString()!, row.GetProperty("relativePath").GetString()!,
                 row.GetProperty("language").GetString()!, row.TryGetProperty("symbolName", out var symbol) && symbol.ValueKind != JsonValueKind.Null ? symbol.GetString() : null,
-                row.GetProperty("startLine").GetInt32(), row.GetProperty("endLine").GetInt32(),
+                startLine, endLine,
                 additional.TryGetProperty("score", out var score) ? ReadScore(score) : 0, row.GetProperty("content").GetString()!,
-                row.GetProperty("contentHash").GetString()!, DateTimeOffset.Parse(row.GetProperty("lastIndexedUtc").GetString()!, System.Globalization.CultureInfo.InvariantCulture)));
+                row.GetProperty("contentHash").GetString()!, DateTimeOffset.Parse(row.GetProperty("lastIndexedUtc").GetString()!, System.Globalization.CultureInfo.InvariantCulture),
+                ReadStringOrDefault(row, "chunkKind", "text"),
+                row.TryGetProperty("qualifiedSymbolName", out var qualifiedSymbol) && qualifiedSymbol.ValueKind != JsonValueKind.Null ? qualifiedSymbol.GetString() : null,
+                ReadStringOrDefault(row, "structuralLocator", $"lines:{startLine}-{endLine}"),
+                ReadStringOrDefault(row, "chunkerId", "generic"), ReadStringOrDefault(row, "chunkerVersion", "1"),
+                ReadStringOrDefault(row, "chunkProfileFingerprint", "legacy-generic-1")));
         }
         return results;
     }
@@ -138,29 +167,19 @@ public sealed class WeaviateVectorStore(HttpClient client, IOptions<LocalRagOpti
             @class = _options.Collection,
             vectorizer = "none",
             vectorIndexConfig = new { distance = "cosine" },
-            properties = new[]
-            {
-                new { name = "chunkId", dataType = new[] { "text" }, indexFilterable = true, indexSearchable = false },
-                new { name = "sourceId", dataType = new[] { "text" }, indexFilterable = true, indexSearchable = false },
-                new { name = "fileId", dataType = new[] { "text" }, indexFilterable = true, indexSearchable = false },
-                new { name = "relativePath", dataType = new[] { "text" }, indexFilterable = true, indexSearchable = true },
-                new { name = "language", dataType = new[] { "text" }, indexFilterable = true, indexSearchable = true },
-                new { name = "symbolName", dataType = new[] { "text" }, indexFilterable = true, indexSearchable = true },
-                new { name = "startLine", dataType = new[] { "int" }, indexFilterable = false, indexSearchable = false },
-                new { name = "endLine", dataType = new[] { "int" }, indexFilterable = false, indexSearchable = false },
-                new { name = "ordinal", dataType = new[] { "int" }, indexFilterable = false, indexSearchable = false },
-                new { name = "content", dataType = new[] { "text" }, indexFilterable = false, indexSearchable = true },
-                new { name = "contentHash", dataType = new[] { "text" }, indexFilterable = true, indexSearchable = false },
-                new { name = "tokenCount", dataType = new[] { "int" }, indexFilterable = false, indexSearchable = false },
-                new { name = "embeddingProfileId", dataType = new[] { "text" }, indexFilterable = true, indexSearchable = false },
-                new { name = "lastIndexedUtc", dataType = new[] { "date" }, indexFilterable = true, indexSearchable = false }
-            }
+            properties = RequiredProperties.Select(CreatePropertyBody).ToArray()
         };
         using var response = await client.PostAsJsonAsync("v1/schema", schema, _json, cancellationToken);
         await EnsureSuccessAsync(response, cancellationToken);
     }
 
-    private async Task ValidateSchemaAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+    private Task ValidateSchemaAsync(HttpResponseMessage response, CancellationToken cancellationToken) =>
+        ValidateSchemaAsync(response, addMissingProperties: true, cancellationToken);
+
+    private async Task ValidateSchemaAsync(
+        HttpResponseMessage response,
+        bool addMissingProperties,
+        CancellationToken cancellationToken)
     {
         using var document = JsonDocument.Parse(await response.Content.ReadAsStreamAsync(cancellationToken));
         var root = document.RootElement;
@@ -183,15 +202,61 @@ public sealed class WeaviateVectorStore(HttpClient client, IOptions<LocalRagOpti
         var actual = properties.EnumerateArray()
             .Where(property => property.TryGetProperty("name", out _))
             .ToDictionary(property => property.GetProperty("name").GetString()!, property => property, StringComparer.Ordinal);
+
+        var missing = RequiredProperties.Where(required => !actual.ContainsKey(required.Name)).ToArray();
+        if (missing.Length > 0 && !addMissingProperties)
+        {
+            throw new InvalidOperationException(
+                $"Weaviate collection '{_options.Collection}' did not persist required properties: {string.Join(", ", missing.Select(property => property.Name))}.");
+        }
+
+        foreach (var required in missing)
+        {
+            using var addResponse = await client.PostAsJsonAsync(
+                $"v1/schema/{Uri.EscapeDataString(_options.Collection)}/properties",
+                CreatePropertyBody(required),
+                _json,
+                cancellationToken);
+            await EnsureSuccessAsync(addResponse, cancellationToken);
+        }
+
+        if (missing.Length > 0)
+        {
+            using var refreshed = await client.GetAsync(
+                $"v1/schema/{Uri.EscapeDataString(_options.Collection)}",
+                cancellationToken);
+            await EnsureSuccessAsync(refreshed, cancellationToken);
+            await ValidateSchemaAsync(refreshed, addMissingProperties: false, cancellationToken);
+            return;
+        }
+
         foreach (var required in RequiredProperties)
         {
-            if (!actual.TryGetValue(required.Key, out var property) || !property.TryGetProperty("dataType", out var dataType) ||
-                dataType.ValueKind != JsonValueKind.Array || !dataType.EnumerateArray().Any(value => string.Equals(value.GetString(), required.Value, StringComparison.OrdinalIgnoreCase)))
+            var property = actual[required.Name];
+            if (!property.TryGetProperty("dataType", out var dataType) || dataType.ValueKind != JsonValueKind.Array ||
+                 dataType.GetArrayLength() != 1 ||
+                 !string.Equals(dataType[0].GetString(), required.DataType, StringComparison.OrdinalIgnoreCase))
             {
-                throw new InvalidOperationException($"Weaviate collection '{_options.Collection}' is missing compatible property '{required.Key}' ({required.Value}).");
+                throw new InvalidOperationException($"Weaviate collection '{_options.Collection}' has incompatible property '{required.Name}'; expected type '{required.DataType}'.");
+            }
+            if (!property.TryGetProperty("indexFilterable", out var filterable) || filterable.ValueKind is not JsonValueKind.True and not JsonValueKind.False ||
+                 filterable.GetBoolean() != required.IndexFilterable ||
+                 !property.TryGetProperty("indexSearchable", out var searchable) || searchable.ValueKind is not JsonValueKind.True and not JsonValueKind.False ||
+                 searchable.GetBoolean() != required.IndexSearchable)
+            {
+                throw new InvalidOperationException(
+                    $"Weaviate collection '{_options.Collection}' has incompatible indexing flags for property '{required.Name}'.");
             }
         }
     }
+
+    private static object CreatePropertyBody(PropertyDefinition property) => new
+    {
+        name = property.Name,
+        dataType = new[] { property.DataType },
+        indexFilterable = property.IndexFilterable,
+        indexSearchable = property.IndexSearchable
+    };
 
     private static async Task EnsureBatchSucceededAsync(HttpResponseMessage response, CancellationToken cancellationToken)
     {
@@ -252,10 +317,17 @@ public sealed class WeaviateVectorStore(HttpClient client, IOptions<LocalRagOpti
 
     private static string QuoteGraphQl(string value) => JsonSerializer.Serialize(value);
 
+    private static string ReadStringOrDefault(JsonElement element, string propertyName, string defaultValue) =>
+        element.TryGetProperty(propertyName, out var property) && property.ValueKind == JsonValueKind.String
+            ? property.GetString() ?? defaultValue
+            : defaultValue;
+
     private static double ReadScore(JsonElement score) => score.ValueKind switch
     {
         JsonValueKind.Number => score.GetDouble(),
         JsonValueKind.String when double.TryParse(score.GetString(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var value) => value,
         _ => 0
     };
+
+    private sealed record PropertyDefinition(string Name, string DataType, bool IndexFilterable, bool IndexSearchable);
 }

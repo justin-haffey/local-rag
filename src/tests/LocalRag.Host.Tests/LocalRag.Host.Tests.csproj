@@ -8,7 +8,9 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Remove="Fixtures\StructuralEvaluation\sources\**\*.cs" />
     <None Include="Exhibit A.pdf" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Final Decree [615749].pdf" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Fixtures\StructuralEvaluation\**\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

@@ -13,11 +13,25 @@ public sealed partial class IndexCoordinator(
     SourceWatcherRegistry watchers,
     IndexWorkChannel queue,
     IndexJobStore jobs,
+    IChunkProfileProvider chunkProfile,
+    IChunkProfileStateStore chunkProfiles,
     ILogger<IndexCoordinator> logger) : IIndexCoordinator
 {
     public async Task QueueInitialIndexAsync(string sourceId, CancellationToken cancellationToken)
     {
-        await jobs.QueueAsync(sourceId, cancellationToken);
+        var existingChunks = await indexState.GetChunksForSourceAsync(sourceId, cancellationToken);
+        var state = await chunkProfiles.GetOrCreateAsync(
+            sourceId,
+            chunkProfile.Fingerprint,
+            existingChunks.Count > 0,
+            cancellationToken);
+        var transitionRequired = state.ActiveFingerprint != chunkProfile.Fingerprint ||
+            state.Status != ChunkProfileStatus.Ready || state.PendingFingerprint is not null;
+        if (transitionRequired)
+        {
+            await chunkProfiles.BeginTransitionAsync(sourceId, chunkProfile.Fingerprint, cancellationToken);
+        }
+        await jobs.QueueAsync(sourceId, chunkProfile.Fingerprint, transitionRequired, cancellationToken);
         await queue.EnqueueAsync(sourceId, cancellationToken);
     }
 
@@ -30,12 +44,38 @@ public sealed partial class IndexCoordinator(
         await sources.RemoveAsync(sourceId, cancellationToken);
     }
 
-    internal async Task<bool> ProcessAsync(string sourceId, CancellationToken cancellationToken)
+    internal Task<bool> ProcessAsync(string sourceId, CancellationToken cancellationToken) =>
+        ProcessAsync(new IndexJob("direct", sourceId, 0), cancellationToken);
+
+    internal async Task<bool> ProcessAsync(IndexJob job, CancellationToken cancellationToken)
     {
+        var sourceId = job.SourceId;
         var source = await sources.GetAsync(sourceId, cancellationToken);
         if (source is null || source.Status == SourceStatus.Paused) return true;
+        if (job.ForceContentProcessing && job.TargetChunkProfileFingerprint is not null)
+        {
+            var state = await chunkProfiles.GetAsync(sourceId, cancellationToken);
+            if (state is
+                {
+                    Status: ChunkProfileStatus.Ready,
+                    PendingFingerprint: null
+                } && state.ActiveFingerprint == job.TargetChunkProfileFingerprint)
+            {
+                await sources.SetStatusAsync(sourceId, SourceStatus.Ready, null, cancellationToken);
+                return true;
+            }
+            await chunkProfiles.BeginTransitionAsync(sourceId, job.TargetChunkProfileFingerprint, cancellationToken);
+        }
         if (!Directory.Exists(source.CanonicalRootPath))
         {
+            if (job.ForceContentProcessing && job.TargetChunkProfileFingerprint is not null)
+            {
+                await chunkProfiles.FailTransitionAsync(
+                    sourceId,
+                    job.TargetChunkProfileFingerprint,
+                    MissingSourcePolicy.MissingRootMessage,
+                    cancellationToken);
+            }
             await sources.SetStatusAsync(sourceId, SourceStatus.Degraded, MissingSourcePolicy.MissingRootMessage, cancellationToken);
             return false;
         }
@@ -59,7 +99,7 @@ public sealed partial class IndexCoordinator(
                 if (!filePolicy.IsEligible(source.CanonicalRootPath, path, info)) continue;
                 var relativePath = Path.GetRelativePath(source.CanonicalRootPath, path);
                 observed.Add(relativePath);
-                await fileIndexing.IndexAsync(source, path, relativePath, info, cancellationToken);
+                await fileIndexing.IndexAsync(source, path, relativePath, info, cancellationToken, job.ForceContentProcessing);
             }
 
             var existing = await indexState.GetChunksForSourceAsync(sourceId, cancellationToken);
@@ -69,12 +109,24 @@ public sealed partial class IndexCoordinator(
                 await indexState.DeleteFileAsync(sourceId, removed.Key, cancellationToken);
             }
 
+            if (job.ForceContentProcessing && job.TargetChunkProfileFingerprint is not null)
+            {
+                await chunkProfiles.CompleteTransitionAsync(sourceId, job.TargetChunkProfileFingerprint, cancellationToken);
+            }
             await sources.SetStatusAsync(sourceId, SourceStatus.Ready, null, cancellationToken);
             return true;
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             LogIndexingFailed(logger, exception, sourceId);
+            if (job.ForceContentProcessing && job.TargetChunkProfileFingerprint is not null)
+            {
+                await chunkProfiles.FailTransitionAsync(
+                    sourceId,
+                    job.TargetChunkProfileFingerprint,
+                    exception.Message,
+                    cancellationToken);
+            }
             await sources.SetStatusAsync(sourceId, SourceStatus.Degraded, exception.Message, cancellationToken);
             return false;
         }

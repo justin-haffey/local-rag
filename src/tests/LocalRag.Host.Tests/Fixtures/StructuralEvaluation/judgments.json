@@ -1,0 +1,41 @@
+[
+  { "family": "csharp", "path": "csharp/Services.cs", "query": "Where are interrupted invoice batches reconciled before settlement retries?", "intent": "invoice reconciliation service", "startLine": 1, "endLine": 4, "relevanceGrade": 3 },
+  { "family": "csharp", "path": "csharp/Services.cs", "query": "Which service evicts stale cache entries after a deployment?", "intent": "cache eviction service", "startLine": 6, "endLine": 9, "relevanceGrade": 3 },
+  { "family": "csharp", "path": "csharp/Services.cs", "query": "How are distributed worker leases renewed before they expire?", "intent": "lease renewal service", "startLine": 11, "endLine": 14, "relevanceGrade": 3 },
+  { "family": "csharp", "path": "csharp/Services.cs", "query": "Where are signed audit events exported for compliance review?", "intent": "audit export service", "startLine": 16, "endLine": 19, "relevanceGrade": 3 },
+
+  { "family": "typescript-javascript", "path": "typescript/workflows.ts", "query": "Where is the monthly payroll run scheduled?", "intent": "payroll scheduling workflow", "startLine": 1, "endLine": 3, "relevanceGrade": 3 },
+  { "family": "typescript-javascript", "path": "typescript/workflows.ts", "query": "Which workflow preloads CDN assets before a release?", "intent": "CDN asset warming workflow", "startLine": 5, "endLine": 7, "relevanceGrade": 3 },
+  { "family": "typescript-javascript", "path": "typescript/workflows.ts", "query": "How are failed webhook delivery attempts inspected?", "intent": "webhook retry inspection workflow", "startLine": 9, "endLine": 11, "relevanceGrade": 3 },
+  { "family": "typescript-javascript", "path": "typescript/workflows.ts", "query": "Where are product usage analytics published?", "intent": "usage analytics publishing workflow", "startLine": 13, "endLine": 15, "relevanceGrade": 3 },
+
+  { "family": "python", "path": "python/workers.py", "query": "Which worker validates outbound shipment labels?", "intent": "shipment label validation worker", "startLine": 1, "endLine": 2, "relevanceGrade": 3 },
+  { "family": "python", "path": "python/workers.py", "query": "Where are expired feature flags pruned?", "intent": "feature flag pruning worker", "startLine": 4, "endLine": 5, "relevanceGrade": 3 },
+  { "family": "python", "path": "python/workers.py", "query": "How are expiring TLS certificates monitored?", "intent": "certificate monitoring worker", "startLine": 7, "endLine": 8, "relevanceGrade": 3 },
+  { "family": "python", "path": "python/workers.py", "query": "Which worker signs release manifests?", "intent": "release manifest signing worker", "startLine": 10, "endLine": 11, "relevanceGrade": 3 },
+
+  { "family": "markdown", "path": "markdown/operations.md", "query": "What is the runbook for recovering a lagging database replica?", "intent": "database replica recovery runbook", "startLine": 1, "endLine": 3, "relevanceGrade": 3 },
+  { "family": "markdown", "path": "markdown/operations.md", "query": "How should encryption keys be rotated without downtime?", "intent": "encryption key rotation runbook", "startLine": 4, "endLine": 6, "relevanceGrade": 3 },
+  { "family": "markdown", "path": "markdown/operations.md", "query": "Where is queue consumer lag diagnosed?", "intent": "queue lag diagnostics runbook", "startLine": 7, "endLine": 9, "relevanceGrade": 3 },
+  { "family": "markdown", "path": "markdown/operations.md", "query": "What is the retention policy for incident timelines?", "intent": "incident timeline retention runbook", "startLine": 10, "endLine": 11, "relevanceGrade": 3 },
+
+  { "family": "json", "path": "json/policies.json", "query": "Which policy controls transactional email batching?", "intent": "transactional email batching policy", "startLine": 2, "endLine": 2, "relevanceGrade": 3 },
+  { "family": "json", "path": "json/policies.json", "query": "Where is thumbnail image cache expiration configured?", "intent": "thumbnail cache policy", "startLine": 3, "endLine": 3, "relevanceGrade": 3 },
+  { "family": "json", "path": "json/policies.json", "query": "Which policy sets idle user session timeouts?", "intent": "idle session timeout policy", "startLine": 4, "endLine": 4, "relevanceGrade": 3 },
+  { "family": "json", "path": "json/policies.json", "query": "Where is consent history archival configured?", "intent": "consent history archive policy", "startLine": 5, "endLine": 5, "relevanceGrade": 3 },
+
+  { "family": "yaml", "path": "yaml/services.yaml", "query": "Which service scales payment authorization workers during traffic spikes?", "intent": "payment authorization autoscaling service", "startLine": 1, "endLine": 2, "relevanceGrade": 3 },
+  { "family": "yaml", "path": "yaml/services.yaml", "query": "Where is the blob preview cache refreshed?", "intent": "blob preview cache service", "startLine": 3, "endLine": 4, "relevanceGrade": 3 },
+  { "family": "yaml", "path": "yaml/services.yaml", "query": "Which service renews media transcoding job leases?", "intent": "transcoding lease service", "startLine": 5, "endLine": 6, "relevanceGrade": 3 },
+  { "family": "yaml", "path": "yaml/services.yaml", "query": "Where are access review reports published?", "intent": "access review publishing service", "startLine": 7, "endLine": 8, "relevanceGrade": 3 },
+
+  { "family": "toml", "path": "toml/settings.toml", "query": "Where is telemetry trace sampling configured?", "intent": "telemetry sampling settings", "startLine": 1, "endLine": 2, "relevanceGrade": 3 },
+  { "family": "toml", "path": "toml/settings.toml", "query": "Which settings enable compression for database backups?", "intent": "backup compression settings", "startLine": 3, "endLine": 4, "relevanceGrade": 3 },
+  { "family": "toml", "path": "toml/settings.toml", "query": "Where is the outbound proxy circuit breaker configured?", "intent": "proxy circuit breaker settings", "startLine": 5, "endLine": 6, "relevanceGrade": 3 },
+  { "family": "toml", "path": "toml/settings.toml", "query": "Which settings retain distributed traces for seven days?", "intent": "trace retention settings", "startLine": 7, "endLine": 8, "relevanceGrade": 3 },
+
+  { "family": "xml", "path": "xml/targets.xml", "query": "Which build target compiles localized resource bundles?", "intent": "resource bundle compilation target", "startLine": 2, "endLine": 4, "relevanceGrade": 3 },
+  { "family": "xml", "path": "xml/targets.xml", "query": "Where are portable debugging symbols packaged?", "intent": "debug symbol packaging target", "startLine": 5, "endLine": 7, "relevanceGrade": 3 },
+  { "family": "xml", "path": "xml/targets.xml", "query": "Which build target runs database migrations?", "intent": "database migration target", "startLine": 8, "endLine": 10, "relevanceGrade": 3 },
+  { "family": "xml", "path": "xml/targets.xml", "query": "Where are third-party license notices verified?", "intent": "license notice verification target", "startLine": 11, "endLine": 13, "relevanceGrade": 3 }
+]

@@ -1,5 +1,3 @@
-using System.Security.Cryptography;
-using System.Text;
 using LocalRag.Application;
 using LocalRag.Configuration;
 using LocalRag.Domain;
@@ -7,74 +5,109 @@ using Microsoft.Extensions.Options;
 
 namespace LocalRag.Infrastructure.Processing;
 
-public sealed class GenericChunker(IOptions<LocalRagOptions> options) : IChunker
+/// <summary>Deterministic line-preserving fallback used when structural parsing is unavailable or unsafe.</summary>
+public sealed class GenericChunker : IChunker
 {
-    private readonly ChunkingOptions _options = options.Value.Chunking;
+    private readonly LocalRagOptions _options;
+    private readonly IChunkProfileProvider _profile;
+    private readonly IChunkTokenCounter _tokenCounter;
+
+    public GenericChunker(IOptions<LocalRagOptions> options)
+        : this(options, new ChunkProfileProvider(options), new CharacterUpperBoundTokenCounter())
+    {
+    }
+
+    public GenericChunker(IOptions<LocalRagOptions> options, IChunkProfileProvider profile)
+        : this(options, profile, new CharacterUpperBoundTokenCounter())
+    {
+    }
+
+    internal GenericChunker(
+        IOptions<LocalRagOptions> options,
+        IChunkProfileProvider profile,
+        IChunkTokenCounter tokenCounter)
+    {
+        _options = options.Value;
+        _profile = profile;
+        _tokenCounter = tokenCounter;
+    }
 
     public IReadOnlyList<ChunkRecord> Chunk(SourceRecord source, IndexedFile file, string normalizedContent)
     {
-        var lines = normalizedContent.Split('\n');
+        var lines = ChunkingText.Lines(normalizedContent);
         var chunks = new List<ChunkRecord>();
-        var targetCharacters = Math.Max(400, _options.TargetTokens * 4);
-        var maximumCharacters = Math.Max(targetCharacters, _options.MaximumTokens * 4);
+        var hardLimit = Math.Min(_options.Chunking.MaximumTokens, _options.Embedding.MaximumTokens);
+        if (hardLimit < 3) throw new InvalidOperationException("Chunk and embedding token limits must both be at least three.");
+        var target = Math.Clamp(_options.Chunking.TargetTokens, 3, hardLimit);
         var start = 0;
         var ordinal = 0;
 
         while (start < lines.Length)
         {
             var end = start;
-            var length = 0;
-            while (end < lines.Length)
+            string content;
+            do
             {
-                var projected = length + lines[end].Length + 1;
-                if (end > start && projected > maximumCharacters) break;
-                length = projected;
                 end++;
-                if (length >= targetCharacters && IsNaturalBoundary(lines, end)) break;
+                content = string.Join('\n', lines[start..end]);
             }
+            while (end < lines.Length && CountPassageTokens(content + "\n" + lines[end]) <= hardLimit &&
+                   (CountPassageTokens(content) < target || !string.IsNullOrWhiteSpace(lines[end - 1])));
 
-            if (end == start) end++;
-            var content = string.Join('\n', lines[start..end]);
-            if (!string.IsNullOrWhiteSpace(content))
+            if (CountPassageTokens(content) > hardLimit)
             {
-                var contentHash = Hash(content);
-                chunks.Add(new ChunkRecord(
-                    ChunkId: Hash($"{source.SourceId}\n{file.RelativePath}\n{start + 1}\n{contentHash}"),
-                    SourceId: source.SourceId,
-                    FileId: file.FileId,
-                    RelativePath: file.RelativePath,
-                    Language: LanguageFor(file.RelativePath),
-                    SymbolName: null,
-                    StartLine: start + 1,
-                    EndLine: end,
-                    Ordinal: ordinal++,
-                    Content: content,
-                    ContentHash: contentHash,
-                    TokenCount: EstimateTokens(content),
-                    EmbeddingProfileId: source.EmbeddingProfileId,
-                    LastIndexedUtc: DateTimeOffset.UtcNow));
+                foreach (var segment in SplitOversizedLine(lines[start], hardLimit))
+                {
+                    if (string.IsNullOrWhiteSpace(segment)) continue;
+                    var locator = $"lines:{start + 1}-{start + 1}:segment:{chunks.Count + 1}";
+                    chunks.Add(ChunkingText.CreateRecord(source, file, segment, start + 1, start + 1, ordinal++, "text",
+                        null, null, locator, "generic", "1", _profile.Fingerprint, CountPassageTokens(segment)));
+                }
+            }
+            else if (!string.IsNullOrWhiteSpace(content))
+            {
+                var locator = $"lines:{start + 1}-{end}";
+                chunks.Add(ChunkingText.CreateRecord(source, file, content, start + 1, end, ordinal++, "text",
+                    null, null, locator, "generic", "1", _profile.Fingerprint, CountPassageTokens(content)));
             }
 
             if (end >= lines.Length) break;
-            start = Math.Max(end - Math.Max(1, _options.OverlapTokens / 8), start + 1);
+            var overlapLines = Math.Max(0, _options.Chunking.OverlapTokens / 8);
+            start = Math.Max(end - overlapLines, start + 1);
         }
 
         return chunks;
     }
 
-    private static bool IsNaturalBoundary(string[] lines, int nextLine) =>
-        nextLine >= lines.Length || string.IsNullOrWhiteSpace(lines[nextLine - 1]);
-
-    private static string Hash(string value) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
-
-    private static int EstimateTokens(string content) => Math.Max(1, (int)Math.Ceiling(content.Length / 4d));
-
-    private static string LanguageFor(string path) => Path.GetExtension(path).ToLowerInvariant() switch
+    private IEnumerable<string> SplitOversizedLine(string line, int hardLimit)
     {
-        ".cs" => "csharp", ".ts" or ".tsx" => "typescript", ".js" or ".jsx" => "javascript",
-        ".py" => "python", ".go" => "go", ".rs" => "rust", ".java" => "java",
-        ".json" => "json", ".yml" or ".yaml" => "yaml", ".toml" => "toml",
-        ".xml" or ".csproj" or ".props" or ".targets" => "xml", ".md" => "markdown",
-        ".sql" => "sql", ".ps1" or ".sh" => "shell", ".docx" => "word", ".pdf" => "pdf", _ => "text"
-    };
+        for (var offset = 0; offset < line.Length;)
+        {
+            var low = 1;
+            var high = line.Length - offset;
+            var acceptedLength = 0;
+            while (low <= high)
+            {
+                var candidateLength = low + ((high - low) / 2);
+                if (CountPassageTokens(line.Substring(offset, candidateLength)) <= hardLimit)
+                {
+                    acceptedLength = candidateLength;
+                    low = candidateLength + 1;
+                }
+                else
+                {
+                    high = candidateLength - 1;
+                }
+            }
+            if (acceptedLength == 0)
+            {
+                throw new InvalidOperationException("The configured passage prefix leaves no token capacity for chunk content.");
+            }
+            yield return line.Substring(offset, acceptedLength);
+            offset += acceptedLength;
+        }
+    }
+
+    private int CountPassageTokens(string content) =>
+        _tokenCounter.CountTokens(_options.Embedding.PassagePrefix + content);
 }

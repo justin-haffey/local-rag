@@ -1,0 +1,8 @@
+[TelemetrySampling]
+purpose = "configure telemetry trace sampling"
+[BackupCompression]
+purpose = "enable compression for database backups"
+[ProxyCircuitBreaker]
+purpose = "configure the outbound proxy circuit breaker"
+[TraceRetention]
+purpose = "retain distributed traces for seven days"

@@ -37,6 +37,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\Install-LocalRagEm
 
 Defaults are in [`src/LocalRag.Host/appsettings.json`](src/LocalRag.Host/appsettings.json). Copy `appsettings.Local.json.example` to `appsettings.Local.json` for local overrides, or use environment variables such as `LocalRag__Weaviate__Endpoint` and `LocalRag__Weaviate__ApiKey`.
 
+Structural chunking is enabled by default for C#, TypeScript/JavaScript, Python, Markdown, JSON, YAML, TOML, and the XML family (`.xml`, `.csproj`, `.props`, and `.targets`). Unsupported or malformed files use the mandatory generic line-preserving fallback. Every chunk records its kind, symbol/qualified symbol when available, structural locator, chunker ID/version, profile fingerprint, and exact line range. Both structural and generic chunks use the configured BERT WordPiece tokenizer as the final model-limit check.
+
+Changing adapter enablement, token settings, embedding/tokenizer identity, or a chunker version changes the canonical chunk-profile fingerprint. The next reconciliation performs a forced full-source reindex and keeps that source out of search and chunk retrieval until all new chunks and stale-vector deletions succeed. Restart and retry resume the durable transition; failure leaves the source degraded and query-invisible. To roll back to generic chunking, set `LocalRag__Chunking__EnabledAdapters` to an empty array in local configuration, restart the host, and reindex the source. Restore the approved adapter list to roll forward again.
+
 The backend requires `LocalRag__Authentication__Token`; the extension creates and retains this in VS Code Secret Storage. Start manually only when supplying a token explicitly.
 
 The project-level `.codex/config.toml` registers the backend's Streamable HTTP MCP endpoint as `local_rag`. To let Codex and the extension share its bearer token without committing a secret, generate a high-entropy user environment variable once, then restart VS Code:
@@ -76,7 +80,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\Package-VsCode
 
 The script restores extension dependencies, publishes the Windows x64 backend, compiles and validates the extension, creates `artifacts\local-rag-0.1.0.vsix`, installs it with the VS Code CLI, and verifies `starlinx-llc.local-rag@0.1.0`. Use `-SkipInstall` to create the VSIX without installing it.
 
-To require real local inference during test execution, set `LOCALRAG_ONNX_TESTS=1`. To run live Weaviate integration tests, set `WEAVIATE_TEST_ENDPOINT=http://127.0.0.1:8080`.
+To require real local inference during test execution, set `LOCALRAG_ONNX_TESTS=1`. To run live Weaviate integration tests, set `WEAVIATE_TEST_ENDPOINT=http://127.0.0.1:8080`. FEATURE-01's paired 32-query retrieval evaluation additionally uses `LOCALRAG_STRUCTURAL_EVAL=1` and can write its machine-readable evidence to `LOCALRAG_EVALUATION_REPORT`.
 
 The extension manages only the packaged backend process. If Weaviate or model assets are unavailable, `/health/ready` becomes degraded and the extension provides an actionable error.
 

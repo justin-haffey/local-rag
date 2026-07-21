@@ -50,6 +50,7 @@ public sealed class PdfDocumentIndexingTests(ITestOutputHelper output)
 
         Assert.True(content.Length > 100);
         Assert.DoesNotContain('\0', content);
+        Assert.Contains("SYNTHETIC OCR EXHIBIT A", content, StringComparison.OrdinalIgnoreCase);
         output.WriteLine(content[..Math.Min(content.Length, 4_000)]);
     }
 

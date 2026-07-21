@@ -6,6 +6,7 @@ namespace LocalRag.Infrastructure.Indexing;
 public sealed partial class StartupInitializationService(
     ISourceRegistry sources,
     IIndexStateStore indexState,
+    IChunkProfileStateStore chunkProfiles,
     IndexJobStore jobs,
     SourceWatcherRegistry watchers,
     IIndexCoordinator coordinator,
@@ -16,6 +17,7 @@ public sealed partial class StartupInitializationService(
     {
         await sources.InitializeAsync(cancellationToken);
         await indexState.InitializeAsync(cancellationToken);
+        await chunkProfiles.InitializeAsync(cancellationToken);
         await jobs.InitializeAsync(cancellationToken);
         await jobs.RecoverAsync(cancellationToken);
         foreach (var source in await sources.ListAsync(cancellationToken))

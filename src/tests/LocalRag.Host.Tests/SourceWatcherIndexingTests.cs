@@ -43,6 +43,7 @@ public sealed class SourceWatcherIndexingTests
         var sources = new SqliteSourceRegistry(database, options);
         var indexState = new SqliteIndexStateStore(database, options);
         var jobs = new IndexJobStore(database);
+        var chunkProfiles = new SqliteChunkProfileStateStore(database);
         var queue = new IndexWorkChannel();
         using var watchers = new SourceWatcherRegistry(queue, jobs, sources, options, NullLogger<SourceWatcherRegistry>.Instance);
         var vectors = new RecordingVectorStore();
@@ -68,12 +69,15 @@ public sealed class SourceWatcherIndexingTests
             watchers,
             queue,
             jobs,
+            new FixedChunkProfileProvider(),
+            chunkProfiles,
             NullLogger<IndexCoordinator>.Instance);
 
         try
         {
             await sources.InitializeAsync(CancellationToken.None);
             await indexState.InitializeAsync(CancellationToken.None);
+            await chunkProfiles.InitializeAsync(CancellationToken.None);
             await jobs.InitializeAsync(CancellationToken.None);
             var source = await sources.RegisterAsync(root, "watcher fixture", CancellationToken.None);
             watchers.Track(source);
@@ -112,6 +116,12 @@ public sealed class SourceWatcherIndexingTests
             DeleteDirectory(root);
             DeleteDirectory(data);
         }
+    }
+
+    private sealed class FixedChunkProfileProvider : IChunkProfileProvider
+    {
+        public string ChunkerIdentity => "test/1";
+        public string Fingerprint => "test-structural-profile";
     }
 
     private static async Task<IndexJob> WaitForJobAsync(IndexWorkChannel queue, IndexJobStore jobs)

@@ -41,6 +41,35 @@ public interface IChunker
     IReadOnlyList<ChunkRecord> Chunk(SourceRecord source, IndexedFile file, string normalizedContent);
 }
 
+/// <summary>Exposes the canonical identity of the active chunking configuration.</summary>
+public interface IChunkProfileProvider
+{
+    string ChunkerIdentity { get; }
+    string Fingerprint { get; }
+}
+
+/// <summary>Persists source-level chunk-profile transitions and query cutover state.</summary>
+public interface IChunkProfileStateStore
+{
+    Task InitializeAsync(CancellationToken cancellationToken);
+    Task<ChunkProfileState> GetOrCreateAsync(
+        string sourceId,
+        string configuredFingerprint,
+        bool hasIndexedChunks,
+        CancellationToken cancellationToken);
+    Task<ChunkProfileState?> GetAsync(string sourceId, CancellationToken cancellationToken);
+    Task BeginTransitionAsync(string sourceId, string targetFingerprint, CancellationToken cancellationToken);
+    Task CompleteTransitionAsync(string sourceId, string targetFingerprint, CancellationToken cancellationToken);
+    Task FailTransitionAsync(string sourceId, string targetFingerprint, string failureMessage, CancellationToken cancellationToken);
+    Task<bool> IsQueryVisibleAsync(string sourceId, CancellationToken cancellationToken);
+}
+
+/// <summary>Linearizes source-profile transitions with source-derived query operations.</summary>
+public interface IChunkProfileOperationGate
+{
+    Task<IAsyncDisposable> AcquireAsync(IEnumerable<string> sourceIds, CancellationToken cancellationToken);
+}
+
 /// <summary>Extracts searchable text from one supported file format.</summary>
 public interface IContentExtractor
 {

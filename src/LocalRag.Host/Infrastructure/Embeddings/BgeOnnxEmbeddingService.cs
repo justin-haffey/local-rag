@@ -14,11 +14,17 @@ public sealed class BgeOnnxEmbeddingService : IEmbeddingService, IDisposable
     private readonly Lazy<BertWordPieceTokenizer> _tokenizer;
 
     public BgeOnnxEmbeddingService(IOptions<LocalRagOptions> options)
+        : this(options, null)
+    {
+    }
+
+    internal BgeOnnxEmbeddingService(IOptions<LocalRagOptions> options, BertWordPieceTokenizer? tokenizer)
     {
         _options = options.Value.Embedding;
         var modelDirectory = Environment.ExpandEnvironmentVariables(_options.ModelDirectory);
         _session = new Lazy<InferenceSession>(() => new InferenceSession(Path.Combine(modelDirectory, "model.onnx")));
-        _tokenizer = new Lazy<BertWordPieceTokenizer>(() => new BertWordPieceTokenizer(Path.Combine(modelDirectory, "vocab.txt")));
+        _tokenizer = new Lazy<BertWordPieceTokenizer>(() =>
+            tokenizer ?? new BertWordPieceTokenizer(Path.Combine(modelDirectory, "vocab.txt")));
     }
 
     public string ProfileId => _options.ProfileId;

@@ -67,6 +67,11 @@ The skill-local template files are immutable sources. Copy the exact source temp
 - Identify uncertainty, conflicts, missing inputs, and deferred decisions. Request direction before making a product, security, data-retention, compatibility, or rollout decision that materially changes scope.
 - Do not change source code, infrastructure, production data, credentials, external services, or release state while drafting process artifacts unless the user separately authorizes that work.
 
+## Repository Navigation and Evidence
+
+- Use `codebase-memory-mcp` first for code symbols and relationships; use `plugins/local-rag-skills` for semantic discovery, source triage, index verification, and evidence retrieval.
+- Treat retrieval as leads: verify material claims and edits in current source/tests, disclose dynamic or stale-index uncertainty, and use `rg` only for literals, config/non-code, or insufficient indexed results.
+
 ## Readiness Criteria
 
 An artifact may advance only when its predecessor is sufficiently complete:

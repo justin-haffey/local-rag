@@ -1,0 +1,14 @@
+<Targets>
+  <CompileResourceBundles>
+    <Purpose>compile localized resource bundles</Purpose>
+  </CompileResourceBundles>
+  <PackDebugSymbols>
+    <Purpose>package portable debugging symbols</Purpose>
+  </PackDebugSymbols>
+  <RunDatabaseMigrations>
+    <Purpose>run database migrations</Purpose>
+  </RunDatabaseMigrations>
+  <VerifyLicenseNotices>
+    <Purpose>verify third-party license notices</Purpose>
+  </VerifyLicenseNotices>
+</Targets>

@@ -11,7 +11,9 @@ public sealed class SqliteIndexStateStore(SqliteDatabase database, IOptions<Loca
     public async Task InitializeAsync(CancellationToken cancellationToken)
     {
         await using var connection = await database.OpenAsync(cancellationToken);
+        await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellationToken);
         await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
         command.CommandText = """
             CREATE TABLE IF NOT EXISTS Files (
               FileId TEXT PRIMARY KEY,
@@ -29,6 +31,12 @@ public sealed class SqliteIndexStateStore(SqliteDatabase database, IOptions<Loca
               RelativePath TEXT NOT NULL,
               Language TEXT NOT NULL,
               SymbolName TEXT NULL,
+              ChunkKind TEXT NOT NULL DEFAULT 'text',
+              QualifiedSymbolName TEXT NULL,
+              StructuralLocator TEXT NOT NULL DEFAULT '',
+              ChunkerId TEXT NOT NULL DEFAULT 'generic',
+              ChunkerVersion TEXT NOT NULL DEFAULT '1',
+              ChunkProfileFingerprint TEXT NOT NULL DEFAULT 'legacy-generic-1',
               StartLine INTEGER NOT NULL,
               EndLine INTEGER NOT NULL,
               Ordinal INTEGER NOT NULL,
@@ -76,6 +84,8 @@ public sealed class SqliteIndexStateStore(SqliteDatabase database, IOptions<Loca
         command.Parameters.AddWithValue("$dimensions", options.Value.Embedding.Dimensions);
         command.Parameters.AddWithValue("$now", DateTimeOffset.UtcNow.ToString("O"));
         await command.ExecuteNonQueryAsync(cancellationToken);
+        await MigrateChunkProvenanceAsync(connection, transaction, cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
     }
 
     public async Task<IndexedFile?> GetFileAsync(string sourceId, string relativePath, CancellationToken cancellationToken)
@@ -102,6 +112,10 @@ public sealed class SqliteIndexStateStore(SqliteDatabase database, IOptions<Loca
 
     public async Task SaveFileAndChunksAsync(IndexedFile file, IReadOnlyList<ChunkRecord> chunks, CancellationToken cancellationToken)
     {
+        ChunkRecordValidation.Validate(
+            file,
+            chunks,
+            Math.Min(options.Value.Chunking.MaximumTokens, options.Value.Embedding.MaximumTokens));
         await using var connection = await database.OpenAsync(cancellationToken);
         await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellationToken);
         await using (var fileCommand = connection.CreateCommand())
@@ -136,8 +150,8 @@ public sealed class SqliteIndexStateStore(SqliteDatabase database, IOptions<Loca
             await using var insert = connection.CreateCommand();
             insert.Transaction = transaction;
             insert.CommandText = """
-                INSERT INTO Chunks(ChunkId, SourceId, FileId, RelativePath, Language, SymbolName, StartLine, EndLine, Ordinal, Content, ContentHash, TokenCount, EmbeddingProfileId, LastIndexedUtc)
-                VALUES($id, $source, $file, $path, $language, $symbol, $start, $end, $ordinal, $content, $hash, $tokens, $profile, $indexed);
+                INSERT INTO Chunks(ChunkId, SourceId, FileId, RelativePath, Language, SymbolName, ChunkKind, QualifiedSymbolName, StructuralLocator, ChunkerId, ChunkerVersion, ChunkProfileFingerprint, StartLine, EndLine, Ordinal, Content, ContentHash, TokenCount, EmbeddingProfileId, LastIndexedUtc)
+                VALUES($id, $source, $file, $path, $language, $symbol, $chunkKind, $qualifiedSymbol, $locator, $chunkerId, $chunkerVersion, $chunkProfileFingerprint, $start, $end, $ordinal, $content, $hash, $tokens, $profile, $indexed);
                 """;
             AddChunkParameters(insert, chunk);
             await insert.ExecuteNonQueryAsync(cancellationToken);
@@ -179,7 +193,7 @@ public sealed class SqliteIndexStateStore(SqliteDatabase database, IOptions<Loca
     private static SqliteCommand CreateChunkSelect(SqliteConnection connection, string predicate)
     {
         var command = connection.CreateCommand();
-        command.CommandText = $"SELECT ChunkId, SourceId, FileId, RelativePath, Language, SymbolName, StartLine, EndLine, Ordinal, Content, ContentHash, TokenCount, EmbeddingProfileId, LastIndexedUtc FROM Chunks WHERE {predicate} ORDER BY RelativePath, Ordinal;";
+        command.CommandText = $"SELECT ChunkId, SourceId, FileId, RelativePath, Language, SymbolName, ChunkKind, QualifiedSymbolName, StructuralLocator, ChunkerId, ChunkerVersion, ChunkProfileFingerprint, StartLine, EndLine, Ordinal, Content, ContentHash, TokenCount, EmbeddingProfileId, LastIndexedUtc FROM Chunks WHERE {predicate} ORDER BY RelativePath, Ordinal;";
         return command;
     }
 
@@ -191,6 +205,12 @@ public sealed class SqliteIndexStateStore(SqliteDatabase database, IOptions<Loca
         command.Parameters.AddWithValue("$path", chunk.RelativePath);
         command.Parameters.AddWithValue("$language", chunk.Language);
         command.Parameters.AddWithValue("$symbol", (object?)chunk.SymbolName ?? DBNull.Value);
+        command.Parameters.AddWithValue("$chunkKind", chunk.ChunkKind);
+        command.Parameters.AddWithValue("$qualifiedSymbol", (object?)chunk.QualifiedSymbolName ?? DBNull.Value);
+        command.Parameters.AddWithValue("$locator", chunk.StructuralLocator);
+        command.Parameters.AddWithValue("$chunkerId", chunk.ChunkerId);
+        command.Parameters.AddWithValue("$chunkerVersion", chunk.ChunkerVersion);
+        command.Parameters.AddWithValue("$chunkProfileFingerprint", chunk.ChunkProfileFingerprint);
         command.Parameters.AddWithValue("$start", chunk.StartLine);
         command.Parameters.AddWithValue("$end", chunk.EndLine);
         command.Parameters.AddWithValue("$ordinal", chunk.Ordinal);
@@ -206,6 +226,49 @@ public sealed class SqliteIndexStateStore(SqliteDatabase database, IOptions<Loca
 
     private static ChunkRecord ReadChunk(SqliteDataReader reader) => new(
         reader.GetString(0), reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetString(4),
-        reader.IsDBNull(5) ? null : reader.GetString(5), reader.GetInt32(6), reader.GetInt32(7), reader.GetInt32(8),
-        reader.GetString(9), reader.GetString(10), reader.GetInt32(11), reader.GetString(12), DateTimeOffset.Parse(reader.GetString(13), System.Globalization.CultureInfo.InvariantCulture));
+        reader.IsDBNull(5) ? null : reader.GetString(5), reader.GetInt32(12), reader.GetInt32(13), reader.GetInt32(14),
+        reader.GetString(15), reader.GetString(16), reader.GetInt32(17), reader.GetString(18), DateTimeOffset.Parse(reader.GetString(19), System.Globalization.CultureInfo.InvariantCulture),
+        reader.GetString(6), reader.IsDBNull(7) ? null : reader.GetString(7), reader.GetString(8), reader.GetString(9), reader.GetString(10), reader.GetString(11));
+
+    private static async Task MigrateChunkProvenanceAsync(
+        SqliteConnection connection,
+        SqliteTransaction transaction,
+        CancellationToken cancellationToken)
+    {
+        var columns = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        await using (var tableInfo = connection.CreateCommand())
+        {
+            tableInfo.Transaction = transaction;
+            tableInfo.CommandText = "PRAGMA table_info(Chunks);";
+            await using var reader = await tableInfo.ExecuteReaderAsync(cancellationToken);
+            while (await reader.ReadAsync(cancellationToken))
+            {
+                columns.Add(reader.GetString(1));
+            }
+        }
+
+        var migrations = new (string Name, string Definition)[]
+        {
+            ("ChunkKind", "TEXT NOT NULL DEFAULT 'text'"),
+            ("QualifiedSymbolName", "TEXT NULL"),
+            ("StructuralLocator", "TEXT NOT NULL DEFAULT ''"),
+            ("ChunkerId", "TEXT NOT NULL DEFAULT 'generic'"),
+            ("ChunkerVersion", "TEXT NOT NULL DEFAULT '1'"),
+            ("ChunkProfileFingerprint", "TEXT NOT NULL DEFAULT 'legacy-generic-1'")
+        };
+
+        foreach (var (name, definition) in migrations)
+        {
+            if (columns.Contains(name)) continue;
+            await using var alter = connection.CreateCommand();
+            alter.Transaction = transaction;
+            alter.CommandText = $"ALTER TABLE Chunks ADD COLUMN {name} {definition};";
+            await alter.ExecuteNonQueryAsync(cancellationToken);
+        }
+
+        await using var backfill = connection.CreateCommand();
+        backfill.Transaction = transaction;
+        backfill.CommandText = "UPDATE Chunks SET StructuralLocator = 'lines:' || StartLine || '-' || EndLine WHERE StructuralLocator = '';";
+        await backfill.ExecuteNonQueryAsync(cancellationToken);
+    }
 }

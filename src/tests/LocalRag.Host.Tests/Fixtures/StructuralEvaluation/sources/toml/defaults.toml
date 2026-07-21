@@ -1,0 +1,16 @@
+[TelemetryDisplay]
+purpose = "display telemetry traces and telemetry trace details"
+[SamplingPreview]
+purpose = "preview sampling configuration and configured sampling values"
+[BackupSchedule]
+purpose = "schedule database backups"
+[CompressionPreview]
+purpose = "preview compression settings"
+[ProxyInventory]
+purpose = "list outbound proxy hosts"
+[CircuitBreakerPreview]
+purpose = "preview circuit breaker configuration"
+[TraceSearch]
+purpose = "search distributed traces"
+[SevenDayRetentionPreview]
+purpose = "preview seven day retention settings"

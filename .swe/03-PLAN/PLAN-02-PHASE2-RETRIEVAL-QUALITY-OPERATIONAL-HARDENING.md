@@ -10,7 +10,7 @@
 Related documents:
 
 - Design: [.swe/01-DESIGN/DESIGN.md](../01-DESIGN/DESIGN.md)
-- ADRs: `.swe/02-ADR/` contains no standalone ADRs as of 2026-07-21; the design's Section 19 decision summaries are the current source.
+- ADRs: [ADR-001: Language-Aware Structural Chunking](../02-ADR/ADR-001-language-aware-structural-chunking.md) is Accepted; remaining Phase 2 ADRs are created and reviewed at the start of their owning feature cycles.
 - Features: [.swe/04-FEATURE/](../04-FEATURE/)
 - Architecture: [DESIGN.md Sections 4–16](../01-DESIGN/DESIGN.md)
 
@@ -138,16 +138,16 @@ Phase 2 turns the working local Windows MVP into a higher-quality, recoverable r
 
 ### Feature registry
 
-| Feature ID | Feature name                        | Priority         | Detailed plan                                                                | Requirements | Verification          | Status      |
-| ---------- | ----------------------------------- | ---------------- | ---------------------------------------------------------------------------- | ------------ | --------------------- | ----------- |
-| FEATURE-01 | Language-aware structural chunking  | Must             | [FEATURE-01](../04-FEATURE/FEATURE-01-LANGUAGE-AWARE-STRUCTURAL-CHUNKING.md)  | R2.1-*       | POS-01/NEG-01/EDGE-01 | Not started |
-| FEATURE-02 | Reconciliation and watcher recovery | Must             | [FEATURE-02](../04-FEATURE/FEATURE-02-RECONCILIATION-AND-WATCHER-RECOVERY.md) | R2.2-*       | POS-02/NEG-02/EDGE-02 | Not started |
-| FEATURE-03 | Contextual retrieval pipeline       | Must             | [FEATURE-03](../04-FEATURE/FEATURE-03-CONTEXTUAL-RETRIEVAL-PIPELINE.md)       | R2.3-*       | POS-03/NEG-03/EDGE-03 | Not started |
-| FEATURE-04 | Client-to-source authorization      | Pending Approval | [FEATURE-04](../04-FEATURE/FEATURE-04-CLIENT-TO-SOURCE-AUTHORIZATION.md)      | R2.4-*       | POS-04/NEG-04/EDGE-04 | Not started |
-| FEATURE-05 | Expanded read-only MCP capabilities | Should           | [FEATURE-05](../04-FEATURE/FEATURE-05-EXPANDED-READ-ONLY-MCP-CAPABILITIES.md) | R2.5-*       | POS-05/NEG-05/EDGE-05 | Not started |
-| FEATURE-06 | VS Code search experience           | Must             | [FEATURE-06](../04-FEATURE/FEATURE-06-VSCODE-SEARCH-EXPERIENCE.md)            | R2.6-*       | POS-06/NEG-06/EDGE-06 | Not started |
-| FEATURE-07 | Metrics and diagnostics dashboard   | Must             | [FEATURE-07](../04-FEATURE/FEATURE-07-METRICS-AND-DIAGNOSTICS-DASHBOARD.md)   | R2.7-*       | POS-07/NEG-07/EDGE-07 | Not started |
-| FEATURE-08 | Cross-platform host packaging       | Pending Approval | [FEATURE-08](../04-FEATURE/FEATURE-08-CROSS-PLATFORM-HOST-PACKAGING.md)       | R2.8-*       | POS-08/NEG-08/EDGE-08 | Not started |
+| Feature ID | Feature name                        | Priority | Detailed plan                                                                | Requirements | Verification          | Status      |
+| ---------- | ----------------------------------- | -------- | ---------------------------------------------------------------------------- | ------------ | --------------------- | ----------- |
+| FEATURE-01 | Language-aware structural chunking  | Must     | [FEATURE-01](../04-FEATURE/FEATURE-01-LANGUAGE-AWARE-STRUCTURAL-CHUNKING.md)  | R2.1-*       | POS-01/NEG-01/EDGE-01 | Completed   |
+| FEATURE-02 | Reconciliation and watcher recovery | Must     | [FEATURE-02](../04-FEATURE/FEATURE-02-RECONCILIATION-AND-WATCHER-RECOVERY.md) | R2.2-*       | POS-02/NEG-02/EDGE-02 | Not started |
+| FEATURE-03 | Contextual retrieval pipeline       | Must     | [FEATURE-03](../04-FEATURE/FEATURE-03-CONTEXTUAL-RETRIEVAL-PIPELINE.md)       | R2.3-*       | POS-03/NEG-03/EDGE-03 | Not started |
+| FEATURE-04 | Client-to-source authorization      | Rejected | [FEATURE-04](../04-FEATURE/FEATURE-04-CLIENT-TO-SOURCE-AUTHORIZATION.md)      | R2.4-*       | POS-04/NEG-04/EDGE-04 | Not started |
+| FEATURE-05 | Expanded read-only MCP capabilities | Should   | [FEATURE-05](../04-FEATURE/FEATURE-05-EXPANDED-READ-ONLY-MCP-CAPABILITIES.md) | R2.5-*       | POS-05/NEG-05/EDGE-05 | Not started |
+| FEATURE-06 | VS Code search experience           | Must     | [FEATURE-06](../04-FEATURE/FEATURE-06-VSCODE-SEARCH-EXPERIENCE.md)            | R2.6-*       | POS-06/NEG-06/EDGE-06 | Not started |
+| FEATURE-07 | Metrics and diagnostics dashboard   | Must     | [FEATURE-07](../04-FEATURE/FEATURE-07-METRICS-AND-DIAGNOSTICS-DASHBOARD.md)   | R2.7-*       | POS-07/NEG-07/EDGE-07 | Not started |
+| FEATURE-08 | Cross-platform host packaging       | Rejected | [FEATURE-08](../04-FEATURE/FEATURE-08-CROSS-PLATFORM-HOST-PACKAGING.md)       | R2.8-*       | POS-08/NEG-08/EDGE-08 | Not started |
 
 ### Feature blocks
 
@@ -693,16 +693,16 @@ The phase is complete only when:
 
 ### Open decisions
 
-| Decision                                                              | Options                                                                        | Decision owner               | Due date                         | Result / linked ADR                |
-| --------------------------------------------------------------------- | ------------------------------------------------------------------------------ | ---------------------------- | -------------------------------- | ---------------------------------- |
-| Approve design and extract Section 19 summaries into standalone ADRs. | Accept as written / revise before extraction.                                  | Architecture owner           | Before PLAN-02 Ready             | Pending;`.swe/02-ADR/` is empty. |
-| Select the Phase 2 language corpus and parser strategy.               | In-house lightweight parsers / approved parser libraries / staged mix.         | Retrieval owner              | Before FEATURE-01 Ready          | Pending ADR/decision.              |
-| Set relevance evaluation corpus and success thresholds.               | Recall/nDCG/MRR and latency targets by language/use case.                      | Product and retrieval owners | Before FEATURE-01 implementation | Pending acceptance record.         |
-| Approve client/grant schema and credential protection/bootstrap.      | Verifier records / OS credential references / other reviewed local mechanism.  | Security owner               | Before FEATURE-04 Ready          | Pending security ADR.              |
-| Approve diversification and reranker policy.                          | Deterministic diversification only / optional approved local reranker.         | Retrieval owner              | Before FEATURE-03 Ready          | Pending ranking ADR.               |
-| Select diagnostics format and retention.                              | In-memory snapshot / bounded SQLite events / standards-based metrics endpoint. | Operations owner             | Before FEATURE-07 Ready          | Pending observability decision.    |
-| Select supported RIDs and package formats.                            | Finite Windows/macOS/Linux matrix and portable/service/native formats.         | Release owner                | Before FEATURE-08 Ready          | Pending packaging ADR.             |
-| Commit Phase 2 version and target date.                               | Semantic-version increment and release date after sizing.                      | Product owner                | Before plan acceptance           | Pending.                           |
+| Decision                                                              | Options                                                                        | Decision owner               | Due date                         | Result / linked ADR                                                           |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------ | ---------------------------- | -------------------------------- | ----------------------------------------------------------------------------- |
+| Approve design and extract Section 19 summaries into standalone ADRs. | Accept as written / revise before extraction.                                  | Architecture owner           | Before PLAN-02 Ready             | Pending;`.swe/02-ADR/` is empty.                                            |
+| Select the Phase 2 language corpus and parser strategy.               | In-house lightweight parsers / approved parser libraries / staged mix.         | Retrieval owner              | Before FEATURE-01 Ready          | Accepted in[ADR-001](../02-ADR/ADR-001-language-aware-structural-chunking.md). |
+| Set relevance evaluation corpus and success thresholds.               | Recall/nDCG/MRR and latency targets by language/use case.                      | Product and retrieval owners | Before FEATURE-01 implementation | Accepted in[ADR-001](../02-ADR/ADR-001-language-aware-structural-chunking.md). |
+| Approve client/grant schema and credential protection/bootstrap.      | Verifier records / OS credential references / other reviewed local mechanism.  | Security owner               | Before FEATURE-04 Ready          | Pending security ADR.                                                         |
+| Approve diversification and reranker policy.                          | Deterministic diversification only / optional approved local reranker.         | Retrieval owner              | Before FEATURE-03 Ready          | Pending ranking ADR.                                                          |
+| Select diagnostics format and retention.                              | In-memory snapshot / bounded SQLite events / standards-based metrics endpoint. | Operations owner             | Before FEATURE-07 Ready          | Pending observability decision.                                               |
+| Select supported RIDs and package formats.                            | Finite Windows/macOS/Linux matrix and portable/service/native formats.         | Release owner                | Before FEATURE-08 Ready          | Pending packaging ADR.                                                        |
+| Commit Phase 2 version and target date.                               | Semantic-version increment and release date after sizing.                      | Product owner                | Before plan acceptance           | Pending.                                                                      |
 
 ---
 

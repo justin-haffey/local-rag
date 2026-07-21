@@ -19,10 +19,16 @@ public sealed class FileIndexingService(
     IOptions<LocalRagOptions> options,
     OperationalMetrics metrics)
 {
-    public async Task IndexAsync(SourceRecord source, string path, string relativePath, FileInfo info, CancellationToken cancellationToken)
+    public async Task IndexAsync(
+        SourceRecord source,
+        string path,
+        string relativePath,
+        FileInfo info,
+        CancellationToken cancellationToken,
+        bool forceContentProcessing = false)
     {
         var existingFile = await indexState.GetFileAsync(source.SourceId, relativePath, cancellationToken);
-        if (existingFile is not null && existingFile.SizeBytes == info.Length && existingFile.LastModifiedUtc.UtcDateTime == info.LastWriteTimeUtc)
+        if (!forceContentProcessing && existingFile is not null && existingFile.SizeBytes == info.Length && existingFile.LastModifiedUtc.UtcDateTime == info.LastWriteTimeUtc)
         {
             return;
         }
@@ -41,12 +47,16 @@ public sealed class FileIndexingService(
 
         var content = await contentExtraction.ExtractAsync(path, cancellationToken);
         var hash = Hash(content);
-        if (existingFile?.ContentHash == hash) return;
+        if (!forceContentProcessing && existingFile?.ContentHash == hash) return;
 
         var file = new IndexedFile(
             existingFile?.FileId ?? Hash($"{source.SourceId}\n{relativePath}"), source.SourceId, relativePath, hash, info.Length, new DateTimeOffset(info.LastWriteTimeUtc));
         var previous = existingFile is null ? Array.Empty<ChunkRecord>() : await indexState.GetChunksForFileAsync(existingFile.FileId, cancellationToken);
         var chunks = chunker.Chunk(source, file, content);
+        ChunkRecordValidation.Validate(
+            file,
+            chunks,
+            Math.Min(options.Value.Chunking.MaximumTokens, options.Value.Embedding.MaximumTokens));
         var previousIds = previous.Select(chunk => chunk.ChunkId).ToHashSet(StringComparer.Ordinal);
         var toEmbed = chunks.Where(chunk => !previousIds.Contains(chunk.ChunkId)).ToArray();
         var documents = new List<VectorDocument>(toEmbed.Length);

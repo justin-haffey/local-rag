@@ -23,8 +23,8 @@ public sealed partial class IndexWorker(IndexWorkChannel queue, IServiceProvider
                 var job = await jobs.LeaseAsync(sourceId, stoppingToken);
                 if (job is null) continue;
                 using var scope = services.CreateScope();
-                var succeeded = await scope.ServiceProvider.GetRequiredService<IndexCoordinator>().ProcessAsync(sourceId, stoppingToken);
-                if (succeeded) { await jobs.CompleteAsync(job, stoppingToken); metrics.JobCompleted(); }
+                var succeeded = await scope.ServiceProvider.GetRequiredService<IndexCoordinator>().ProcessAsync(job, stoppingToken);
+                if (succeeded) await CompleteAndWakeSuccessorAsync(job, stoppingToken);
                 else await ScheduleRetryAsync(job, new InvalidOperationException("Indexing failed; see source status for details."), stoppingToken);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
@@ -37,11 +37,19 @@ public sealed partial class IndexWorker(IndexWorkChannel queue, IServiceProvider
         }
     }
 
-    private async Task ScheduleRetryAsync(IndexJob job, Exception exception, CancellationToken cancellationToken)
+    internal async Task CompleteAndWakeSuccessorAsync(IndexJob job, CancellationToken cancellationToken)
+    {
+        var hasPendingSuccessor = await jobs.CompleteAsync(job, cancellationToken);
+        metrics.JobCompleted();
+        if (hasPendingSuccessor) await queue.EnqueueAsync(job.SourceId, cancellationToken);
+    }
+
+    internal async Task ScheduleRetryAsync(IndexJob job, Exception exception, CancellationToken cancellationToken)
     {
         var indexing = options.Value.Indexing;
         var delay = TimeSpan.FromSeconds(indexing.RetryBaseDelaySeconds * Math.Pow(2, job.Attempt));
-        await jobs.RetryOrFailAsync(job, exception, indexing.MaxRetryAttempts, delay, cancellationToken);
+        var hasPendingSuccessor = await jobs.RetryOrFailAsync(
+            job, exception, indexing.MaxRetryAttempts, delay, cancellationToken);
         if (job.Attempt + 1 < indexing.MaxRetryAttempts)
         {
             metrics.JobRetried();
@@ -51,7 +59,11 @@ public sealed partial class IndexWorker(IndexWorkChannel queue, IServiceProvider
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { }
             }, CancellationToken.None);
         }
-        else metrics.JobFailed();
+        else
+        {
+            metrics.JobFailed();
+            if (hasPendingSuccessor) await queue.EnqueueAsync(job.SourceId, cancellationToken);
+        }
     }
 
     [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Index worker failed for source {SourceId}")]

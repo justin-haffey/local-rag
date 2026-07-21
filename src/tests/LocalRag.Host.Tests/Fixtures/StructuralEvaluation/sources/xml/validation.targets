@@ -1,0 +1,14 @@
+<Project>
+  <ValidateResources>
+    <Purpose>validate localized resource bundle names</Purpose>
+  </ValidateResources>
+  <ValidateSymbols>
+    <Purpose>validate portable debugging symbol paths</Purpose>
+  </ValidateSymbols>
+  <ValidateMigrationNames>
+    <Purpose>validate database migration names</Purpose>
+  </ValidateMigrationNames>
+  <ValidateLicenseMetadata>
+    <Purpose>validate third-party license metadata</Purpose>
+  </ValidateLicenseMetadata>
+</Project>

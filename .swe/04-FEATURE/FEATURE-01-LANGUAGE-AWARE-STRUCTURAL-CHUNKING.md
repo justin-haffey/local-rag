@@ -1,22 +1,22 @@
 # Feature: Language-Aware Structural Chunking
 
-Links:  
-Plan: [.swe/03-PLAN/PLAN-02-PHASE2-RETRIEVAL-QUALITY-OPERATIONAL-HARDENING.md](../03-PLAN/PLAN-02-PHASE2-RETRIEVAL-QUALITY-OPERATIONAL-HARDENING.md)  
-Modules: `src/LocalRag.Host/Application`, `src/LocalRag.Host/Domain`, `src/LocalRag.Host/Infrastructure/Processing`, SQLite state, Weaviate schema  
-ADRs: No standalone ADR exists; DESIGN.md Sections 5.7, 5.9, 17, and 19 are the current source, and PLAN-02 blocks Ready status on an accepted chunking/versioning decision.
+Links:
+Plan: [.swe/03-PLAN/PLAN-02-PHASE2-RETRIEVAL-QUALITY-OPERATIONAL-HARDENING.md](../03-PLAN/PLAN-02-PHASE2-RETRIEVAL-QUALITY-OPERATIONAL-HARDENING.md)
+Modules: `src/LocalRag.Host/Application`, `src/LocalRag.Host/Domain`, `src/LocalRag.Host/Infrastructure/Processing`, SQLite state, Weaviate schema
+ADRs: [ADR-001: Language-Aware Structural Chunking](../02-ADR/ADR-001-language-aware-structural-chunking.md) is Accepted and is the governing chunking/versioning/evaluation decision.
 
 ---
 
 ## Implementation plan (step-by-step)
 
-- [ ] Approve the Phase 2 language corpus, parser strategy, chunk metadata, versioning, and evaluation threshold.
-- [ ] Extend chunk contracts and persistence with chunk kind, qualified symbol, structural locator, and chunker identity/version.
-- [ ] Add a chunker selector/composite and retain `GenericChunker` as the mandatory fallback.
-- [ ] Implement the approved structural chunkers in smallest-language increments with golden fixtures.
-- [ ] Add deterministic oversized-symbol splitting and token-window enforcement.
-- [ ] Add/update automated tests for every positive, negative, and edge scenario below.
-- [ ] Run build, test, format, live-inference, live-Weaviate, and retrieval-evaluation commands; record results.
-- [ ] Update schema/migration, configuration, architecture, and supported-language documentation.
+- [x] Approve the Phase 2 language corpus, parser strategy, chunk metadata, versioning, and evaluation threshold through ADR-001.
+- [x] Extend chunk contracts and persistence with chunk kind, qualified symbol, structural locator, and chunker identity/version.
+- [x] Add a chunker selector/composite and retain `GenericChunker` as the mandatory fallback.
+- [x] Implement the approved structural chunkers in smallest-language increments with golden fixtures.
+- [x] Add deterministic oversized-symbol splitting and token-window enforcement.
+- [x] Add/update automated tests for every positive, negative, and edge scenario below.
+- [x] Run build, test, format, live-inference, live-Weaviate, and retrieval-evaluation commands; record results.
+- [x] Update schema/migration, configuration, architecture, and supported-language documentation.
 
 ---
 
@@ -28,12 +28,12 @@ Produce higher-quality searchable chunks that preserve meaningful code/configura
 
 ## Stakeholders (who needs this to be clear)
 
-| Role | What they need from this spec |
-| ---- | ----------------------------- |
-| Product / Owner | Approved language scope and measurable retrieval-quality threshold |
-| Engineering | Parser/selector interfaces, stable identities, migrations, and fallback rules |
-| DevOps / SRE | Reindex/version transition, resource bounds, and diagnostics |
-| QA | Golden structural fixtures, malformed inputs, token boundaries, and evaluation corpus |
+| Role            | What they need from this spec                                                         |
+| --------------- | ------------------------------------------------------------------------------------- |
+| Product / Owner | Approved language scope and measurable retrieval-quality threshold                    |
+| Engineering     | Parser/selector interfaces, stable identities, migrations, and fallback rules         |
+| DevOps / SRE    | Reindex/version transition, resource bounds, and diagnostics                          |
+| QA              | Golden structural fixtures, malformed inputs, token boundaries, and evaluation corpus |
 
 ---
 
@@ -108,7 +108,7 @@ Produce higher-quality searchable chunks that preserve meaningful code/configura
 
 ## Diagrams
 
-~~~mermaid
+```mermaid
 flowchart LR
     A[Normalized file] --> B[Chunker selector]
     B --> C[Structural adapter]
@@ -116,7 +116,7 @@ flowchart LR
     C --> E[Bounded structural chunks]
     D --> E
     E --> F[Embed and persist]
-~~~
+```
 
 ---
 
@@ -133,32 +133,32 @@ flowchart LR
 - build: `dotnet build .\LocalRag.sln -c Release`
 - test: `dotnet test .\LocalRag.sln -c Release`
 - format: `dotnet format .\LocalRag.sln --verify-no-changes`
-- coverage: no coverage command is currently defined; add and record one before this feature is marked complete, or record reviewer-approved omission.
+- coverage: `dotnet test .\LocalRag.sln -c Release --no-build --no-restore --collect:"Code Coverage;Format=Cobertura" --results-directory artifacts/coverage-cobertura`
 
 ### Test flows
 
 **Positive scenarios**
 
-| ID | Description | Level (Unit / Int / API / UI) | Expected result | Data / Notes |
-| -- | ----------- | ----------------------------- | --------------- | ------------ |
-| POS-01-001 | Supported nested structural units | Unit | Stable chunks preserve units, symbols, and exact lines | One fixture per approved language |
-| POS-01-002 | Structural metadata persists and searches | Integration | SQLite/Weaviate/result contracts retain approved provenance | Real Weaviate |
-| POS-01-003 | Reindex identical file/version | Integration | Same identities; no unchanged re-embedding | Recording/real embedding counts |
+| ID         | Description                               | Level (Unit / Int / API / UI) | Expected result                                             | Data / Notes                      |
+| ---------- | ----------------------------------------- | ----------------------------- | ----------------------------------------------------------- | --------------------------------- |
+| POS-01-001 | Supported nested structural units         | Unit                          | Stable chunks preserve units, symbols, and exact lines      | One fixture per approved language |
+| POS-01-002 | Structural metadata persists and searches | Integration                   | SQLite/Weaviate/result contracts retain approved provenance | Real Weaviate                     |
+| POS-01-003 | Reindex identical file/version            | Integration                   | Same identities; no unchanged re-embedding                  | Recording/real embedding counts   |
 
 **Negative scenarios**
 
-| ID | Description | Level (Unit / Int / API / UI) | Expected result | Data / Notes |
-| -- | ----------- | ----------------------------- | --------------- | ------------ |
-| NEG-01-001 | Parser emits invalid bounds or over-limit chunk | Unit | Output rejected/bounded; no corrupt persistence | Faulting adapter |
-| NEG-01-002 | Unsupported or malformed input | Integration | Generic searchable fallback with safe diagnostic | Invalid syntax/binary-like text |
+| ID         | Description                                     | Level (Unit / Int / API / UI) | Expected result                                  | Data / Notes                    |
+| ---------- | ----------------------------------------------- | ----------------------------- | ------------------------------------------------ | ------------------------------- |
+| NEG-01-001 | Parser emits invalid bounds or over-limit chunk | Unit                          | Output rejected/bounded; no corrupt persistence  | Faulting adapter                |
+| NEG-01-002 | Unsupported or malformed input                  | Integration                   | Generic searchable fallback with safe diagnostic | Invalid syntax/binary-like text |
 
 **Edge cases**
 
-| ID | Description | Level (Unit / Int / API / UI) | Expected result | Data / Notes |
-| -- | ----------- | ----------------------------- | --------------- | ------------ |
-| EDGE-01-001 | Oversized structural unit | Unit | Deterministic signature/continuations within hard limit | Boundary tokenizer fixture |
-| EDGE-01-002 | Empty/comment-only/mixed-line-ending file | Unit | No blank chunks and correct line mapping | Encoding/line fixtures |
-| EDGE-01-003 | Chunker version transition | Integration | Explicit reindex; no mixed incompatible results | Old/new version seed |
+| ID          | Description                               | Level (Unit / Int / API / UI) | Expected result                                         | Data / Notes               |
+| ----------- | ----------------------------------------- | ----------------------------- | ------------------------------------------------------- | -------------------------- |
+| EDGE-01-001 | Oversized structural unit                 | Unit                          | Deterministic signature/continuations within hard limit | Boundary tokenizer fixture |
+| EDGE-01-002 | Empty/comment-only/mixed-line-ending file | Unit                          | No blank chunks and correct line mapping                | Encoding/line fixtures     |
+| EDGE-01-003 | Chunker version transition                | Integration                   | Explicit reindex; no mixed incompatible results         | Old/new version seed       |
 
 ### Test mapping
 
@@ -186,6 +186,19 @@ flowchart LR
 - Documentation is updated: feature, plan, design/ADR if decisions changed, supported languages, and configuration.
 - Feature flags/migrations are rolled out or cleaned up, and PLAN-02/FEATURE-01 review evidence is recorded.
 
+### Completion evidence (2026-07-21)
+
+- Release build: succeeded with zero warnings and zero errors.
+- Deterministic local suite: 92 passed, 3 explicitly skipped external tests, 0 failed in three consecutive full-suite runs. The machine-readable coverage summary is [feature-01-coverage.json](../../artifacts/evaluation/feature-01-coverage.json).
+- Live suite: 95 passed, 0 skipped, and 0 failed with the real BGE ONNX model and external Weaviate at `127.0.0.1:8080`.
+- Paired retrieval evaluation: 24 checked-in files, 32 natural queries, eight reported families, clean isolated collections, fixed path/span qrels, and deterministic top-10 ranking. Candidate Recall@10 was 1.0000, MRR@10 was 0.9193, and nDCG@10 was 0.9394 versus the generic baseline's 0.8382, a 12.08% improvement with no family regression beyond 0.02. The auditable report is [feature-01-retrieval.json](../../artifacts/evaluation/feature-01-retrieval.json).
+- Performance evidence: repeated 24-file sequential ONNX/Weaviate runs measured about 3.3 files/second, below the 10 files/second design target, while sustaining roughly 17 chunks/second with candidate per-file p95 below 0.55 seconds, search p95 below 14 ms, and peak working set below 607 MB. The solution architect approved a bounded Feature 01 performance exception on 2026-07-21. The report times normalized-content chunking, embedding, and vector upsert together, binds the current worktree/evaluator hashes, and enforces latency plus a 1 GiB peak-working-set ceiling. This exception applies only to Feature 01 evaluation and does not waive the PLAN-02 release performance gate; batching and full detection/extraction-to-index throughput remain follow-up performance work.
+- Static analysis and clients: `dotnet format --verify-no-changes`, VS Code TypeScript lint, and all seven extension tests passed.
+- Security/observability: REST/MCP serialization asserts relative paths plus all additive provenance without absolute roots; chunking metrics assert bounded `chunker.id`, `chunker.version`, and `chunking.outcome` tags without content or path values.
+- Regression fixtures: DOCX and PDF indexing remain covered; the exact synthetic image-only OCR PDF is visually verified and its extracted sentinel is asserted.
+- Residual limitation: the approved adapters are conservative bounded lexical parsers rather than compiler-grade parsers; malformed or ambiguous input intentionally uses versioned generic fallback.
+- Review disposition: independent solution-architecture, implementation/code, and test/evidence reviews all returned `APPROVED`; the solution architect also approved the ADR implementation amendment and the bounded Feature 01 performance exception.
+
 ---
 
 ## References
@@ -193,4 +206,3 @@ flowchart LR
 - Plan: [.swe/03-PLAN/PLAN-02](../03-PLAN/PLAN-02-PHASE2-RETRIEVAL-QUALITY-OPERATIONAL-HARDENING.md)
 - Architecture: [.swe/01-DESIGN/DESIGN.md](../01-DESIGN/DESIGN.md)
 - Code: `src/LocalRag.Host/Infrastructure/Processing/GenericChunker.cs`, `Application/Contracts.cs`, `Domain/Models.cs`
-

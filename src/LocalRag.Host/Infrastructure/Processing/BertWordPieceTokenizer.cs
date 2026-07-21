@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace LocalRag.Infrastructure.Processing;
 
-internal sealed partial class BertWordPieceTokenizer
+internal sealed partial class BertWordPieceTokenizer : IChunkTokenCounter
 {
     private readonly FrozenDictionary<string, int> _vocabulary;
     private readonly int _unknownId;
@@ -25,6 +25,12 @@ internal sealed partial class BertWordPieceTokenizer
 
     public long[] Encode(string content, int maximumTokens)
     {
+        var tokenCount = CountTokens(content);
+        if (maximumTokens < 3 || tokenCount > maximumTokens)
+        {
+            throw new InvalidOperationException(
+                $"WordPiece input requires {tokenCount} tokens but the configured hard limit is {maximumTokens}.");
+        }
         var ids = new List<int> { _clsId };
         foreach (var word in WordRegex().Matches(content.ToLowerInvariant()).Select(match => match.Value))
         {
@@ -38,6 +44,16 @@ internal sealed partial class BertWordPieceTokenizer
         ids.Add(_sepId);
         while (ids.Count < maximumTokens) ids.Add(_padId);
         return ids.Select(id => (long)id).ToArray();
+    }
+
+    public int CountTokens(string content)
+    {
+        var count = 2;
+        foreach (var word in WordRegex().Matches(content.ToLowerInvariant()).Select(match => match.Value))
+        {
+            count += EncodeWord(word).Count;
+        }
+        return count;
     }
 
     private List<int> EncodeWord(string word)

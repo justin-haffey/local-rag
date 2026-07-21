@@ -1,0 +1,10 @@
+{
+  "TransactionalEmailPreview": "render transactional email previews",
+  "BatchDisplayOrder": "display batch ordering",
+  "ThumbnailDisplaySize": "display thumbnail images from the thumbnail image cache",
+  "ExpirationBanner": "show cache expiration policy warnings and expiration values",
+  "SessionBanner": "show an idle user session warning",
+  "TimeoutDisplay": "display policy timeout values",
+  "ConsentDisplayOrder": "order consent records",
+  "HistoryArchiveNavigation": "show history archive navigation"
+}

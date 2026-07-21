@@ -1,6 +1,7 @@
 using LocalRag.Application;
 using LocalRag.Domain;
 using LocalRag.Infrastructure.Diagnostics;
+using LocalRag.Infrastructure.Indexing;
 using Xunit;
 
 namespace LocalRag.Host.Tests;
@@ -11,11 +12,69 @@ public sealed class RagSearchServiceTests
     public async Task SearchRejectsUnknownSourceIdBeforeQueryingStore()
     {
         var vectors = new FakeVectorStore();
-        var service = new RagSearchService(new FakeEmbeddings(), vectors, new FakeIndexState(), new FakeSources(), new OperationalMetrics());
+        var service = new RagSearchService(
+            new FakeEmbeddings(),
+            vectors,
+            new FakeIndexState(),
+            new FakeSources(),
+            new VisibleChunkProfiles(),
+            new ChunkProfileOperationGate(),
+            new OperationalMetrics());
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() => service.SearchAsync(new SearchRequest("retry", ["unknown"]), CancellationToken.None));
         Assert.False(vectors.WasSearched);
     }
+
+    [Fact]
+    public async Task SearchRejectsSourceWhileChunkProfileIsNotQueryVisible()
+    {
+        var vectors = new FakeVectorStore();
+        var service = new RagSearchService(
+            new FakeEmbeddings(),
+            vectors,
+            new FakeIndexState(),
+            new FakeSources(),
+            new VisibleChunkProfiles(isVisible: false),
+            new ChunkProfileOperationGate(),
+            new OperationalMetrics());
+
+        await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
+            service.SearchAsync(new SearchRequest("retry", ["source"]), CancellationToken.None));
+        Assert.False(vectors.WasSearched);
+    }
+
+    [Fact]
+    public async Task DefaultSearchReturnsNoResultsWhenEverySourceIsTransitioning()
+    {
+        var vectors = new FakeVectorStore();
+        var service = CreateService(vectors, isVisible: false);
+
+        var response = await service.SearchAsync(new SearchRequest("retry"), CancellationToken.None);
+
+        Assert.Empty(response.Results);
+        Assert.False(vectors.WasSearched);
+    }
+
+    [Fact]
+    public async Task ExplicitEmptySourceScopeNeverBecomesAnUnfilteredSearch()
+    {
+        var vectors = new FakeVectorStore();
+        var service = CreateService(vectors, isVisible: true);
+
+        var response = await service.SearchAsync(new SearchRequest("retry", []), CancellationToken.None);
+
+        Assert.Empty(response.Results);
+        Assert.False(vectors.WasSearched);
+    }
+
+    private static RagSearchService CreateService(FakeVectorStore vectors, bool isVisible) => new(
+        new FakeEmbeddings(),
+        vectors,
+        new FakeIndexState(),
+        new FakeSources(),
+        new VisibleChunkProfiles(isVisible),
+        new ChunkProfileOperationGate(),
+        new OperationalMetrics());
 
     private sealed class FakeEmbeddings : IEmbeddingService
     {
@@ -48,6 +107,18 @@ public sealed class RagSearchServiceTests
         public Task<SourceRecord?> GetAsync(string sourceId, CancellationToken cancellationToken) => Task.FromResult<SourceRecord?>(sourceId == Source.SourceId ? Source : null);
         public Task RemoveAsync(string sourceId, CancellationToken cancellationToken) => Task.CompletedTask;
         public Task SetStatusAsync(string sourceId, SourceStatus status, string? failureMessage, CancellationToken cancellationToken) => Task.CompletedTask;
+    }
+
+    private sealed class VisibleChunkProfiles(bool isVisible = true) : IChunkProfileStateStore
+    {
+        public Task InitializeAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+        public Task<ChunkProfileState> GetOrCreateAsync(string sourceId, string configuredFingerprint, bool hasIndexedChunks, CancellationToken cancellationToken) =>
+            Task.FromResult(new ChunkProfileState(sourceId, configuredFingerprint, null, ChunkProfileStatus.Ready, DateTimeOffset.UnixEpoch, DateTimeOffset.UnixEpoch, null));
+        public Task<ChunkProfileState?> GetAsync(string sourceId, CancellationToken cancellationToken) => Task.FromResult<ChunkProfileState?>(null);
+        public Task BeginTransitionAsync(string sourceId, string targetFingerprint, CancellationToken cancellationToken) => Task.CompletedTask;
+        public Task CompleteTransitionAsync(string sourceId, string targetFingerprint, CancellationToken cancellationToken) => Task.CompletedTask;
+        public Task FailTransitionAsync(string sourceId, string targetFingerprint, string failureMessage, CancellationToken cancellationToken) => Task.CompletedTask;
+        public Task<bool> IsQueryVisibleAsync(string sourceId, CancellationToken cancellationToken) => Task.FromResult(isVisible);
     }
 
     private sealed class FakeIndexState : IIndexStateStore
