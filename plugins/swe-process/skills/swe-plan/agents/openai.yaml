@@ -1,0 +1,10 @@
+interface:
+  display_name: "SWE Phase Plan"
+  short_description: "Plan a phase and its features"
+  default_prompt: "Use $swe-plan to create a phase plan and all associated feature plans from the SWE design."
+
+policy:
+  allow_implicit_invocation: true
+
+dependencies:
+  tools: []

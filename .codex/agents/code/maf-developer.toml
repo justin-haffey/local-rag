@@ -1,6 +1,6 @@
 name = "maf-developer"
 description = "Use this agent for complex Microsoft Agent Framework development, including agent composition, orchestration, tool integration, memory, copilot integration, and voice-agent implementation."
-model = "gpt-5.6"
+model = "gpt-5.6-sol"
 model_reasoning_effort = "xhigh"
 sandbox_mode = "workspace-write"
 developer_instructions = """

@@ -22,7 +22,6 @@ release/
 node_modules/
 
 # Local Dev
-.swe/
 *.log
 
 # Test results and coverage

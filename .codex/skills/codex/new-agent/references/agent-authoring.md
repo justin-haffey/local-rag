@@ -11,8 +11,8 @@ This repository uses the current Codex custom-agent schema from the official Cod
 
 ## Repository Pattern
 
-- `.codex/agents/core/` is for core project agents.
-- `.codex/agents/copilot/` is for the Copilot meta-agent collection.
+- `.codex/agents/code/` is for coding agents.
+- `.codex/agents/` is for application domain agents.
 - `.codex/config.toml` is the root registry for agent entries and shared MCP inventory.
 - `.codex/agents/copilot/AGENTS.override.md` routes the Copilot collection.
 
@@ -95,7 +95,7 @@ Add a matching root registry entry for the new agent:
 ```toml
 [agents.my_agent]
 description = "Use this agent for ..."
-config_file = "agents/core/my-agent.toml"
+config_file = "agents/code/my-agent.toml"
 ```
 
 Use `agents/copilot/...` in `config_file` for agents that live in the Copilot collection. If the agent is in `.codex/agents/copilot/`, also update `.codex/agents/copilot/AGENTS.override.md`.

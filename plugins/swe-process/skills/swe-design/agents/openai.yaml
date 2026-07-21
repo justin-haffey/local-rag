@@ -1,0 +1,10 @@
+interface:
+  display_name: "SWE Design"
+  short_description: "Turn concepts into design and ADRs"
+  default_prompt: "Use $swe-design to create a governed design and the associated ADRs from `.swe/00-CONCEPT/`."
+
+policy:
+  allow_implicit_invocation: true
+
+dependencies:
+  tools: []

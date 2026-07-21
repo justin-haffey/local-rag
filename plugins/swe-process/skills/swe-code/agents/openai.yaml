@@ -1,0 +1,10 @@
+interface:
+  display_name: "SWE Code"
+  short_description: "Implement and verify a plan or feature"
+  default_prompt: "Use $swe-code PLAN-## or FEATURE-## to implement, verify, and synchronize its governed SWE evidence."
+
+policy:
+  allow_implicit_invocation: false
+
+dependencies:
+  tools: []

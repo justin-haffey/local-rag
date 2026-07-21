@@ -1,0 +1,24 @@
+{
+  "name": "swe-process",
+  "version": "0.1.0",
+  "description": "Governed concept-to-design, ADR, phase-plan, and feature-plan workflows for repositories using the SWE artifact layout.",
+  "author": {
+    "name": "Local RAG"
+  },
+  "keywords": ["software-engineering", "design", "adr", "planning", "governance"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "SWE Process",
+    "shortDescription": "Governed engineering artifacts",
+    "longDescription": "Creates reviewable design, architecture-decision, phase-plan, and feature-plan artifacts from the repository SWE process.",
+    "developerName": "Local RAG",
+    "category": "Productivity",
+    "capabilities": ["Read", "Write"],
+    "defaultPrompt": [
+      "Use $swe-design to turn my concepts into a governed design.",
+      "Use $swe-plan to plan this phase and its feature work.",
+      "Use $swe-feature to create an implementation-ready feature plan."
+    ],
+    "brandColor": "#0F766E"
+  }
+}

@@ -1,0 +1,10 @@
+interface:
+  display_name: "SWE Feature Plan"
+  short_description: "Create one ready feature plan"
+  default_prompt: "Use $swe-feature to create one governed, implementation-ready feature plan."
+
+policy:
+  allow_implicit_invocation: true
+
+dependencies:
+  tools: []
