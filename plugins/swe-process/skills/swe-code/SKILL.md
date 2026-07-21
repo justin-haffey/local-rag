@@ -2,7 +2,6 @@
 name: swe-code
 description: Implements and verifies one governed SWE feature or every feature in a governed SWE plan. Use when the user invokes `$swe-code PLAN-##` or `$swe-code FEATURE-##` to execute ready `.swe` artifacts through `$orchestrate`. Do not use to draft plans, bypass readiness gates, deploy, or implement an ambiguous target.
 ---
-
 # SWE Code
 
 Implement a selected ready feature, or a selected plan's complete ordered feature set, with verified evidence and synchronized SWE records.
@@ -21,7 +20,7 @@ Implement a selected ready feature, or a selected plan's complete ordered featur
 2. For a plan, enumerate `.swe/03-PLAN/PLAN-##-*.md`; for a feature, enumerate `.swe/04-FEATURE/FEATURE-##-*.md`. Confirm the identifier and repository-relative links within the selected document agree with the filename.
 3. Reject missing, duplicate, malformed, renamed, or otherwise ambiguous matches. Do not select a nearest match, create a replacement artifact, or infer an ID.
 4. For feature mode, resolve its owning phase plan and row from the feature's repository-relative plan link. Stop if either is absent or ambiguous.
-5. For plan mode, resolve every feature listed or linked in the plan's feature registry. Stop before implementation if any feature file is missing, duplicated, unlinked, or outside `.swe/04-FEATURE/`.
+5. For plan mode, resolve every feature listed (unless it is Pending Approval) or linked in the plan's feature registry. Stop before implementation if any feature file is missing, duplicated, unlinked, or outside `.swe/04-FEATURE/`.
 
 ## Execution Workflow
 

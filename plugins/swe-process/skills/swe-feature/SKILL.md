@@ -2,7 +2,6 @@
 name: swe-feature
 description: Creates one governed, implementation-ready FEATURE plan from SWE design, ADR, and phase-plan artifacts. Use when the user asks to specify one feature, acceptance criteria, flows, touchpoints, and verification. Do not use to create a phase plan, multiple feature plans, or implement code.
 ---
-
 # SWE Feature Planning
 
 Create exactly one detailed feature plan that turns approved upstream intent into bounded, verifiable implementation work.
@@ -22,7 +21,7 @@ Create exactly one detailed feature plan that turns approved upstream intent int
 
 ## Workflow
 
-1. Read `.codex/AGENTS.md`, the relevant `.swe/01-DESIGN/DESIGN.md`, linked `.swe/02-ADR/*.md`, and the applicable `.swe/03-PLAN/PLAN-##-PHASE#-short-name.md`. If the work belongs to a phase with no plan, recommend `$swe-plan` instead.
+1. Read `.codex/AGENTS.md`, the relevant `.swe/01-DESIGN/DESIGN.md`, linked `.swe/02-ADR/*.md`, and the applicable `.swe/03-PLAN/PLAN-##-SHORT-NAME.md`. If the work belongs to a phase with no plan, recommend `$swe-plan` instead.
 2. Inspect `.swe/04-FEATURE/`, allocate the next unused `FEATURE-##` ID, and select a concise kebab-case filename. If a requested feature artifact already exists, stop and ask before revising it.
 3. Copy `references/FEATURE-##-TEMPLATE.md` to `.swe/04-FEATURE/FEATURE-##-feature-name.md`. Remove template-only notes and complete every applicable section: links, purpose, stakeholder needs, scope, business rules, primary and edge flows, system behavior, diagram, verification, Definition of Done, and references.
 4. Define stable requirement IDs and make the feature independently testable. Include at least one meaningful positive, negative, and edge scenario when the feature has executable behavior; otherwise explain why a category is inapplicable.
