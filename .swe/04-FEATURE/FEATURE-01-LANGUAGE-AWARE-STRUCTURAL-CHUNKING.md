@@ -22,7 +22,7 @@ ADRs: [ADR-001: Language-Aware Structural Chunking](../02-ADR/ADR-001-language-a
 
 ## Purpose
 
-Produce higher-quality searchable chunks that preserve meaningful code/configuration boundaries and provenance, while remaining deterministic, bounded, and safe when parsing is unsupported or fails.
+Produce higher-quality searchable chunks that preserve meaningful swe/configuration boundaries and provenance, while remaining deterministic, bounded, and safe when parsing is unsupported or fails.
 
 ---
 

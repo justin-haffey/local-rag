@@ -556,7 +556,7 @@ The release is complete when:
 
 ## Filing checklist
 
-- [ ] File saved under `.swe/01-DESIGN/DESIGN.md` (not in `.code/swe/templates/`).
+- [ ] File saved under `.swe/01-DESIGN/DESIGN.md` (not in `.swe/swe/templates/`).
 - [ ] Status reflects real state (`Proposed`, `Accepted`, `Rejected`, `Superseded`).
 - [ ] Links to related features, tests, and ADRs are filled in.
 - [ ] Major Components contains at least one Mermaid diagram for each component.

@@ -1361,7 +1361,7 @@ deploy/
 - Weaviate Docker deployment.
 - Folder registration and removal.
 - Initial scan and incremental watcher.
-- Generic code/text chunker.
+- Generic swe/text chunker.
 - One local embedding profile.
 - Batch upsert and hybrid search.
 - Basic VS Code commands and status.

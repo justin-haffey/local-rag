@@ -610,7 +610,7 @@ Phase 2 turns the working local Windows MVP into a higher-quality, recoverable r
 ### Test environment
 
 - Runtime / platform: .NET SDK pinned by `global.json`; Node.js 22+; current Windows x64 baseline plus the approved Phase 2 RID runner matrix.
-- Data and reset strategy: Disposable SQLite databases, checked-in code/config fixtures, retrieval-quality corpus with judgments, temporary source roots, and isolated Weaviate test collections.
+- Data and reset strategy: Disposable SQLite databases, checked-in swe/config fixtures, retrieval-quality corpus with judgments, temporary source roots, and isolated Weaviate test collections.
 - External dependencies: Real ONNX model inference when `LOCALRAG_ONNX_TESTS=1`; real externally managed Weaviate when `WEAVIATE_TEST_ENDPOINT` is set; no mocked live-dependency release claim.
 - Required environment variables / secrets: `LOCALRAG_ONNX_TESTS`, `WEAVIATE_TEST_ENDPOINT`, `LocalRag__Authentication__Token`, and test-only client credentials generated during the test.
 
