@@ -480,6 +480,8 @@ dependency:
 
 ## 18. Delivery Phases
 
+[Ensure phase coverage of the entire DESIGN document]
+
 ### Phase 1: [Minimum Viable Outcome]
 
 - [Required capability.]
@@ -499,6 +501,8 @@ dependency:
 ---
 
 ## 19. Architecture Decisions
+
+[List initial ADR's]
 
 ### ADR-001: [Decision Title]
 

@@ -17,6 +17,8 @@ bin/
 debug/
 release/
 *.exe*
+artifacts/
+artifacts/*
 
 # Node
 node_modules/
