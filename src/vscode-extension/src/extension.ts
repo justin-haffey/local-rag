@@ -4,7 +4,7 @@ import * as path from "node:path";
 import { ChildProcess, spawn } from "node:child_process";
 import * as vscode from "vscode";
 import { resolveInstallerConfiguration } from "./installerSettings";
-import { environmentMcpToken, isMissingSource, rootPathHash, SourceState } from "./sourceState";
+import { environmentMcpToken, isMissingSource, recoveryPresentation, rootPathHash, SourceState } from "./sourceState";
 
 interface BackendDiscovery {
     endpoint: string;
@@ -13,6 +13,7 @@ interface BackendDiscovery {
 }
 
 let backend: ChildProcess | undefined;
+let sourceStatusIndicator: vscode.StatusBarItem | undefined;
 const sourceStateKey = "localRag.sourceState";
 
 class SourceDecorationProvider implements vscode.FileDecorationProvider {
@@ -47,6 +48,7 @@ export function activate(context: vscode.ExtensionContext): void {
     status.tooltip = "Local RAG backend is not connected";
     status.command = "localRag.showSourceStatus";
     status.show();
+    sourceStatusIndicator = status;
     context.subscriptions.push(status);
 
     const decorations = new SourceDecorationProvider();
@@ -109,6 +111,20 @@ export function activate(context: vscode.ExtensionContext): void {
         }
         const selected = await pickSource(client, sources);
         if (!selected) return;
+        if (selected.recovery && !isMissingSource(selected)) {
+            const presentation = recoveryPresentation(selected);
+            const message = `${selected.displayName}: ${presentation.label}${presentation.detail ? ` - ${presentation.detail}` : ""}`;
+            if (presentation.action) {
+                const action = await vscode.window.showWarningMessage(message, presentation.action);
+                if (action === "Queue recovery") {
+                    await client.post(`/api/v1/sources/${encodeURIComponent(selected.sourceId)}/reindex`, undefined);
+                    vscode.window.showInformationMessage(`Recovery queued for ${selected.displayName}.`);
+                }
+            } else {
+                vscode.window.showInformationMessage(message);
+            }
+            return;
+        }
         if (isMissingSource(selected)) {
             const action = await vscode.window.showWarningMessage(
                 `${selected.displayName}: ${selected.status} — ${selected.lastError}`,
@@ -137,7 +153,24 @@ async function refreshSourceState(
     const sources = await client.get<SourceState[]>("/api/v1/sources");
     decorations.update(sources);
     await context.globalState.update(sourceStateKey, sources);
+    updateStatusIndicator(sources);
     return sources;
+}
+
+function updateStatusIndicator(sources: readonly SourceState[]): void {
+    if (!sourceStatusIndicator) return;
+    const degraded = sources.filter(source => source.recovery?.state.toLowerCase() === "degraded").length;
+    const recovering = sources.filter(source => ["queued", "running"].includes(source.recovery?.state.toLowerCase() ?? "")).length;
+    if (degraded > 0) {
+        sourceStatusIndicator.text = `$(warning) Local RAG (${degraded})`;
+        sourceStatusIndicator.tooltip = `${degraded} source${degraded === 1 ? " needs" : "s need"} recovery attention. Select to review and retry.`;
+    } else if (recovering > 0) {
+        sourceStatusIndicator.text = `$(sync~spin) Local RAG (${recovering})`;
+        sourceStatusIndicator.tooltip = `${recovering} source${recovering === 1 ? " is" : "s are"} recovering automatically.`;
+    } else {
+        sourceStatusIndicator.text = "$(database) Local RAG";
+        sourceStatusIndicator.tooltip = `${sources.length} registered source${sources.length === 1 ? "" : "s"}; recovery state is healthy.`;
+    }
 }
 
 async function ensureBackend(context: vscode.ExtensionContext, status: vscode.StatusBarItem): Promise<LocalRagClient> {
@@ -207,7 +240,7 @@ async function resolveFolder(uri?: vscode.Uri): Promise<vscode.Uri | undefined> 
 
 async function pickSource(client: LocalRagClient, sources?: SourceState[]): Promise<SourceState | undefined> {
     const values = sources ?? await client.get<SourceState[]>("/api/v1/sources");
-    const picks = values.map(source => ({ label: source.displayName, description: source.status, source }));
+    const picks = values.map(source => ({ label: source.displayName, description: recoveryPresentation(source).label, source }));
     return (await vscode.window.showQuickPick(picks, { placeHolder: "Select a Local RAG source" }))?.source;
 }
 

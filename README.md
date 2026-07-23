@@ -1,12 +1,12 @@
 # Local RAG
 
-Supercharge your agentic coding agents!  **Local RAG** **indexes approved local folders** using a local **ONNX** **embedding model** and stores externally generated vectors in a separately deployed **Weaviate** instance.
+**Quickly RAG-ify any project folder.**  Local RAG indexes local folders using a fast local **ONNX** **embedding model** and stores externally generated vectors in a **Weaviate** instance.
 
 ## Introduction
 
-**Local-First Agentic RAG for Developers**
+Local-First Agentic RAG for Developers
 
-Built by **Justin Haffey**, this project is a local-first Retrieval-Augmented Generation platform designed for developers who want their coding assistants and autonomous agents to understand real repositories without surrendering source code to a cloud service. Developers can register folders directly from Visual Studio Code, where the system continuously discovers, parses, chunks, embeds, and indexes source files, documentation, configuration, and project metadata. The platform is built on C#/.NET, ASP.NET Core, SQLite, Weaviate, Docker, and local embedding models, giving engineers a practical foundation for semantic, lexical, and hybrid search across everything from small applications to multi-gigabyte monorepos.
+This project is a local-first Retrieval-Augmented Generation platform designed for developers who want their coding assistants and autonomous agents to understand real repositories without surrendering source code to a cloud service. Developers can register folders directly from Visual Studio Code, where the system continuously discovers, parses, chunks, embeds, and indexes source files, documentation, configuration, and project metadata. The platform is built on C#/.NET, ASP.NET Core, SQLite, Weaviate, Docker, and local embedding models, giving engineers a practical foundation for semantic, lexical, and hybrid search across everything from small applications to multi-gigabyte monorepos.
 
 The core architecture is intentionally agent-ready: a hosted C# Model Context Protocol (MCP) server exposes structured, read-only tools for source discovery, hybrid search, chunk retrieval, similarity search, context expansion, and index health. AI coding assistants and external agent hosts can retrieve precise, source-scoped context with file paths, symbols, line ranges, scores, hashes, and neighboring chunks—without receiving direct access to the file system or vector database. REST, MCP, VS Code, CLI, and automation clients all share the same application services, ensuring consistent ranking, authorization, filtering, and response contracts across every integration surface.
 
@@ -42,6 +42,29 @@ Structural chunking is enabled by default for C#, TypeScript/JavaScript, Python,
 Changing adapter enablement, token settings, embedding/tokenizer identity, or a chunker version changes the canonical chunk-profile fingerprint. The next reconciliation performs a forced full-source reindex and keeps that source out of search and chunk retrieval until all new chunks and stale-vector deletions succeed. Restart and retry resume the durable transition; failure leaves the source degraded and query-invisible. To roll back to generic chunking, set `LocalRag__Chunking__EnabledAdapters` to an empty array in local configuration, restart the host, and reindex the source. Restore the approved adapter list to roll forward again.
 
 The backend requires `LocalRag__Authentication__Token`; the extension creates and retains this in VS Code Secret Storage. Start manually only when supplying a token explicitly.
+
+### Automatic reconciliation and recovery
+
+Filesystem events are treated as hints. Each registered source also has durable, generation-based reconciliation state in SQLite, so watcher overflow, missed events, dependency failures, and host restarts can converge without discarding the existing index. Work is single-flight per source and bounded globally; a hint received during an active scan becomes at most one follow-up generation. Content already committed with the same hash is not re-embedded.
+
+The following `LocalRag:Indexing` settings are validated when the host starts:
+
+| Setting | Default | Valid range | Purpose |
+| --- | ---: | ---: | --- |
+| `ReconciliationIntervalMinutes` | 30 | 1-1440 | Periodic safety scan interval |
+| `ReconciliationLeaseDurationSeconds` | 120 | 30-3600 | Expiry window for durable in-flight work |
+| `ReconciliationLeaseRenewalSeconds` | 30 | 5-1200 and less than the lease duration | Renewal cadence for a running scan |
+| `MaxConcurrentReconciliations` | 2 | 1-32 | Maximum sources reconciled at once |
+| `ReconciliationDispatchPollSeconds` | 5 | 1-60 | Maximum idle delay before durable due work is checked |
+| `ReconciliationHistoryLimit` | 20 | 1-100 | Successful/cancelled generations retained per source after a later checkpoint |
+
+Environment-variable overrides use the normal double-underscore form, for example `LocalRag__Indexing__MaxConcurrentReconciliations=2`. Increase concurrency only when local ONNX, disk, and Weaviate capacity can sustain it. Keep the renewal interval comfortably below the lease duration; startup validation rejects unsafe combinations.
+
+Authenticated REST source responses and the `rag_list_sources` / `rag_get_source_status` MCP tools include an additive `recovery` object. `Clean` means the completed generation has caught up, `Queued` means durable work is waiting or backing off, `Running` is displayed as **Recovering** by the VS Code extension, and `Degraded` means automatic recovery needs attention. Status includes bounded causes, generation watermarks, safe failure codes/summaries, timestamps, and changed/deleted/unchanged counts. It does not expose source roots, relative paths, file content, lease identifiers, stack traces, or raw exception messages.
+
+For a degraded source, first verify that its registered folder, Weaviate endpoint, and local model assets are available. Then select the Local RAG status item in VS Code and choose **Queue recovery**, or call `POST /api/v1/sources/{sourceId}/reindex`. Do not edit the SQLite recovery tables or delete vector data manually. A restart preserves queued/running obligations and recovers expired leases; only one active host may use a given Local RAG data directory.
+
+The authenticated `/metrics` endpoint reports bounded request causes, watcher overflows, runs/outcomes/retries, recovered leases, durations, result counts, and current dirty/degraded gauges without source-, path-, content-, error-, or lease-labelled dimensions.
 
 The project-level `.codex/config.toml` registers the backend's Streamable HTTP MCP endpoint as `local_rag`. To let Codex and the extension share its bearer token without committing a secret, generate a high-entropy user environment variable once, then restart VS Code:
 
@@ -112,6 +135,7 @@ The extension manages only the packaged backend process. If Weaviate or model as
 * **PDF Indexing.** Native `.pdf` text is extracted locally in page reading order, while scanned pages use bundled English Tesseract OCR. Page, extracted-text, OCR-page, DPI, and rendered-pixel limits bound processing.
 * **Efficient Reprocessing.** Unchanged files and chunks are not re-embedded unnecessarily, reducing indexing time and compute usage.
 * **Repository Scale.** Bounded processing queues, batch operations, retry policies, and recoverable jobs support large repositories and multi-gigabyte monorepos.
+* **Language Aware Structural Chunking.** Produces higher-quality searchable chunks that preserve meaningful swe/configuration boundaries and provenance, while remaining deterministic, bounded, and safe when parsing is unsupported or fails.  Extensible, but already supports most major programming languages and common file formats.
 
 ### Models
 

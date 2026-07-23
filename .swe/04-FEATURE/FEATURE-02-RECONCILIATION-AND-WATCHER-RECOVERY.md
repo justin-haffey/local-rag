@@ -1,22 +1,25 @@
 # Feature: Reconciliation and Watcher Recovery
 
+Status: Completed
+Approval: Explicitly approved by the user on 2026-07-22 for governed implementation through `$swe-code FEATURE-02`.
+
 Links:  
 Plan: [.swe/03-PLAN/PLAN-02-PHASE2-RETRIEVAL-QUALITY-OPERATIONAL-HARDENING.md](../03-PLAN/PLAN-02-PHASE2-RETRIEVAL-QUALITY-OPERATIONAL-HARDENING.md)  
 Modules: `Infrastructure/Indexing`, SQLite job/checkpoint/source state, status APIs, diagnostics  
-ADRs: No standalone ADR exists; DESIGN.md Sections 5.5, 10, and the ADR-006 summary govern the draft. A standalone reconciliation-state decision is required before Ready.
+ADRs: [ADR-002: Durable Reconciliation State and Watcher Recovery](../02-ADR/ADR-002-durable-reconciliation-state-and-watcher-recovery.md) is Accepted and governs implementation.
 
 ---
 
 ## Implementation plan (step-by-step)
 
-- [ ] Specify dirty/recovery states, causes, generations, persistence, and status transitions.
-- [ ] Add SQLite migration/repositories for recovery state and checkpoint outcome.
-- [ ] Route watcher errors and scheduled/startup scans through one coalescing reconciliation scheduler.
-- [ ] Make reconciliation generation-aware, restart-safe, idempotent, and bounded.
-- [ ] Clear degraded/dirty state only after full successful convergence; retain recoverable work on dependency failure.
-- [ ] Add overflow, duplicate-event, save-burst, restart, locked-file, and unavailable-dependency tests.
-- [ ] Run build/test/format plus real Weaviate and real ONNX recovery scenarios; record evidence.
-- [ ] Update operations, status, configuration, and recovery documentation.
+- [x] Specify dirty/recovery states, causes, generations, persistence, and status transitions.
+- [x] Add SQLite migration/repositories for recovery state and checkpoint outcome.
+- [x] Route watcher errors and scheduled/startup scans through one coalescing reconciliation scheduler.
+- [x] Make reconciliation generation-aware, restart-safe, idempotent, and bounded.
+- [x] Clear degraded/dirty state only after full successful convergence; retain recoverable work on dependency failure.
+- [x] Add overflow, duplicate-event, save-burst, restart, locked-file, and unavailable-dependency tests.
+- [x] Run build/test/format plus real Weaviate and real ONNX recovery scenarios; record evidence.
+- [x] Update operations, status, configuration, and recovery documentation.
 
 ---
 
@@ -132,7 +135,7 @@ stateDiagram-v2
 - build: `dotnet build .\LocalRag.sln -c Release`
 - test: `dotnet test .\LocalRag.sln -c Release`
 - format: `dotnet format .\LocalRag.sln --verify-no-changes`
-- coverage: no command currently defined; add one before completion or record reviewer-approved omission.
+- coverage: `dotnet test .\LocalRag.sln -c Release --no-build --no-restore --collect:"Code Coverage;Format=Cobertura" --results-directory <artifact-directory>`
 
 ### Test flows
 
@@ -184,6 +187,17 @@ stateDiagram-v2
 - SQLite migrations, recovery/rollback behavior, metrics, configuration, and operator docs are updated.
 - FEATURE-02 and PLAN-02 evidence is recorded and explicitly reviewed.
 
+### Completion evidence (2026-07-22)
+
+- Release build: `dotnet build .\LocalRag.sln -c Release --no-restore` succeeded with zero warnings and zero errors.
+- Deterministic local suite: `dotnet test .\LocalRag.sln -c Release --no-build` passed 124 tests, skipped only four explicitly gated external/evaluation tests, and failed zero tests.
+- Live release suite: with `LOCALRAG_ONNX_TESTS=1` and `WEAVIATE_TEST_ENDPOINT=http://127.0.0.1:8080`, the real Weaviate contract, pinned real BGE ONNX profile, and combined overflow/restart create-change-delete/no-unchanged-reembedding recovery scenarios passed 3/3 with zero skips and zero failures.
+- Fault and concurrency matrix: automated coverage includes 64-request coalescing, one-current/one-successor ordering, delayed retry precedence, lease expiry/stale completion, retry exhaustion/dead-letter retention, forced-profile successor precedence, legacy migration/dead-letter preservation, bounded SQLite writer replay, locked-file retry, actual removal during a blocked vector mutation, vector-upsert-before-manifest convergence, temporary missing-root recovery, 64-file scan, unchanged zero-embedding/upsert behavior, and status/log/metrics redaction.
+- Coverage: the documented Cobertura command passed and reported 6,932/9,216 lines (75.22%) and 2,012/3,222 branches (62.45%); the machine-readable report was retained in the run's temporary artifact directory.
+- Static/client gates: `dotnet format .\LocalRag.sln --verify-no-changes --no-restore`, VS Code `npm.cmd run lint`, and all 9 extension tests passed.
+- Operations and compatibility: additive SQLite migration/rollback guidance, bounded retry/retention configuration, recovery metrics/status, API/MCP redaction, VS Code recovery presentation/action, and README operations guidance are implemented.
+- Review disposition: independent solution-architecture and C# implementation/test-evidence reviews both returned `APPROVE` on the final bytes after lease-expiry, fail-closed traversal, retry-coalescing, dispatcher wakeup, SQLite contention, generation/profile, retention, and evidence findings were corrected.
+
 ---
 
 ## References
@@ -191,4 +205,3 @@ stateDiagram-v2
 - Plan: [.swe/03-PLAN/PLAN-02](../03-PLAN/PLAN-02-PHASE2-RETRIEVAL-QUALITY-OPERATIONAL-HARDENING.md)
 - Architecture: [.swe/01-DESIGN/DESIGN.md](../01-DESIGN/DESIGN.md)
 - Code: `SourceWatcherRegistry.cs`, `ReconciliationService.cs`, `IndexCoordinator.cs`, job/checkpoint/source SQLite stores
-

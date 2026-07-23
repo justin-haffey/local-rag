@@ -95,6 +95,37 @@ public interface IIndexCoordinator
     Task RemoveSourceAsync(string sourceId, CancellationToken cancellationToken);
 }
 
+/// <summary>
+/// Persists source-scoped reconciliation generations. SQLite is the authoritative queue; an in-memory
+/// channel may only be used to wake due source IDs after these methods commit.
+/// </summary>
+public interface IReconciliationStore
+{
+    Task InitializeAsync(CancellationToken cancellationToken);
+    Task<ReconciliationRequestResult> RequestAsync(ReconciliationRequest request, CancellationToken cancellationToken);
+    Task<ReconciliationLease?> TryLeaseAsync(string sourceId, TimeSpan leaseDuration, CancellationToken cancellationToken);
+    Task<bool> RenewLeaseAsync(ReconciliationLease lease, TimeSpan leaseDuration, CancellationToken cancellationToken);
+    Task<ReconciliationCompletionResult> CompleteAsync(
+        ReconciliationLease lease,
+        ReconciliationResult result,
+        CancellationToken cancellationToken);
+    Task<ReconciliationFailureResult> FailAsync(
+        ReconciliationLease lease,
+        ReconciliationFailure failure,
+        int maxAttempts,
+        TimeSpan retryDelay,
+        CancellationToken cancellationToken);
+    Task<bool> ReleaseAsync(ReconciliationLease lease, CancellationToken cancellationToken);
+    Task<IReadOnlyList<string>> GetDueSourceIdsAsync(DateTimeOffset now, CancellationToken cancellationToken);
+    Task<DateTimeOffset?> GetNextDueUtcAsync(DateTimeOffset now, CancellationToken cancellationToken);
+    Task<IReadOnlyList<string>> RecoverExpiredLeasesAsync(DateTimeOffset now, CancellationToken cancellationToken);
+    Task<SourceReconciliation?> GetAsync(string sourceId, CancellationToken cancellationToken);
+    Task<IReadOnlyList<SourceReconciliation>> ListAsync(CancellationToken cancellationToken);
+    Task<SourceLifecycle?> TombstoneAsync(string sourceId, CancellationToken cancellationToken);
+    Task<bool> IsLifecycleCurrentAsync(string sourceId, long expectedEpoch, CancellationToken cancellationToken);
+    Task PruneCompletedAsync(int historyLimit, CancellationToken cancellationToken);
+}
+
 /// <summary>Application-facing search facade combining metadata and vector retrieval.</summary>
 public interface IRagSearchService
 {

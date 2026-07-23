@@ -91,13 +91,19 @@ builder.Services.AddHttpClient<IVectorStore, WeaviateVectorStore>((services, cli
 builder.Services.AddSingleton<IndexWorkChannel>();
 builder.Services.AddSingleton<OperationalMetrics>();
 builder.Services.AddSingleton<IndexJobStore>();
+builder.Services.AddSingleton<SqliteReconciliationStore>();
+builder.Services.AddSingleton<IReconciliationStore>(services => services.GetRequiredService<SqliteReconciliationStore>());
+builder.Services.AddSingleton<SourceOperationGate>();
+builder.Services.AddSingleton<ReconciliationDispatchSignal>();
+builder.Services.AddSingleton<ReconciliationScheduler>();
 builder.Services.AddSingleton<SourceWatcherRegistry>();
 builder.Services.AddSingleton<MissingSourcePolicy>();
 builder.Services.AddSingleton<IndexCoordinator>();
 builder.Services.AddSingleton<IIndexCoordinator>(services => services.GetRequiredService<IndexCoordinator>());
 builder.Services.AddSingleton<IRagSearchService, RagSearchService>();
-builder.Services.AddHostedService<IndexWorker>();
 builder.Services.AddHostedService<StartupInitializationService>();
+builder.Services.AddHostedService<ReconciliationDispatcher>();
+builder.Services.AddHostedService<IndexWorker>();
 builder.Services.AddHostedService<ReconciliationService>();
 builder.Services.AddHealthChecks()
     .AddCheck<SqliteHealthCheck>("sqlite", failureStatus: HealthStatus.Unhealthy)
@@ -146,17 +152,29 @@ app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.Health
 
 var api = app.MapGroup("/api/v1").RequireAuthorization();
 app.MapGet("/metrics", (OperationalMetrics metrics) => Results.Ok(metrics.Snapshot())).RequireAuthorization();
-api.MapPost("/sources", async (RegisterSourceRequest request, ISourceRegistry sources, IIndexCoordinator coordinator, CancellationToken cancellationToken) =>
+api.MapPost("/sources", async (RegisterSourceRequest request, ISourceRegistry sources, IReconciliationStore reconciliations, IIndexCoordinator coordinator, CancellationToken cancellationToken) =>
 {
     var source = await sources.RegisterAsync(request.RootPath, request.DisplayName, cancellationToken);
     await coordinator.QueueInitialIndexAsync(source.SourceId, cancellationToken);
-    return Results.Created($"/api/v1/sources/{source.SourceId}", source.ToResponse());
+    return Results.Created(
+        $"/api/v1/sources/{source.SourceId}",
+        source.ToResponse(await reconciliations.GetAsync(source.SourceId, cancellationToken)));
 });
-api.MapGet("/sources", async (ISourceRegistry sources, CancellationToken cancellationToken) => (await sources.ListAsync(cancellationToken)).Select(source => source.ToResponse()));
-api.MapGet("/sources/{sourceId}", async (string sourceId, ISourceRegistry sources, CancellationToken cancellationToken) =>
-    await sources.GetAsync(sourceId, cancellationToken) is { } source ? Results.Ok(source.ToResponse()) : Results.NotFound());
-api.MapGet("/sources/{sourceId}/status", async (string sourceId, ISourceRegistry sources, CancellationToken cancellationToken) =>
-    await sources.GetAsync(sourceId, cancellationToken) is { } source ? Results.Ok(source.ToResponse()) : Results.NotFound());
+api.MapGet("/sources", async (ISourceRegistry sources, IReconciliationStore reconciliations, CancellationToken cancellationToken) =>
+{
+    var recoveryBySource = (await reconciliations.ListAsync(cancellationToken))
+        .ToDictionary(recovery => recovery.SourceId, StringComparer.Ordinal);
+    return (await sources.ListAsync(cancellationToken))
+        .Select(source => source.ToResponse(recoveryBySource.GetValueOrDefault(source.SourceId)));
+});
+api.MapGet("/sources/{sourceId}", async (string sourceId, ISourceRegistry sources, IReconciliationStore reconciliations, CancellationToken cancellationToken) =>
+    await sources.GetAsync(sourceId, cancellationToken) is { } source
+        ? Results.Ok(source.ToResponse(await reconciliations.GetAsync(sourceId, cancellationToken)))
+        : Results.NotFound());
+api.MapGet("/sources/{sourceId}/status", async (string sourceId, ISourceRegistry sources, IReconciliationStore reconciliations, CancellationToken cancellationToken) =>
+    await sources.GetAsync(sourceId, cancellationToken) is { } source
+        ? Results.Ok(source.ToResponse(await reconciliations.GetAsync(sourceId, cancellationToken)))
+        : Results.NotFound());
 api.MapDelete("/sources/{sourceId}", async (string sourceId, ISourceRegistry sources, IIndexCoordinator coordinator, CancellationToken cancellationToken) =>
 {
     if (await sources.GetAsync(sourceId, cancellationToken) is null) return Results.NotFound();

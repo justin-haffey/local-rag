@@ -7,9 +7,11 @@ public sealed partial class StartupInitializationService(
     ISourceRegistry sources,
     IIndexStateStore indexState,
     IChunkProfileStateStore chunkProfiles,
-    IndexJobStore jobs,
+    IndexJobStore legacyJobs,
+    IReconciliationStore reconciliations,
+    ReconciliationScheduler scheduler,
     SourceWatcherRegistry watchers,
-    IIndexCoordinator coordinator,
+    IndexCoordinator coordinator,
     MissingSourcePolicy missingSourcePolicy,
     ILogger<StartupInitializationService> logger) : IHostedService
 {
@@ -18,10 +20,33 @@ public sealed partial class StartupInitializationService(
         await sources.InitializeAsync(cancellationToken);
         await indexState.InitializeAsync(cancellationToken);
         await chunkProfiles.InitializeAsync(cancellationToken);
-        await jobs.InitializeAsync(cancellationToken);
-        await jobs.RecoverAsync(cancellationToken);
+        await legacyJobs.InitializeAsync(cancellationToken);
+        await reconciliations.InitializeAsync(cancellationToken);
+
+        foreach (var sourceId in await reconciliations.RecoverExpiredLeasesAsync(DateTimeOffset.UtcNow, cancellationToken))
+        {
+            await scheduler.WakeAsync(sourceId, cancellationToken);
+        }
+
         foreach (var source in await sources.ListAsync(cancellationToken))
         {
+            if (source.LifecycleState == SourceLifecycleState.Removing)
+            {
+                try
+                {
+                    await coordinator.RemoveSourceAsync(source.SourceId, cancellationToken);
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    throw;
+                }
+                catch
+                {
+                    LogMissingSourceCleanupFailed(logger, source.SourceId);
+                }
+                continue;
+            }
+
             if (!Directory.Exists(source.CanonicalRootPath))
             {
                 if (missingSourcePolicy.ShouldCleanup(source, DateTimeOffset.UtcNow))
@@ -30,19 +55,32 @@ public sealed partial class StartupInitializationService(
                     {
                         await coordinator.RemoveSourceAsync(source.SourceId, cancellationToken);
                     }
-                    catch (Exception exception) when (exception is not OperationCanceledException)
+                    catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                     {
-                        LogMissingSourceCleanupFailed(logger, exception, source.SourceId);
+                        throw;
                     }
+                    catch
+                    {
+                        LogMissingSourceCleanupFailed(logger, source.SourceId);
+                    }
+                    continue;
                 }
-                else if (!string.Equals(source.LastError, MissingSourcePolicy.MissingRootMessage, StringComparison.Ordinal))
+
+                if (!string.Equals(source.LastError, MissingSourcePolicy.MissingRootMessage, StringComparison.Ordinal))
                 {
-                    await sources.SetStatusAsync(source.SourceId, SourceStatus.Degraded, MissingSourcePolicy.MissingRootMessage, cancellationToken);
+                    await sources.SetStatusAsync(
+                        source.SourceId,
+                        SourceStatus.Degraded,
+                        MissingSourcePolicy.MissingRootMessage,
+                        cancellationToken);
                 }
-                continue;
             }
-            watchers.Track(source);
-            await coordinator.QueueInitialIndexAsync(source.SourceId, cancellationToken);
+            else
+            {
+                watchers.Track(source);
+            }
+
+            await coordinator.QueueStartupAsync(source.SourceId, cancellationToken);
         }
         LogInitialized(logger);
     }
@@ -53,5 +91,5 @@ public sealed partial class StartupInitializationService(
     private static partial void LogInitialized(ILogger logger);
 
     [LoggerMessage(EventId = 2, Level = LogLevel.Warning, Message = "Could not remove stale source {SourceId}; cleanup will be retried.")]
-    private static partial void LogMissingSourceCleanupFailed(ILogger logger, Exception exception, string sourceId);
+    private static partial void LogMissingSourceCleanupFailed(ILogger logger, string sourceId);
 }

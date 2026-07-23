@@ -54,6 +54,16 @@ public sealed class IndexingOptions
     public int StabilityIntervalMilliseconds { get; init; } = 1500;
     public int MaxConcurrentFiles { get; init; } = 4;
     public int ReconciliationIntervalMinutes { get; init; } = 30;
+    /// <summary>Duration of a durable reconciliation lease before it is eligible for recovery.</summary>
+    public int ReconciliationLeaseDurationSeconds { get; init; } = 120;
+    /// <summary>Interval used by a running reconciliation to renew its durable lease.</summary>
+    public int ReconciliationLeaseRenewalSeconds { get; init; } = 30;
+    /// <summary>Maximum number of sources reconciled concurrently; each source remains single-flight.</summary>
+    public int MaxConcurrentReconciliations { get; init; } = 2;
+    /// <summary>Maximum delay before the dispatcher checks durable due work when no earlier due time is known.</summary>
+    public int ReconciliationDispatchPollSeconds { get; init; } = 5;
+    /// <summary>Terminal reconciliation generations retained per source after a later successful checkpoint.</summary>
+    public int ReconciliationHistoryLimit { get; init; } = 20;
     /// <summary>How long an inaccessible source may remain degraded before its index and registry record are removed.</summary>
     public int MissingSourceCleanupGraceMinutes { get; init; } = 60;
     public int MaxRetryAttempts { get; init; } = 5;

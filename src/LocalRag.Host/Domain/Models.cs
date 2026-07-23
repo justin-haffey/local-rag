@@ -38,7 +38,9 @@ public sealed record SourceRecord(
     DateTimeOffset? LastScanUtc,
     DateTimeOffset? LastSuccessfulIndexUtc,
     string EmbeddingProfileId,
-    string? LastError = null);
+    string? LastError = null,
+    SourceLifecycleState LifecycleState = SourceLifecycleState.Active,
+    long LifecycleEpoch = 0);
 
 /// <summary>File identity and metadata used to detect changes within a registered source.</summary>
 public sealed record IndexedFile(

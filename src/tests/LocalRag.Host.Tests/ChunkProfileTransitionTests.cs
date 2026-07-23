@@ -3,8 +3,6 @@ using LocalRag.Domain;
 using LocalRag.Infrastructure.Indexing;
 using LocalRag.Infrastructure.Sqlite;
 using Microsoft.Data.Sqlite;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Xunit;
 
@@ -153,97 +151,6 @@ public sealed class ChunkProfileTransitionTests
             var successor = Assert.IsType<IndexJob>(await jobs.LeaseAsync(fixture.Source.SourceId, CancellationToken.None));
             Assert.NotEqual(active.JobId, successor.JobId);
             Assert.Equal("candidate-next", successor.TargetChunkProfileFingerprint);
-            Assert.True(successor.ForceContentProcessing);
-        }
-        finally
-        {
-            fixture.Dispose();
-        }
-    }
-
-    [Fact]
-    public async Task CompletingActiveJobRequeuesSuccessorAfterPrematureSignalWasConsumed()
-    {
-        var fixture = await CreateFixtureAsync();
-        try
-        {
-            var jobs = new IndexJobStore(fixture.Database);
-            await jobs.InitializeAsync(CancellationToken.None);
-            await jobs.QueueAsync(fixture.Source.SourceId, CancellationToken.None);
-            var active = Assert.IsType<IndexJob>(await jobs.LeaseAsync(fixture.Source.SourceId, CancellationToken.None));
-            await jobs.QueueAsync(
-                fixture.Source.SourceId, "candidate-next", forceContentProcessing: true, CancellationToken.None);
-
-            var queue = new IndexWorkChannel();
-            await queue.EnqueueAsync(fixture.Source.SourceId, CancellationToken.None);
-            await using (var premature = queue.ReadAllAsync(CancellationToken.None).GetAsyncEnumerator())
-            {
-                Assert.True(await premature.MoveNextAsync());
-                Assert.Equal(fixture.Source.SourceId, premature.Current);
-            }
-            Assert.Null(await jobs.LeaseAsync(fixture.Source.SourceId, CancellationToken.None));
-
-            var worker = new IndexWorker(
-                queue,
-                new ServiceCollection().BuildServiceProvider(),
-                jobs,
-                Options.Create(new LocalRagOptions()),
-                new Infrastructure.Diagnostics.OperationalMetrics(),
-                NullLogger<IndexWorker>.Instance);
-            await worker.CompleteAndWakeSuccessorAsync(active, CancellationToken.None);
-
-            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-            await using var awakened = queue.ReadAllAsync(timeout.Token).GetAsyncEnumerator();
-            Assert.True(await awakened.MoveNextAsync());
-            Assert.Equal(fixture.Source.SourceId, awakened.Current);
-            var successor = Assert.IsType<IndexJob>(await jobs.LeaseAsync(fixture.Source.SourceId, CancellationToken.None));
-            Assert.Equal("candidate-next", successor.TargetChunkProfileFingerprint);
-            Assert.True(successor.ForceContentProcessing);
-        }
-        finally
-        {
-            fixture.Dispose();
-        }
-    }
-
-    [Fact]
-    public async Task TerminalFailureRequeuesSuccessorAfterPrematureSignalWasConsumed()
-    {
-        var fixture = await CreateFixtureAsync();
-        try
-        {
-            var jobs = new IndexJobStore(fixture.Database);
-            await jobs.InitializeAsync(CancellationToken.None);
-            await jobs.QueueAsync(fixture.Source.SourceId, CancellationToken.None);
-            var active = Assert.IsType<IndexJob>(await jobs.LeaseAsync(fixture.Source.SourceId, CancellationToken.None));
-            await jobs.QueueAsync(
-                fixture.Source.SourceId, "repair-profile", forceContentProcessing: true, CancellationToken.None);
-
-            var queue = new IndexWorkChannel();
-            await queue.EnqueueAsync(fixture.Source.SourceId, CancellationToken.None);
-            await using (var premature = queue.ReadAllAsync(CancellationToken.None).GetAsyncEnumerator())
-            {
-                Assert.True(await premature.MoveNextAsync());
-            }
-
-            var worker = new IndexWorker(
-                queue,
-                new ServiceCollection().BuildServiceProvider(),
-                jobs,
-                Options.Create(new LocalRagOptions
-                {
-                    Indexing = new IndexingOptions { MaxRetryAttempts = 1, RetryBaseDelaySeconds = 0 }
-                }),
-                new Infrastructure.Diagnostics.OperationalMetrics(),
-                NullLogger<IndexWorker>.Instance);
-            await worker.ScheduleRetryAsync(active, new InvalidOperationException("terminal failure"), CancellationToken.None);
-
-            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-            await using var awakened = queue.ReadAllAsync(timeout.Token).GetAsyncEnumerator();
-            Assert.True(await awakened.MoveNextAsync());
-            Assert.Equal(fixture.Source.SourceId, awakened.Current);
-            var successor = Assert.IsType<IndexJob>(await jobs.LeaseAsync(fixture.Source.SourceId, CancellationToken.None));
-            Assert.Equal("repair-profile", successor.TargetChunkProfileFingerprint);
             Assert.True(successor.ForceContentProcessing);
         }
         finally

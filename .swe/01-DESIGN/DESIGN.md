@@ -1441,6 +1441,12 @@ deploy/
 
 **Rationale:** Structural metadata improves symbol/section retrieval, while a durable query-invisible transition prevents old and new chunk semantics from being externally mixed.
 
+### Phase 2 Decision Record: Durable Reconciliation State and Watcher Recovery
+
+**Decision:** [Standalone ADR-002](../02-ADR/ADR-002-durable-reconciliation-state-and-watcher-recovery.md) governs the SQLite generation watermarks, bounded cause coalescing, token-fenced leases, durable retry dispatch, per-source external-mutation gate, removal tombstone, compatibility status projection, and privacy-safe recovery diagnostics used by FEATURE-02.
+
+**Rationale:** Filesystem events are lossy hints. Durable desired/completed generations and one active plus one follow-up generation prove that events arriving during recovery are not lost, while lease and removal fencing prevent stale completion or source resurrection.
+
 ---
 
 ## 20. Acceptance Criteria for the MVP

@@ -2,15 +2,15 @@
 
 **Plan ID:** PLAN-02
 **Phase:** Phase 2 — Retrieval Quality and Operational Hardening
-**Status:** Draft
+**Status:** Approved
 **Owner:** LocalRAG engineering
 **Target release:** Phase 2; version and date not yet committed
-**Last updated:** 2026-07-21
+**Last updated:** 2026-07-22
 
 Related documents:
 
 - Design: [.swe/01-DESIGN/DESIGN.md](../01-DESIGN/DESIGN.md)
-- ADRs: [ADR-001: Language-Aware Structural Chunking](../02-ADR/ADR-001-language-aware-structural-chunking.md) is Accepted; remaining Phase 2 ADRs are created and reviewed at the start of their owning feature cycles.
+- ADRs: [ADR-001: Language-Aware Structural Chunking](../02-ADR/ADR-001-language-aware-structural-chunking.md) and [ADR-002: Durable Reconciliation State and Watcher Recovery](../02-ADR/ADR-002-durable-reconciliation-state-and-watcher-recovery.md) are Accepted; remaining Phase 2 ADRs are created and reviewed at the start of their owning feature cycles.
 - Features: [.swe/04-FEATURE/](../04-FEATURE/)
 - Architecture: [DESIGN.md Sections 4–16](../01-DESIGN/DESIGN.md)
 
@@ -124,7 +124,7 @@ Phase 2 turns the working local Windows MVP into a higher-quality, recoverable r
 ### Delivery sequence
 
 - [ ] Approve the Phase 2 boundary, create/accept the missing standalone ADRs, select the language corpus, authorization schema, reranker policy, and packaging RID matrix.
-- [ ] Implement FEATURE-01 and FEATURE-02 in parallel after their data/contract decisions are accepted.
+- [x] Implement FEATURE-01 and FEATURE-02 in parallel after their data/contract decisions are accepted.
 - [ ] Implement FEATURE-04 before exposing any new source-scoped surface.
 - [ ] Implement FEATURE-03, then validate retrieval and authorization through shared REST contracts.
 - [ ] Implement FEATURE-05 and FEATURE-06 over the shared retrieval/authorization contracts.
@@ -141,7 +141,7 @@ Phase 2 turns the working local Windows MVP into a higher-quality, recoverable r
 | Feature ID | Feature name                        | Priority | Detailed plan                                                                | Requirements | Verification          | Status      |
 | ---------- | ----------------------------------- | -------- | ---------------------------------------------------------------------------- | ------------ | --------------------- | ----------- |
 | FEATURE-01 | Language-aware structural chunking  | Must     | [FEATURE-01](../04-FEATURE/FEATURE-01-LANGUAGE-AWARE-STRUCTURAL-CHUNKING.md)  | R2.1-*       | POS-01/NEG-01/EDGE-01 | Completed   |
-| FEATURE-02 | Reconciliation and watcher recovery | Must     | [FEATURE-02](../04-FEATURE/FEATURE-02-RECONCILIATION-AND-WATCHER-RECOVERY.md) | R2.2-*       | POS-02/NEG-02/EDGE-02 | Not started |
+| FEATURE-02 | Reconciliation and watcher recovery | Must     | [FEATURE-02](../04-FEATURE/FEATURE-02-RECONCILIATION-AND-WATCHER-RECOVERY.md) | R2.2-*       | POS-02/NEG-02/EDGE-02 | Completed   |
 | FEATURE-03 | Contextual retrieval pipeline       | Must     | [FEATURE-03](../04-FEATURE/FEATURE-03-CONTEXTUAL-RETRIEVAL-PIPELINE.md)       | R2.3-*       | POS-03/NEG-03/EDGE-03 | Not started |
 | FEATURE-04 | Client-to-source authorization      | Rejected | [FEATURE-04](../04-FEATURE/FEATURE-04-CLIENT-TO-SOURCE-AUTHORIZATION.md)      | R2.4-*       | POS-04/NEG-04/EDGE-04 | Not started |
 | FEATURE-05 | Expanded read-only MCP capabilities | Should   | [FEATURE-05](../04-FEATURE/FEATURE-05-EXPANDED-READ-ONLY-MCP-CAPABILITIES.md) | R2.5-*       | POS-05/NEG-05/EDGE-05 | Not started |
@@ -233,10 +233,10 @@ Phase 2 turns the working local Windows MVP into a higher-quality, recoverable r
 
 **Acceptance criteria**
 
-- [ ] Overflow recovery needs no manual reindex when dependencies are healthy.
-- [ ] Degraded status clears only after a complete successful generation.
-- [ ] Restart and duplicate-event tests prove idempotency.
-- [ ] Metrics show overflows, reconciliation duration, result counts, and failures without source content.
+- [x] Overflow recovery needs no manual reindex when dependencies are healthy.
+- [x] Degraded status clears only after a complete successful generation.
+- [x] Restart and duplicate-event tests prove idempotency.
+- [x] Metrics show overflows, reconciliation duration, result counts, and failures without source content.
 
 **Implementation touchpoints**
 
@@ -250,16 +250,16 @@ Phase 2 turns the working local Windows MVP into a higher-quality, recoverable r
 
 | Verification ID | Level       | Scenario                                               | Expected result                                           | Test / command         |
 | --------------- | ----------- | ------------------------------------------------------ | --------------------------------------------------------- | ---------------------- |
-| POS-02-001      | Integration | Simulated watcher overflow with changed/deleted files. | One reconciliation converges SQLite and Weaviate.         | Host integration tests |
-| NEG-02-001      | Integration | Dependency remains unavailable.                        | Retry is bounded; source stays degraded and job retained. | Fault-injection test   |
-| EDGE-02-001     | Integration | Overflow repeats during active reconciliation.         | A later generation runs; no parallel storm or lost state. | Concurrency test       |
+| POS-02-001      | Integration/live | Watcher overflow with created/changed/deleted files. | One reconciliation converges SQLite and real Weaviate.    | `ReconciliationLiveIntegrationTests` |
+| NEG-02-001      | Integration | Dependency remains unavailable through exhaustion.     | Retry is bounded; source stays degraded and job retained. | `SqliteReconciliationStoreTests`      |
+| EDGE-02-001     | Integration | Overflow repeats during active reconciliation.         | A later generation runs; no parallel storm or lost state. | `ReconciliationRecoveryTests`         |
 
 **Feature completion checklist**
 
-- [ ] Requirements are implemented and linked to tests.
-- [ ] Positive, negative, and edge scenarios pass.
-- [ ] Public contracts, configuration, migrations, and docs are updated.
-- [ ] Review evidence and remaining limitations are recorded.
+- [x] Requirements are implemented and linked to tests.
+- [x] Positive, negative, and edge scenarios pass.
+- [x] Public contracts, configuration, migrations, and docs are updated.
+- [x] Review evidence and remaining limitations are recorded.
 
 #### FEATURE-03 — Contextual retrieval pipeline
 

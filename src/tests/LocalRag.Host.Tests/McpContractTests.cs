@@ -1,4 +1,5 @@
 using LocalRag.Api;
+using LocalRag.Domain;
 using ModelContextProtocol.Server;
 using Xunit;
 
@@ -27,5 +28,68 @@ public sealed class McpContractTests
         Assert.DoesNotContain("CanonicalRootPath", names);
         Assert.Contains("RootPathHash", names);
         Assert.Contains("LastError", names);
+        Assert.Contains("Recovery", names);
+    }
+
+    [Fact]
+    public void RecoveryContractDoesNotExposePathsContentOrLeaseData()
+    {
+        var names = typeof(RecoveryResponse).GetProperties().Select(property => property.Name).ToHashSet(StringComparer.Ordinal);
+
+        Assert.DoesNotContain("SourceId", names);
+        Assert.DoesNotContain("RootPath", names);
+        Assert.DoesNotContain("RelativePath", names);
+        Assert.DoesNotContain("Content", names);
+        Assert.DoesNotContain("LeaseId", names);
+        Assert.DoesNotContain("LeaseExpiresUtc", names);
+        Assert.Contains("State", names);
+        Assert.Contains("Causes", names);
+        Assert.Contains("LastErrorCode", names);
+        Assert.Contains("ChangedFiles", names);
+    }
+
+    [Fact]
+    public void SourceMappingRedactsRawErrorsAndUnboundedRecoveryValues()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var source = new SourceRecord(
+            "source-1",
+            "C:\\private\\repository",
+            "repository",
+            SourceStatus.Degraded,
+            now,
+            now,
+            now,
+            null,
+            "profile",
+            "System.Exception: raw path C:\\private\\repository\\secret.cs");
+        var recovery = new SourceReconciliation(
+            source.SourceId,
+            2,
+            1,
+            null,
+            ReconciliationState.Degraded,
+            ReconciliationCause.Retry | (ReconciliationCause)(1 << 20),
+            ReconciliationCause.None,
+            now,
+            null,
+            null,
+            now,
+            "unbounded-outcome",
+            ReconciliationFailureCode.DependencyUnavailable,
+            "raw dependency exception and path",
+            -1,
+            -1,
+            -1);
+
+        var response = source.ToResponse(recovery);
+
+        Assert.Equal("A required indexing dependency is unavailable.", response.LastError);
+        Assert.NotNull(response.Recovery);
+        Assert.Collection(response.Recovery.Causes, cause => Assert.Equal("Retry", cause));
+        Assert.Null(response.Recovery.LastOutcome);
+        Assert.Equal("A required indexing dependency is unavailable.", response.Recovery.LastErrorSummary);
+        Assert.Equal(0, response.Recovery.ChangedFiles);
+        Assert.DoesNotContain("private", response.LastError!, StringComparison.OrdinalIgnoreCase);
     }
 }

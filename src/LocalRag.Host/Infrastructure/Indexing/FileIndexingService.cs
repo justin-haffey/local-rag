@@ -17,20 +17,22 @@ public sealed class FileIndexingService(
     IVectorStore vectors,
     ContentExtractionService contentExtraction,
     IOptions<LocalRagOptions> options,
-    OperationalMetrics metrics)
+    OperationalMetrics metrics,
+    IReconciliationStore? reconciliations = null)
 {
-    public async Task IndexAsync(
+    public async Task<FileIndexingOutcome> IndexAsync(
         SourceRecord source,
         string path,
         string relativePath,
         FileInfo info,
         CancellationToken cancellationToken,
-        bool forceContentProcessing = false)
+        bool forceContentProcessing = false,
+        ReconciliationLease? lease = null)
     {
         var existingFile = await indexState.GetFileAsync(source.SourceId, relativePath, cancellationToken);
         if (!forceContentProcessing && existingFile is not null && existingFile.SizeBytes == info.Length && existingFile.LastModifiedUtc.UtcDateTime == info.LastWriteTimeUtc)
         {
-            return;
+            return FileIndexingOutcome.Unchanged;
         }
 
         var initialLength = info.Length;
@@ -47,7 +49,18 @@ public sealed class FileIndexingService(
 
         var content = await contentExtraction.ExtractAsync(path, cancellationToken);
         var hash = Hash(content);
-        if (!forceContentProcessing && existingFile?.ContentHash == hash) return;
+        if (!forceContentProcessing && existingFile?.ContentHash == hash)
+        {
+            var committedChunks = await indexState.GetChunksForFileAsync(existingFile.FileId, cancellationToken);
+            var refreshedFile = existingFile with
+            {
+                SizeBytes = info.Length,
+                LastModifiedUtc = new DateTimeOffset(info.LastWriteTimeUtc)
+            };
+            await EnsureLifecycleCurrentAsync(lease, cancellationToken);
+            await indexState.SaveFileAndChunksAsync(refreshedFile, committedChunks, cancellationToken);
+            return FileIndexingOutcome.Unchanged;
+        }
 
         var file = new IndexedFile(
             existingFile?.FileId ?? Hash($"{source.SourceId}\n{relativePath}"), source.SourceId, relativePath, hash, info.Length, new DateTimeOffset(info.LastWriteTimeUtc));
@@ -64,12 +77,30 @@ public sealed class FileIndexingService(
         {
             documents.Add(new VectorDocument(chunk, await embeddings.EmbedPassageAsync(chunk.Content, cancellationToken)));
         }
+        await EnsureLifecycleCurrentAsync(lease, cancellationToken);
         await vectors.UpsertAsync(documents, cancellationToken);
         var currentIds = chunks.Select(chunk => chunk.ChunkId).ToHashSet(StringComparer.Ordinal);
+        await EnsureLifecycleCurrentAsync(lease, cancellationToken);
         await vectors.DeleteAsync(previous.Where(chunk => !currentIds.Contains(chunk.ChunkId)).Select(chunk => chunk.ChunkId).ToArray(), cancellationToken);
+        await EnsureLifecycleCurrentAsync(lease, cancellationToken);
         await indexState.SaveFileAndChunksAsync(file, chunks, cancellationToken);
         metrics.FileIndexed();
+        return new FileIndexingOutcome(Changed: true, EmbeddingCount: documents.Count, UpsertCount: documents.Count);
+    }
+
+    private async Task EnsureLifecycleCurrentAsync(ReconciliationLease? lease, CancellationToken cancellationToken)
+    {
+        if (lease is null || reconciliations is null) return;
+        if (!await reconciliations.IsLifecycleCurrentAsync(lease.SourceId, lease.LifecycleEpoch, cancellationToken))
+        {
+            throw new OperationCanceledException("The source lifecycle changed during reconciliation.");
+        }
     }
 
     private static string Hash(string value) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value))).ToLowerInvariant();
+}
+
+public sealed record FileIndexingOutcome(bool Changed, int EmbeddingCount, int UpsertCount)
+{
+    public static FileIndexingOutcome Unchanged { get; } = new(false, 0, 0);
 }

@@ -1,12 +1,14 @@
 using LocalRag.Application;
 using LocalRag.Configuration;
+using LocalRag.Domain;
 using Microsoft.Extensions.Options;
 
 namespace LocalRag.Infrastructure.Indexing;
 
-/// <summary>Periodically treats filesystem watchers as hints and schedules source reconciliation scans.</summary>
+/// <summary>Periodically schedules durable snapshot reconciliation for every registered source.</summary>
 public sealed partial class ReconciliationService(
     ISourceRegistry sources,
+    ReconciliationScheduler scheduler,
     IIndexCoordinator coordinator,
     MissingSourcePolicy missingSourcePolicy,
     IOptions<LocalRagOptions> options,
@@ -14,7 +16,7 @@ public sealed partial class ReconciliationService(
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var interval = TimeSpan.FromMinutes(Math.Max(1, options.Value.Indexing.ReconciliationIntervalMinutes));
+        var interval = TimeSpan.FromMinutes(options.Value.Indexing.ReconciliationIntervalMinutes);
         using var timer = new PeriodicTimer(interval);
         while (await timer.WaitForNextTickAsync(stoppingToken))
         {
@@ -22,29 +24,44 @@ public sealed partial class ReconciliationService(
             {
                 try
                 {
+                    if (source.LifecycleState == SourceLifecycleState.Removing)
+                    {
+                        await coordinator.RemoveSourceAsync(source.SourceId, stoppingToken);
+                        continue;
+                    }
+
                     if (!Directory.Exists(source.CanonicalRootPath))
                     {
                         if (missingSourcePolicy.ShouldCleanup(source, DateTimeOffset.UtcNow))
                         {
                             await coordinator.RemoveSourceAsync(source.SourceId, stoppingToken);
+                            continue;
                         }
-                        else if (!string.Equals(source.LastError, MissingSourcePolicy.MissingRootMessage, StringComparison.Ordinal))
+
+                        if (!string.Equals(source.LastError, MissingSourcePolicy.MissingRootMessage, StringComparison.Ordinal))
                         {
-                            await sources.SetStatusAsync(source.SourceId, Domain.SourceStatus.Degraded, MissingSourcePolicy.MissingRootMessage, stoppingToken);
+                            await sources.SetStatusAsync(
+                                source.SourceId,
+                                SourceStatus.Degraded,
+                                MissingSourcePolicy.MissingRootMessage,
+                                stoppingToken);
                         }
-                        continue;
                     }
 
-                    await coordinator.ReindexAsync(source.SourceId, stoppingToken);
+                    await scheduler.RequestAsync(source.SourceId, ReconciliationCause.Periodic, stoppingToken);
                 }
-                catch (Exception exception) when (exception is not OperationCanceledException)
+                catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
                 {
-                    LogReconciliationQueueFailed(logger, exception, source.SourceId);
+                    return;
+                }
+                catch
+                {
+                    LogReconciliationQueueFailed(logger, source.SourceId);
                 }
             }
         }
     }
 
     [LoggerMessage(EventId = 1, Level = LogLevel.Warning, Message = "Failed to queue reconciliation for source {SourceId}")]
-    private static partial void LogReconciliationQueueFailed(ILogger logger, Exception exception, string sourceId);
+    private static partial void LogReconciliationQueueFailed(ILogger logger, string sourceId);
 }

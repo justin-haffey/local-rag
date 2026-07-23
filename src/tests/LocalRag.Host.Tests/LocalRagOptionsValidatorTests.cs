@@ -35,4 +35,49 @@ public sealed class LocalRagOptionsValidatorTests
         Assert.Contains(result.Failures, failure => failure.Contains("TokenizerId", StringComparison.Ordinal));
         Assert.Contains(result.Failures, failure => failure.Contains("unknown", StringComparison.Ordinal));
     }
+
+    [Fact]
+    public void InvalidReconciliationBoundsFailValidation()
+    {
+        var options = new LocalRagOptions
+        {
+            Indexing = new IndexingOptions
+            {
+                ReconciliationIntervalMinutes = 0,
+                ReconciliationLeaseDurationSeconds = 29,
+                ReconciliationLeaseRenewalSeconds = 30,
+                MaxConcurrentReconciliations = 0,
+                ReconciliationDispatchPollSeconds = 61,
+                ReconciliationHistoryLimit = 101
+            }
+        };
+
+        var result = new LocalRagOptionsValidator().Validate(null, options);
+
+        Assert.True(result.Failed);
+        Assert.Contains(result.Failures, failure => failure.Contains("ReconciliationIntervalMinutes", StringComparison.Ordinal));
+        Assert.Contains(result.Failures, failure => failure.Contains("ReconciliationLeaseDurationSeconds", StringComparison.Ordinal));
+        Assert.Contains(result.Failures, failure => failure.Contains("ReconciliationLeaseRenewalSeconds", StringComparison.Ordinal));
+        Assert.Contains(result.Failures, failure => failure.Contains("MaxConcurrentReconciliations", StringComparison.Ordinal));
+        Assert.Contains(result.Failures, failure => failure.Contains("ReconciliationDispatchPollSeconds", StringComparison.Ordinal));
+        Assert.Contains(result.Failures, failure => failure.Contains("ReconciliationHistoryLimit", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void LeaseRenewalMustBeShorterThanLeaseDuration()
+    {
+        var options = new LocalRagOptions
+        {
+            Indexing = new IndexingOptions
+            {
+                ReconciliationLeaseDurationSeconds = 120,
+                ReconciliationLeaseRenewalSeconds = 120
+            }
+        };
+
+        var result = new LocalRagOptionsValidator().Validate(null, options);
+
+        Assert.True(result.Failed);
+        Assert.Contains(result.Failures, failure => failure.Contains("shorter", StringComparison.Ordinal));
+    }
 }

@@ -11,7 +11,9 @@ public sealed class SqliteSourceRegistry(SqliteDatabase database, IOptions<Local
     public async Task InitializeAsync(CancellationToken cancellationToken)
     {
         await using var connection = await database.OpenAsync(cancellationToken);
+        await using var transaction = await database.BeginImmediateTransactionAsync(connection, cancellationToken);
         await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
         command.CommandText = """
             CREATE TABLE IF NOT EXISTS Sources (
               SourceId TEXT PRIMARY KEY,
@@ -23,7 +25,9 @@ public sealed class SqliteSourceRegistry(SqliteDatabase database, IOptions<Local
               LastScanUtc TEXT NULL,
               LastSuccessfulIndexUtc TEXT NULL,
               EmbeddingProfileId TEXT NOT NULL,
-              LastError TEXT NULL
+              LastError TEXT NULL,
+              LifecycleState TEXT NOT NULL DEFAULT 'Active' CHECK (LifecycleState IN ('Active', 'Removing')),
+              LifecycleEpoch INTEGER NOT NULL DEFAULT 0 CHECK (LifecycleEpoch >= 0)
             );
             CREATE TABLE IF NOT EXISTS SchemaVersions (
               Name TEXT PRIMARY KEY,
@@ -35,6 +39,8 @@ public sealed class SqliteSourceRegistry(SqliteDatabase database, IOptions<Local
             """;
         command.Parameters.AddWithValue("$now", DateTimeOffset.UtcNow.ToString("O"));
         await command.ExecuteNonQueryAsync(cancellationToken);
+        await EnsureLifecycleColumnsAsync(connection, transaction, cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
     }
 
     public async Task<SourceRecord> RegisterAsync(string rootPath, string? displayName, CancellationToken cancellationToken)
@@ -73,8 +79,8 @@ public sealed class SqliteSourceRegistry(SqliteDatabase database, IOptions<Local
 
         await using var insert = connection.CreateCommand();
         insert.CommandText = """
-            INSERT INTO Sources(SourceId, CanonicalRootPath, DisplayName, Status, CreatedUtc, UpdatedUtc, EmbeddingProfileId)
-            VALUES ($id, $root, $name, $status, $created, $updated, $profile);
+            INSERT INTO Sources(SourceId, CanonicalRootPath, DisplayName, Status, CreatedUtc, UpdatedUtc, EmbeddingProfileId, LifecycleState, LifecycleEpoch)
+            VALUES ($id, $root, $name, $status, $created, $updated, $profile, 'Active', 0);
             """;
         AddSourceParameters(insert, source);
         await insert.ExecuteNonQueryAsync(cancellationToken);
@@ -86,7 +92,7 @@ public sealed class SqliteSourceRegistry(SqliteDatabase database, IOptions<Local
         var results = new List<SourceRecord>();
         await using var connection = await database.OpenAsync(cancellationToken);
         await using var command = connection.CreateCommand();
-        command.CommandText = "SELECT SourceId, CanonicalRootPath, DisplayName, Status, CreatedUtc, UpdatedUtc, LastScanUtc, LastSuccessfulIndexUtc, EmbeddingProfileId, LastError FROM Sources ORDER BY DisplayName;";
+        command.CommandText = "SELECT SourceId, CanonicalRootPath, DisplayName, Status, CreatedUtc, UpdatedUtc, LastScanUtc, LastSuccessfulIndexUtc, EmbeddingProfileId, LastError, LifecycleState, LifecycleEpoch FROM Sources ORDER BY DisplayName;";
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);
         while (await reader.ReadAsync(cancellationToken))
         {
@@ -100,7 +106,7 @@ public sealed class SqliteSourceRegistry(SqliteDatabase database, IOptions<Local
     {
         await using var connection = await database.OpenAsync(cancellationToken);
         await using var command = connection.CreateCommand();
-        command.CommandText = "SELECT SourceId, CanonicalRootPath, DisplayName, Status, CreatedUtc, UpdatedUtc, LastScanUtc, LastSuccessfulIndexUtc, EmbeddingProfileId, LastError FROM Sources WHERE SourceId = $id;";
+        command.CommandText = "SELECT SourceId, CanonicalRootPath, DisplayName, Status, CreatedUtc, UpdatedUtc, LastScanUtc, LastSuccessfulIndexUtc, EmbeddingProfileId, LastError, LifecycleState, LifecycleEpoch FROM Sources WHERE SourceId = $id;";
         command.Parameters.AddWithValue("$id", sourceId);
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);
         return await reader.ReadAsync(cancellationToken) ? ReadSource(reader) : null;
@@ -132,7 +138,7 @@ public sealed class SqliteSourceRegistry(SqliteDatabase database, IOptions<Local
                 LastScanUtc = CASE WHEN $status IN ('Indexing', 'Ready', 'Degraded') THEN $updated ELSE LastScanUtc END,
                 LastSuccessfulIndexUtc = CASE WHEN $status = 'Ready' THEN $updated ELSE LastSuccessfulIndexUtc END,
                 LastError = $error
-            WHERE SourceId = $id;
+            WHERE SourceId = $id AND LifecycleState = 'Active';
             """;
         command.Parameters.AddWithValue("$status", status.ToString());
         command.Parameters.AddWithValue("$updated", DateTimeOffset.UtcNow.ToString("O"));
@@ -157,7 +163,39 @@ public sealed class SqliteSourceRegistry(SqliteDatabase database, IOptions<Local
         DateTimeOffset.Parse(reader.GetString(4), System.Globalization.CultureInfo.InvariantCulture), DateTimeOffset.Parse(reader.GetString(5), System.Globalization.CultureInfo.InvariantCulture),
         reader.IsDBNull(6) ? null : DateTimeOffset.Parse(reader.GetString(6), System.Globalization.CultureInfo.InvariantCulture),
         reader.IsDBNull(7) ? null : DateTimeOffset.Parse(reader.GetString(7), System.Globalization.CultureInfo.InvariantCulture), reader.GetString(8),
-        reader.IsDBNull(9) ? null : reader.GetString(9));
+        reader.IsDBNull(9) ? null : reader.GetString(9),
+        Enum.Parse<SourceLifecycleState>(reader.GetString(10), ignoreCase: false),
+        reader.GetInt64(11));
+
+    private static async Task EnsureLifecycleColumnsAsync(
+        SqliteConnection connection,
+        SqliteTransaction transaction,
+        CancellationToken cancellationToken)
+    {
+        var columns = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        await using (var tableInfo = connection.CreateCommand())
+        {
+            tableInfo.Transaction = transaction;
+            tableInfo.CommandText = "PRAGMA table_info(Sources);";
+            await using var reader = await tableInfo.ExecuteReaderAsync(cancellationToken);
+            while (await reader.ReadAsync(cancellationToken)) columns.Add(reader.GetString(1));
+        }
+
+        if (!columns.Contains("LifecycleState"))
+        {
+            await using var addState = connection.CreateCommand();
+            addState.Transaction = transaction;
+            addState.CommandText = "ALTER TABLE Sources ADD COLUMN LifecycleState TEXT NOT NULL DEFAULT 'Active';";
+            await addState.ExecuteNonQueryAsync(cancellationToken);
+        }
+        if (!columns.Contains("LifecycleEpoch"))
+        {
+            await using var addEpoch = connection.CreateCommand();
+            addEpoch.Transaction = transaction;
+            addEpoch.CommandText = "ALTER TABLE Sources ADD COLUMN LifecycleEpoch INTEGER NOT NULL DEFAULT 0;";
+            await addEpoch.ExecuteNonQueryAsync(cancellationToken);
+        }
+    }
 
     private static bool IsOverlappingRoot(string left, string right) =>
         left.Equals(right, StringComparison.OrdinalIgnoreCase) ||

@@ -42,10 +42,11 @@ public sealed class SourceWatcherIndexingTests
         var database = new SqliteDatabase(options);
         var sources = new SqliteSourceRegistry(database, options);
         var indexState = new SqliteIndexStateStore(database, options);
-        var jobs = new IndexJobStore(database);
         var chunkProfiles = new SqliteChunkProfileStateStore(database);
         var queue = new IndexWorkChannel();
-        using var watchers = new SourceWatcherRegistry(queue, jobs, sources, options, NullLogger<SourceWatcherRegistry>.Instance);
+        var reconciliations = new WatcherReconciliationStore();
+        var scheduler = new ReconciliationScheduler(reconciliations, queue, new OperationalMetrics());
+        using var watchers = new SourceWatcherRegistry(scheduler, options, NullLogger<SourceWatcherRegistry>.Instance);
         var vectors = new RecordingVectorStore();
         var extraction = new ContentExtractionService([
             new PlainTextContentExtractor(),
@@ -67,8 +68,9 @@ public sealed class SourceWatcherIndexingTests
             fileIndexing,
             new FilePolicy(options, extraction),
             watchers,
-            queue,
-            jobs,
+            scheduler,
+            reconciliations,
+            new SourceOperationGate(),
             new FixedChunkProfileProvider(),
             chunkProfiles,
             NullLogger<IndexCoordinator>.Instance);
@@ -78,7 +80,6 @@ public sealed class SourceWatcherIndexingTests
             await sources.InitializeAsync(CancellationToken.None);
             await indexState.InitializeAsync(CancellationToken.None);
             await chunkProfiles.InitializeAsync(CancellationToken.None);
-            await jobs.InitializeAsync(CancellationToken.None);
             var source = await sources.RegisterAsync(root, "watcher fixture", CancellationToken.None);
             watchers.Track(source);
 
@@ -86,10 +87,9 @@ public sealed class SourceWatcherIndexingTests
             var path = Path.Combine(root, relativePath);
             if (extension == ".docx") CreateDocx(path);
             else File.Copy(Path.Combine(AppContext.BaseDirectory, "Final Decree [615749].pdf"), path);
-            var createJob = await WaitForJobAsync(queue, jobs);
-            Assert.Equal(source.SourceId, createJob.SourceId);
+            var createSourceId = await WaitForSourceAsync(queue);
+            Assert.Equal(source.SourceId, createSourceId);
             Assert.True(await coordinator.ProcessAsync(source.SourceId, CancellationToken.None));
-            await jobs.CompleteAsync(createJob, CancellationToken.None);
 
             var indexedFile = await indexState.GetFileAsync(source.SourceId, relativePath, CancellationToken.None);
             Assert.NotNull(indexedFile);
@@ -100,10 +100,9 @@ public sealed class SourceWatcherIndexingTests
 
             await Task.Delay(100);
             File.Delete(path);
-            var deleteJob = await WaitForJobAsync(queue, jobs);
-            Assert.Equal(source.SourceId, deleteJob.SourceId);
+            var deleteSourceId = await WaitForSourceAsync(queue);
+            Assert.Equal(source.SourceId, deleteSourceId);
             Assert.True(await coordinator.ProcessAsync(source.SourceId, CancellationToken.None));
-            await jobs.CompleteAsync(deleteJob, CancellationToken.None);
 
             Assert.Null(await indexState.GetFileAsync(source.SourceId, relativePath, CancellationToken.None));
             Assert.DoesNotContain(await indexState.GetChunksForSourceAsync(source.SourceId, CancellationToken.None), chunk => chunk.RelativePath == relativePath);
@@ -124,13 +123,12 @@ public sealed class SourceWatcherIndexingTests
         public string Fingerprint => "test-structural-profile";
     }
 
-    private static async Task<IndexJob> WaitForJobAsync(IndexWorkChannel queue, IndexJobStore jobs)
+    private static async Task<string> WaitForSourceAsync(IndexWorkChannel queue)
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         await using var reader = queue.ReadAllAsync(timeout.Token).GetAsyncEnumerator(timeout.Token);
         Assert.True(await reader.MoveNextAsync());
-        var job = await jobs.LeaseAsync(reader.Current, timeout.Token);
-        return Assert.IsType<IndexJob>(job);
+        return reader.Current;
     }
 
     private static string CreateTemporaryDirectory(string kind)
@@ -196,5 +194,25 @@ public sealed class SourceWatcherIndexingTests
         }
         public Task DeleteSourceAsync(string sourceId, CancellationToken cancellationToken) => Task.CompletedTask;
         public Task<IReadOnlyList<SearchResult>> SearchAsync(SearchRequest request, IReadOnlyList<float> queryVector, CancellationToken cancellationToken) => Task.FromResult<IReadOnlyList<SearchResult>>([]);
+    }
+
+    private sealed class WatcherReconciliationStore : IReconciliationStore
+    {
+        public Task InitializeAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+        public Task<ReconciliationRequestResult> RequestAsync(ReconciliationRequest request, CancellationToken cancellationToken) =>
+            Task.FromResult(new ReconciliationRequestResult(1, true, true, ReconciliationState.Queued));
+        public Task<ReconciliationLease?> TryLeaseAsync(string sourceId, TimeSpan leaseDuration, CancellationToken cancellationToken) => Task.FromResult<ReconciliationLease?>(null);
+        public Task<bool> RenewLeaseAsync(ReconciliationLease lease, TimeSpan leaseDuration, CancellationToken cancellationToken) => Task.FromResult(false);
+        public Task<ReconciliationCompletionResult> CompleteAsync(ReconciliationLease lease, ReconciliationResult result, CancellationToken cancellationToken) => Task.FromResult(new ReconciliationCompletionResult(false, false, false));
+        public Task<ReconciliationFailureResult> FailAsync(ReconciliationLease lease, ReconciliationFailure failure, int maxAttempts, TimeSpan retryDelay, CancellationToken cancellationToken) => Task.FromResult(new ReconciliationFailureResult(false, false, false, null));
+        public Task<bool> ReleaseAsync(ReconciliationLease lease, CancellationToken cancellationToken) => Task.FromResult(false);
+        public Task<IReadOnlyList<string>> GetDueSourceIdsAsync(DateTimeOffset now, CancellationToken cancellationToken) => Task.FromResult<IReadOnlyList<string>>([]);
+        public Task<DateTimeOffset?> GetNextDueUtcAsync(DateTimeOffset now, CancellationToken cancellationToken) => Task.FromResult<DateTimeOffset?>(null);
+        public Task<IReadOnlyList<string>> RecoverExpiredLeasesAsync(DateTimeOffset now, CancellationToken cancellationToken) => Task.FromResult<IReadOnlyList<string>>([]);
+        public Task<SourceReconciliation?> GetAsync(string sourceId, CancellationToken cancellationToken) => Task.FromResult<SourceReconciliation?>(null);
+        public Task<IReadOnlyList<SourceReconciliation>> ListAsync(CancellationToken cancellationToken) => Task.FromResult<IReadOnlyList<SourceReconciliation>>([]);
+        public Task<SourceLifecycle?> TombstoneAsync(string sourceId, CancellationToken cancellationToken) => Task.FromResult<SourceLifecycle?>(null);
+        public Task<bool> IsLifecycleCurrentAsync(string sourceId, long expectedEpoch, CancellationToken cancellationToken) => Task.FromResult(true);
+        public Task PruneCompletedAsync(int historyLimit, CancellationToken cancellationToken) => Task.CompletedTask;
     }
 }

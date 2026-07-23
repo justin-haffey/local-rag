@@ -11,13 +11,26 @@ public sealed partial class IndexCoordinator(
     FileIndexingService fileIndexing,
     FilePolicy filePolicy,
     SourceWatcherRegistry watchers,
-    IndexWorkChannel queue,
-    IndexJobStore jobs,
+    ReconciliationScheduler scheduler,
+    IReconciliationStore reconciliations,
+    SourceOperationGate operationGate,
     IChunkProfileProvider chunkProfile,
     IChunkProfileStateStore chunkProfiles,
     ILogger<IndexCoordinator> logger) : IIndexCoordinator
 {
-    public async Task QueueInitialIndexAsync(string sourceId, CancellationToken cancellationToken)
+    public Task QueueInitialIndexAsync(string sourceId, CancellationToken cancellationToken) =>
+        QueueAsync(sourceId, ReconciliationCause.Initial, cancellationToken);
+
+    public Task ReindexAsync(string sourceId, CancellationToken cancellationToken) =>
+        QueueAsync(sourceId, ReconciliationCause.Manual, cancellationToken);
+
+    internal Task QueueStartupAsync(string sourceId, CancellationToken cancellationToken) =>
+        QueueAsync(sourceId, ReconciliationCause.Startup, cancellationToken);
+
+    private async Task QueueAsync(
+        string sourceId,
+        ReconciliationCause cause,
+        CancellationToken cancellationToken)
     {
         var existingChunks = await indexState.GetChunksForSourceAsync(sourceId, cancellationToken);
         var state = await chunkProfiles.GetOrCreateAsync(
@@ -31,67 +44,115 @@ public sealed partial class IndexCoordinator(
         {
             await chunkProfiles.BeginTransitionAsync(sourceId, chunkProfile.Fingerprint, cancellationToken);
         }
-        await jobs.QueueAsync(sourceId, chunkProfile.Fingerprint, transitionRequired, cancellationToken);
-        await queue.EnqueueAsync(sourceId, cancellationToken);
-    }
 
-    public Task ReindexAsync(string sourceId, CancellationToken cancellationToken) => QueueInitialIndexAsync(sourceId, cancellationToken);
+        await scheduler.RequestAsync(
+            sourceId,
+            cause,
+            chunkProfile.Fingerprint,
+            transitionRequired,
+            cancellationToken);
+    }
 
     public async Task RemoveSourceAsync(string sourceId, CancellationToken cancellationToken)
     {
+        var tombstone = await reconciliations.TombstoneAsync(sourceId, cancellationToken);
+        if (tombstone is null) return;
+
+        operationGate.CancelActive(sourceId);
+        await using var removal = await operationGate.AcquireAsync(sourceId, cancellationToken);
+        var current = await sources.GetAsync(sourceId, removal.CancellationToken);
+        if (current is null ||
+            current.LifecycleState != SourceLifecycleState.Removing ||
+            current.LifecycleEpoch != tombstone.Epoch)
+        {
+            throw new InvalidOperationException("The source removal fence changed before cleanup completed.");
+        }
+
         watchers.Untrack(sourceId);
-        await vectors.DeleteSourceAsync(sourceId, cancellationToken);
-        await sources.RemoveAsync(sourceId, cancellationToken);
+        await vectors.DeleteSourceAsync(sourceId, removal.CancellationToken);
+        await sources.RemoveAsync(sourceId, removal.CancellationToken);
     }
 
-    internal Task<bool> ProcessAsync(string sourceId, CancellationToken cancellationToken) =>
-        ProcessAsync(new IndexJob("direct", sourceId, 0), cancellationToken);
-
-    internal async Task<bool> ProcessAsync(IndexJob job, CancellationToken cancellationToken)
+    internal async Task<bool> ProcessAsync(string sourceId, CancellationToken cancellationToken)
     {
-        var sourceId = job.SourceId;
-        var source = await sources.GetAsync(sourceId, cancellationToken);
-        if (source is null || source.Status == SourceStatus.Paused) return true;
-        if (job.ForceContentProcessing && job.TargetChunkProfileFingerprint is not null)
+        try
         {
-            var state = await chunkProfiles.GetAsync(sourceId, cancellationToken);
-            if (state is
+            await ProcessCoreAsync(sourceId, lease: null, cancellationToken);
+            await sources.SetStatusAsync(sourceId, SourceStatus.Ready, null, cancellationToken);
+            return true;
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    internal Task<ReconciliationExecutionResult> ProcessAsync(
+        ReconciliationLease lease,
+        CancellationToken cancellationToken) =>
+        ProcessCoreAsync(lease.SourceId, lease, cancellationToken);
+
+    private async Task<ReconciliationExecutionResult> ProcessCoreAsync(
+        string sourceId,
+        ReconciliationLease? lease,
+        CancellationToken cancellationToken)
+    {
+        var source = await sources.GetAsync(sourceId, cancellationToken);
+        if (source is null)
+        {
+            throw new ReconciliationProcessingException(ReconciliationFailureCode.Cancelled);
+        }
+        if (source.Status == SourceStatus.Paused)
+        {
+            throw new OperationCanceledException("Paused sources cannot be reconciled.");
+        }
+
+        var forceContentProcessing = lease?.ForceContentProcessing ?? false;
+        var targetFingerprint = lease?.TargetChunkProfileFingerprint;
+        if (forceContentProcessing && targetFingerprint is not null)
+        {
+            var profileState = await chunkProfiles.GetAsync(sourceId, cancellationToken);
+            if (profileState is not
                 {
                     Status: ChunkProfileStatus.Ready,
                     PendingFingerprint: null
-                } && state.ActiveFingerprint == job.TargetChunkProfileFingerprint)
+                } || profileState.ActiveFingerprint != targetFingerprint)
             {
-                await sources.SetStatusAsync(sourceId, SourceStatus.Ready, null, cancellationToken);
-                return true;
+                await chunkProfiles.BeginTransitionAsync(sourceId, targetFingerprint, cancellationToken);
             }
-            await chunkProfiles.BeginTransitionAsync(sourceId, job.TargetChunkProfileFingerprint, cancellationToken);
+            else
+            {
+                forceContentProcessing = false;
+            }
         }
+
         if (!Directory.Exists(source.CanonicalRootPath))
         {
-            if (job.ForceContentProcessing && job.TargetChunkProfileFingerprint is not null)
+            var failure = new ReconciliationFailure(ReconciliationFailureCode.SourceMissing);
+            if (forceContentProcessing && targetFingerprint is not null)
             {
-                await chunkProfiles.FailTransitionAsync(
-                    sourceId,
-                    job.TargetChunkProfileFingerprint,
-                    MissingSourcePolicy.MissingRootMessage,
-                    cancellationToken);
+                await chunkProfiles.FailTransitionAsync(sourceId, targetFingerprint, failure.SafeSummary, cancellationToken);
             }
             await sources.SetStatusAsync(sourceId, SourceStatus.Degraded, MissingSourcePolicy.MissingRootMessage, cancellationToken);
-            return false;
+            throw new ReconciliationProcessingException(failure.Code);
         }
 
         await sources.SetStatusAsync(sourceId, SourceStatus.Indexing, null, cancellationToken);
         try
         {
+            await EnsureLifecycleCurrentAsync(lease, cancellationToken);
             await vectors.EnsureReadyAsync(cancellationToken);
             watchers.Track(source);
             var observed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            var enumeration = new EnumerationOptions
-            {
-                RecurseSubdirectories = true,
-                IgnoreInaccessible = true,
-                AttributesToSkip = FileAttributes.ReparsePoint
-            };
+            var changed = 0;
+            var unchanged = 0;
+            var embeddings = 0;
+            var upserts = 0;
+            var enumeration = CreateEnumerationOptions();
             foreach (var path in Directory.EnumerateFiles(source.CanonicalRootPath, "*", enumeration))
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -99,39 +160,113 @@ public sealed partial class IndexCoordinator(
                 if (!filePolicy.IsEligible(source.CanonicalRootPath, path, info)) continue;
                 var relativePath = Path.GetRelativePath(source.CanonicalRootPath, path);
                 observed.Add(relativePath);
-                await fileIndexing.IndexAsync(source, path, relativePath, info, cancellationToken, job.ForceContentProcessing);
+                var outcome = await fileIndexing.IndexAsync(
+                    source,
+                    path,
+                    relativePath,
+                    info,
+                    cancellationToken,
+                    forceContentProcessing,
+                    lease);
+                if (outcome.Changed) changed++;
+                else unchanged++;
+                embeddings += outcome.EmbeddingCount;
+                upserts += outcome.UpsertCount;
             }
 
+            var deleted = 0;
             var existing = await indexState.GetChunksForSourceAsync(sourceId, cancellationToken);
             foreach (var removed in existing.GroupBy(chunk => chunk.RelativePath).Where(group => !observed.Contains(group.Key)))
             {
+                await EnsureLifecycleCurrentAsync(lease, cancellationToken);
                 await vectors.DeleteAsync(removed.Select(chunk => chunk.ChunkId).ToArray(), cancellationToken);
+                await EnsureLifecycleCurrentAsync(lease, cancellationToken);
                 await indexState.DeleteFileAsync(sourceId, removed.Key, cancellationToken);
+                deleted++;
             }
 
-            if (job.ForceContentProcessing && job.TargetChunkProfileFingerprint is not null)
+            if (forceContentProcessing && targetFingerprint is not null)
             {
-                await chunkProfiles.CompleteTransitionAsync(sourceId, job.TargetChunkProfileFingerprint, cancellationToken);
+                await chunkProfiles.CompleteTransitionAsync(sourceId, targetFingerprint, cancellationToken);
             }
-            await sources.SetStatusAsync(sourceId, SourceStatus.Ready, null, cancellationToken);
-            return true;
+            if (lease is not null && !await chunkProfiles.IsQueryVisibleAsync(sourceId, cancellationToken))
+            {
+                throw new ReconciliationProcessingException(ReconciliationFailureCode.StateCorrupt);
+            }
+
+            return new ReconciliationExecutionResult(
+                new ReconciliationResult(changed, deleted, unchanged),
+                embeddings,
+                upserts);
         }
-        catch (Exception exception) when (exception is not OperationCanceledException)
+        catch (OperationCanceledException)
         {
-            LogIndexingFailed(logger, exception, sourceId);
-            if (job.ForceContentProcessing && job.TargetChunkProfileFingerprint is not null)
+            throw;
+        }
+        catch (ReconciliationProcessingException)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            var code = Classify(exception);
+            var failure = new ReconciliationFailure(code);
+            LogIndexingFailed(logger, sourceId, code);
+            if (forceContentProcessing && targetFingerprint is not null)
             {
-                await chunkProfiles.FailTransitionAsync(
-                    sourceId,
-                    job.TargetChunkProfileFingerprint,
-                    exception.Message,
-                    cancellationToken);
+                await chunkProfiles.FailTransitionAsync(sourceId, targetFingerprint, failure.SafeSummary, cancellationToken);
             }
-            await sources.SetStatusAsync(sourceId, SourceStatus.Degraded, exception.Message, cancellationToken);
-            return false;
+            await sources.SetStatusAsync(sourceId, SourceStatus.Degraded, failure.SafeSummary, cancellationToken);
+            throw new ReconciliationProcessingException(code, exception);
         }
     }
 
-    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Indexing failed for source {SourceId}")]
-    private static partial void LogIndexingFailed(ILogger logger, Exception exception, string sourceId);
+    private async Task EnsureLifecycleCurrentAsync(
+        ReconciliationLease? lease,
+        CancellationToken cancellationToken)
+    {
+        if (lease is null) return;
+        if (!await reconciliations.IsLifecycleCurrentAsync(lease.SourceId, lease.LifecycleEpoch, cancellationToken))
+        {
+            throw new OperationCanceledException("The source lifecycle changed during reconciliation.");
+        }
+    }
+
+    internal static EnumerationOptions CreateEnumerationOptions() => new()
+    {
+        RecurseSubdirectories = true,
+        IgnoreInaccessible = false,
+        AttributesToSkip = FileAttributes.ReparsePoint
+    };
+
+    private static ReconciliationFailureCode Classify(Exception exception) => exception switch
+    {
+        DirectoryNotFoundException => ReconciliationFailureCode.SourceMissing,
+        UnauthorizedAccessException => ReconciliationFailureCode.FileUnstable,
+        IOException => ReconciliationFailureCode.FileUnstable,
+        HttpRequestException or TimeoutException => ReconciliationFailureCode.DependencyUnavailable,
+        _ => ReconciliationFailureCode.Unexpected
+    };
+
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Indexing failed for source {SourceId} with {FailureCode}")]
+    private static partial void LogIndexingFailed(
+        ILogger logger,
+        string sourceId,
+        ReconciliationFailureCode failureCode);
+}
+
+internal sealed record ReconciliationExecutionResult(
+    ReconciliationResult Result,
+    int EmbeddingCount,
+    int UpsertCount);
+
+internal sealed class ReconciliationProcessingException : Exception
+{
+    public ReconciliationProcessingException(ReconciliationFailureCode code, Exception? innerException = null)
+        : base(new ReconciliationFailure(code).SafeSummary, innerException)
+    {
+        Code = code;
+    }
+
+    public ReconciliationFailureCode Code { get; }
 }

@@ -1,7 +1,7 @@
 {
-  "name": "local-rag",
+  "name": "local-machine",
   "interface": {
-    "displayName": "LocalRag"
+    "displayName": "Local Machine"
   },
   "plugins": [
     {
@@ -9,18 +9,6 @@
       "source": {
         "source": "local",
         "path": "./plugins/local-rag-skills"
-      },
-      "policy": {
-        "installation": "AVAILABLE",
-        "authentication": "ON_INSTALL"
-      },
-      "category": "Productivity"
-    },
-    {
-      "name": "swe-process",
-      "source": {
-        "source": "local",
-        "path": "./plugins/swe-process"
       },
       "policy": {
         "installation": "AVAILABLE",
