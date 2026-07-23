@@ -1,55 +1,60 @@
 # AGENTS
 [agents]
+# Note: using new multi-agent-v2
 # max_threads = 8
 # max_depth = 3
 
 [agents.context_engineer]
 description = "Use this agent for prompt engineering, agent-definition work, AGENTS.md and SKILL.md authoring, and other context-heavy instruction design tasks."
-config_file = "agents/swe/context-engineer/context-engineer.toml"
+config_file = "agents/engineers/context-engineer/context-engineer.toml"
 
 [agents.jr_context_engineer]
 description = "Use this compact agent for routine prompt, Codex-agent, AGENTS.md, SKILL.md, tool-policy, structured-output, and behavior-preserving compaction work."
-config_file = "agents/swe/context-engineer/jr-context-engineer.toml"
+config_file = "agents/engineers/context-engineer/jr-context-engineer.toml"
 
-[agents.sr_context_engineer]
-description = "Use this senior agent for complex cross-runtime prompt systems, migrations, audits, tool governance, and high-risk behavior-preserving redesigns."
-config_file = "agents/swe/context-engineer/sr-context-engineer.toml"
+[agents.repo_author]
+description = "Create, update, and maintain AGENTS.md workflow rules and human-facing README.md documentation."
+config_file = "agents/documentation/repo-author.toml"
 
 [agents.solution_architect]
 description = "Use this agent for deep architecture analysis, Azure and .NET solution design, multi-stack system decomposition, and selecting the best agentic design patterns from the local pattern library."
-config_file = "agents/swe/solution-architect.toml"
+config_file = "agents/architects/solution-architect.toml"
 
 [agents.azure_engineer]
 description = "Use this agent for Azure infrastructure engineering, service configuration, operational maintenance, and deployment execution across Azure-hosted workloads."
-config_file = "agents/swe/azure-engineer.toml"
+config_file = "agents/engineers/azure-engineer.toml"
 
 [agents.code_commentor]
 description = "Use this agent for behavior-preserving code documentation work: add, refine, or remove inline comments, docstrings, XML docs, and other code-local API docs when they materially improve maintainability."
-config_file = "agents/swe/code-commentor.toml"
+config_file = "agents/documentation/code-commentor.toml"
 
 [agents.csharp_developer]
 description = "Use this agent for fast, implementation-focused C#/.NET, Razor, and JavaScript work when the goal is to generate or modify project code quickly and pragmatically."
-config_file = "agents/swe/csharp-developer.toml"
+config_file = "agents/developers/csharp-developer.toml"
 
-[agents.database_developer]
+[agents.azure_db_developer]
 description = "Use this agent for Azure SQL and Azure Cosmos DB data design, schema and container modeling, database scripting, and database-focused implementation guidance."
-config_file = "agents/swe/database-developer.toml"
+config_file = "agents/database/azure-db-developer.toml"
 
 [agents.full_stack_developer]
 description = "Use this agent for senior-level full-stack work that spans understanding complex systems, scaffolding new solution areas, and implementing advanced cross-layer code with strong attention to structure, integrations, and long-term maintainability."
-config_file = "agents/swe/full-stack-developer.toml"
+config_file = "agents/developers/full-stack-developer.toml"
 
 [agents.maf_developer]
 description = "Use this agent for complex Microsoft Agent Framework development, including agent composition, orchestration, tool integration, memory, copilot integration, and voice-agent implementation."
-config_file = "agents/swe/maf-developer.toml"
+config_file = "agents/developers/maf-developer.toml"
 
 [agents.ui_designer]
 description = "Use this agent to design modern, responsive web and app experiences, refine UX direction, and validate interface behavior through UI-focused testing."
-config_file = "agents/swe/ui-designer.toml"
+config_file = "agents/developers/ui-designer.toml"
+
+[agents.codex_engineer]
+description = "Use this agent to create, migrate, and validate Codex-native plugins, skills, agents, and coordinated project customizations."
+config_file = "agents/engineers/codex-engineer.toml"
 
 # PROJECT TRUST
 
-[projects.'c:\users\justin\source\local-rag']
+[projects.'C:\Users\justin\Source\codex\swe-plugin']
 trust_level = "trusted"
 
 # FEATURES / FLAGS
@@ -73,4 +78,12 @@ sandbox = "elevated"
 [mcp_servers.microsoft_learn]
 url = "https://learn.microsoft.com/api/mcp"
 
-# [mcp_servers.codebase-memory-mcp]
+#  [mcp_servers.local_rag]
+#  url = "http://127.0.0.1:5198/mcp"
+#  bearer_token_env_var = "LOCALRAG_MCP_TOKEN"
+#  enabled = true
+#  required = false
+#  startup_timeout_sec = 20.0
+#  tool_timeout_sec = 30.0
+
+#  [mcp_servers.codebase-memory-mcp]
