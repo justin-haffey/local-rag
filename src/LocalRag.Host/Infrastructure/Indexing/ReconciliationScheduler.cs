@@ -1,6 +1,7 @@
 using LocalRag.Application;
 using LocalRag.Domain;
 using LocalRag.Infrastructure.Diagnostics;
+using LocalRag.Infrastructure.Management;
 
 namespace LocalRag.Infrastructure.Indexing;
 
@@ -9,7 +10,8 @@ public sealed class ReconciliationScheduler(
     IReconciliationStore store,
     IndexWorkChannel wakeups,
     OperationalMetrics metrics,
-    ReconciliationDispatchSignal? dispatchSignal = null)
+    ReconciliationDispatchSignal? dispatchSignal = null,
+    HostMaintenanceCoordinator? maintenance = null)
 {
     public Task<ReconciliationRequestResult> RequestAsync(
         string sourceId,
@@ -29,15 +31,22 @@ public sealed class ReconciliationScheduler(
             throw new ArgumentOutOfRangeException(nameof(causes), "At least one bounded reconciliation cause is required.");
         }
 
+        var operational = maintenance?.TryAcquireOperational(cancellationToken);
+        if (maintenance is not null && operational is null)
+        {
+            throw new InvalidOperationException("Local RAG maintenance is in progress.");
+        }
+        await using var _ = operational;
+        var effectiveToken = operational?.CancellationToken ?? cancellationToken;
         var result = await store.RequestAsync(
             new ReconciliationRequest(sourceId, causes, targetChunkProfileFingerprint, forceContentProcessing),
-            cancellationToken);
+            effectiveToken);
         dispatchSignal?.Notify();
         metrics.ReconciliationRequested(causes);
         if ((causes & ReconciliationCause.WatcherOverflow) != 0) metrics.WatcherOverflowed();
         if (result.WakeRequired)
         {
-            await wakeups.EnqueueAsync(sourceId, cancellationToken);
+            await wakeups.EnqueueAsync(sourceId, effectiveToken);
         }
 
         return result;

@@ -49,6 +49,25 @@ public sealed class LocalRagOptionsValidator : IValidateOptions<LocalRagOptions>
         {
             errors.Add("Indexing.ReconciliationHistoryLimit must be between 1 and 100.");
         }
+        if (options.Management.ConfirmationLifetimeSeconds is < 30 or > 600)
+        {
+            errors.Add("Management.ConfirmationLifetimeSeconds must be between 30 and 600.");
+        }
+        if (options.Management.MaintenanceDrainTimeoutSeconds is < 5 or > 300)
+        {
+            errors.Add("Management.MaintenanceDrainTimeoutSeconds must be between 5 and 300.");
+        }
+        if (options.Management.Enabled)
+        {
+            if (string.IsNullOrWhiteSpace(options.Management.Token))
+            {
+                errors.Add("Management.Token is required when management is enabled.");
+            }
+            else if (string.Equals(options.Management.Token, options.Authentication.Token, StringComparison.Ordinal))
+            {
+                errors.Add("Management.Token must be distinct from Authentication.Token.");
+            }
+        }
         var enabled = options.Chunking.EnabledAdapters ?? [];
         var unknown = enabled.Where(adapter => !SupportedAdapters.Contains(adapter)).Distinct(StringComparer.Ordinal).ToArray();
         if (unknown.Length > 0) errors.Add($"Unknown structural adapters: {string.Join(", ", unknown)}.");

@@ -2,6 +2,7 @@ using LocalRag.Application;
 using LocalRag.Configuration;
 using LocalRag.Domain;
 using LocalRag.Infrastructure.Diagnostics;
+using LocalRag.Infrastructure.Management;
 using Microsoft.Extensions.Options;
 
 namespace LocalRag.Infrastructure.Indexing;
@@ -11,6 +12,7 @@ public sealed partial class IndexWorker(
     IServiceProvider services,
     IReconciliationStore reconciliations,
     SourceOperationGate operationGate,
+    HostMaintenanceCoordinator maintenance,
     ReconciliationDispatchSignal dispatchSignal,
     IOptions<LocalRagOptions> options,
     OperationalMetrics metrics,
@@ -43,7 +45,10 @@ public sealed partial class IndexWorker(
 
     private async Task ProcessSourceAsync(string sourceId, CancellationToken stoppingToken)
     {
-        await using var sourceOperation = await operationGate.AcquireAsync(sourceId, stoppingToken);
+        var operational = maintenance.TryAcquireOperational(stoppingToken);
+        if (operational is null) return;
+        await using var operationalLease = operational;
+        await using var sourceOperation = await operationGate.AcquireAsync(sourceId, operational.CancellationToken);
         var leaseDuration = TimeSpan.FromSeconds(options.Value.Indexing.ReconciliationLeaseDurationSeconds);
         var lease = await reconciliations.TryLeaseAsync(sourceId, leaseDuration, sourceOperation.CancellationToken);
         if (lease is null) return;
@@ -64,6 +69,10 @@ public sealed partial class IndexWorker(
             var outcome = await scope.ServiceProvider
                 .GetRequiredService<IndexCoordinator>()
                 .ProcessAsync(lease, processing.Token);
+            if (operational.Generation != maintenance.Generation)
+            {
+                throw new OperationCanceledException("The host maintenance generation changed during reconciliation.");
+            }
             var completion = await reconciliations.CompleteAsync(lease, outcome.Result, processing.Token);
             if (!completion.Applied)
             {

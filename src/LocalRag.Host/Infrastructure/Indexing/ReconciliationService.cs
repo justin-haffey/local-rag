@@ -1,6 +1,7 @@
 using LocalRag.Application;
 using LocalRag.Configuration;
 using LocalRag.Domain;
+using LocalRag.Infrastructure.Management;
 using Microsoft.Extensions.Options;
 
 namespace LocalRag.Infrastructure.Indexing;
@@ -12,6 +13,7 @@ public sealed partial class ReconciliationService(
     IIndexCoordinator coordinator,
     MissingSourcePolicy missingSourcePolicy,
     IOptions<LocalRagOptions> options,
+    HostMaintenanceCoordinator maintenance,
     ILogger<ReconciliationService> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -20,13 +22,16 @@ public sealed partial class ReconciliationService(
         using var timer = new PeriodicTimer(interval);
         while (await timer.WaitForNextTickAsync(stoppingToken))
         {
-            foreach (var source in await sources.ListAsync(stoppingToken))
+            var operational = maintenance.TryAcquireOperational(stoppingToken);
+            if (operational is null) continue;
+            await using var operationalLease = operational;
+            foreach (var source in await sources.ListAsync(operational.CancellationToken))
             {
                 try
                 {
                     if (source.LifecycleState == SourceLifecycleState.Removing)
                     {
-                        await coordinator.RemoveSourceAsync(source.SourceId, stoppingToken);
+                        await coordinator.RemoveSourceAsync(source.SourceId, operational.CancellationToken);
                         continue;
                     }
 
@@ -34,7 +39,7 @@ public sealed partial class ReconciliationService(
                     {
                         if (missingSourcePolicy.ShouldCleanup(source, DateTimeOffset.UtcNow))
                         {
-                            await coordinator.RemoveSourceAsync(source.SourceId, stoppingToken);
+                            await coordinator.RemoveSourceAsync(source.SourceId, operational.CancellationToken);
                             continue;
                         }
 
@@ -44,15 +49,19 @@ public sealed partial class ReconciliationService(
                                 source.SourceId,
                                 SourceStatus.Degraded,
                                 MissingSourcePolicy.MissingRootMessage,
-                                stoppingToken);
+                                operational.CancellationToken);
                         }
                     }
 
-                    await scheduler.RequestAsync(source.SourceId, ReconciliationCause.Periodic, stoppingToken);
+                    await scheduler.RequestAsync(source.SourceId, ReconciliationCause.Periodic, operational.CancellationToken);
                 }
                 catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
                 {
                     return;
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
                 }
                 catch
                 {

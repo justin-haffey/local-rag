@@ -1,0 +1,13 @@
+interface:
+  display_name: "Local RAG Reset"
+  short_description: "Confirm a full owned-index reset"
+  default_prompt: "Use $rag-reset to request a confirmed reset of all owned Local RAG index data."
+
+policy:
+  allow_implicit_invocation: false
+
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "local_rag_mgmt"
+      description: "Plugin-provided privileged Local RAG management MCP server"

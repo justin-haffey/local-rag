@@ -1,0 +1,27 @@
+{
+  "name": "local-rag-mgmt",
+  "version": "0.1.0",
+  "description": "Explicitly invoked Local RAG management skills for indexing folders, removing one folder index, and resetting owned local index data.",
+  "author": {
+    "name": "Local RAG"
+  },
+  "keywords": ["local-rag", "mcp", "indexing", "management"],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Local RAG Management",
+    "shortDescription": "Manage local Local RAG indexes",
+    "longDescription": "Three manually invoked management skills index a folder, remove an exact folder index with confirmation, or reset owned Local RAG data with confirmation.",
+    "developerName": "JustinH",
+    "category": "Developer Tools",
+    "capabilities": ["Write"],
+    "defaultPrompt": [
+      "Use $rag-index to index a local folder.",
+      "Use $rag-remove-index to remove one folder index.",
+      "Use $rag-reset to reset owned Local RAG index data."
+    ],
+    "brandColor": "#2563EB",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/icon.png"
+  }
+}

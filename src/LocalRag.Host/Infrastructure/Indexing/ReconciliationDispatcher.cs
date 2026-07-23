@@ -2,6 +2,7 @@ using LocalRag.Application;
 using LocalRag.Configuration;
 using LocalRag.Domain;
 using LocalRag.Infrastructure.Diagnostics;
+using LocalRag.Infrastructure.Management;
 using Microsoft.Extensions.Options;
 using System.Threading.Channels;
 
@@ -14,6 +15,7 @@ public sealed partial class ReconciliationDispatcher(
     ReconciliationDispatchSignal signal,
     IOptions<LocalRagOptions> options,
     OperationalMetrics metrics,
+    HostMaintenanceCoordinator maintenance,
     ILogger<ReconciliationDispatcher> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -24,20 +26,28 @@ public sealed partial class ReconciliationDispatcher(
             var delay = poll;
             try
             {
+                var operational = maintenance.TryAcquireOperational(stoppingToken);
+                if (operational is null)
+                {
+                    await signal.WaitAsync(delay, stoppingToken);
+                    continue;
+                }
+                await using var operationalLease = operational;
+                var operationToken = operational.CancellationToken;
                 var now = DateTimeOffset.UtcNow;
-                var recovered = await store.RecoverExpiredLeasesAsync(now, stoppingToken);
+                var recovered = await store.RecoverExpiredLeasesAsync(now, operationToken);
                 foreach (var _ in recovered) metrics.ReconciliationLeaseRecovered();
-                var due = await store.GetDueSourceIdsAsync(now, stoppingToken);
+                var due = await store.GetDueSourceIdsAsync(now, operationToken);
                 foreach (var sourceId in recovered.Concat(due).Distinct(StringComparer.Ordinal))
                 {
-                    await scheduler.WakeAsync(sourceId, stoppingToken);
+                    await scheduler.WakeAsync(sourceId, operationToken);
                 }
-                var states = await store.ListAsync(stoppingToken);
+                var states = await store.ListAsync(operationToken);
                 metrics.SetRecoveryGauges(
                     states.Count(state => state.DesiredGeneration > state.CompletedGeneration),
                     states.Count(state => state.State == ReconciliationState.Degraded));
                 var delayStarted = DateTimeOffset.UtcNow;
-                var nextDue = await store.GetNextDueUtcAsync(delayStarted, stoppingToken);
+                var nextDue = await store.GetNextDueUtcAsync(delayStarted, operationToken);
                 if (nextDue is not null)
                 {
                     var untilDue = nextDue.Value - delayStarted;
@@ -49,6 +59,10 @@ public sealed partial class ReconciliationDispatcher(
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
                 break;
+            }
+            catch (OperationCanceledException)
+            {
+                continue;
             }
             catch
             {

@@ -1,17 +1,18 @@
 {
   "name": "local-rag-skills",
-  "version": "0.1.0",
-  "description": "Read-only Codex skills that wrap the existing Local RAG MCP server and its code-research workflows.",
+  "version": "0.1.2",
+  "description": "RAG Codex skills that wrap the existing Local RAG MCP server and its code-research workflows.",
   "author": {
     "name": "Local RAG"
   },
   "keywords": ["local-rag", "mcp", "code-search", "retrieval"],
   "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
   "interface": {
     "displayName": "Local RAG Skills",
     "shortDescription": "Use Local RAG sources safely",
     "longDescription": "Eight focused, read-only skills wrap every configured Local RAG MCP tool and four common coding-agent research workflows.",
-    "developerName": "Local RAG",
+    "developerName": "JustinH",
     "category": "Productivity",
     "capabilities": ["Read"],
     "defaultPrompt": [
@@ -19,6 +20,8 @@
       "Use $local-rag-source-triage to assess Local RAG sources.",
       "Use $local-rag-evidence-retrieval to collect coding evidence."
     ],
-    "brandColor": "#2563EB"
+    "brandColor": "#2563EB",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/icon.png"
   }
 }

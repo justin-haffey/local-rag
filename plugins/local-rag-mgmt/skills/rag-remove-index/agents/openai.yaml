@@ -1,0 +1,13 @@
+interface:
+  display_name: "Local RAG Remove Index"
+  short_description: "Confirm removal of one folder index"
+  default_prompt: "Use $rag-remove-index to remove the Local RAG index for the exact folder I specify."
+
+policy:
+  allow_implicit_invocation: false
+
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "local_rag_mgmt"
+      description: "Plugin-provided privileged Local RAG management MCP server"

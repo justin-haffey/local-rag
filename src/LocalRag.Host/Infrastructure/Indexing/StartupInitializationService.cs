@@ -1,5 +1,6 @@
 using LocalRag.Application;
 using LocalRag.Domain;
+using LocalRag.Infrastructure.Management;
 
 namespace LocalRag.Infrastructure.Indexing;
 
@@ -13,15 +14,24 @@ public sealed partial class StartupInitializationService(
     SourceWatcherRegistry watchers,
     IndexCoordinator coordinator,
     MissingSourcePolicy missingSourcePolicy,
+    ResetStateStore resetState,
+    HostMaintenanceCoordinator maintenance,
     ILogger<StartupInitializationService> logger) : IHostedService
 {
     public async Task StartAsync(CancellationToken cancellationToken)
     {
+        var resetRecoveryRequired = resetState.HasIncompleteReset;
+        if (resetRecoveryRequired) maintenance.MarkFailed();
         await sources.InitializeAsync(cancellationToken);
         await indexState.InitializeAsync(cancellationToken);
         await chunkProfiles.InitializeAsync(cancellationToken);
         await legacyJobs.InitializeAsync(cancellationToken);
         await reconciliations.InitializeAsync(cancellationToken);
+        if (resetRecoveryRequired)
+        {
+            LogResetRecoveryRequired(logger);
+            return;
+        }
 
         foreach (var sourceId in await reconciliations.RecoverExpiredLeasesAsync(DateTimeOffset.UtcNow, cancellationToken))
         {
@@ -92,4 +102,7 @@ public sealed partial class StartupInitializationService(
 
     [LoggerMessage(EventId = 2, Level = LogLevel.Warning, Message = "Could not remove stale source {SourceId}; cleanup will be retried.")]
     private static partial void LogMissingSourceCleanupFailed(ILogger logger, string sourceId);
+
+    [LoggerMessage(EventId = 3, Level = LogLevel.Warning, Message = "Local RAG reset recovery is required; indexing startup is suspended.")]
+    private static partial void LogResetRecoveryRequired(ILogger logger);
 }

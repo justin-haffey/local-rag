@@ -6,6 +6,9 @@ namespace LocalRag.Api;
 
 public sealed record RegisterSourceRequest(string RootPath, string? DisplayName);
 public sealed record SearchApiRequest(string Query, IReadOnlyList<string>? SourceIds, int? Limit, double? Alpha);
+public sealed record ManagementIndexRequest(string RootPath, string? DisplayName);
+public sealed record ManagementRemoveRequest(string RootPath, string? ConfirmationToken);
+public sealed record ManagementResetRequest(string? ConfirmationToken);
 public sealed record RecoveryResponse(
     string State,
     long DesiredGeneration,

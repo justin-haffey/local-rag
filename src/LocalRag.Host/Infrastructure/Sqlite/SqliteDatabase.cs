@@ -17,6 +17,7 @@ public sealed class SqliteDatabase(IOptions<LocalRagOptions> options)
     }.ToString();
 
     public string DataDirectory { get; } = Expand(options.Value.DataDirectory);
+    public string DatabasePath { get; } = Path.GetFullPath(Path.Combine(Expand(options.Value.DataDirectory), "localrag.db"));
 
     public async Task<SqliteConnection> OpenAsync(CancellationToken cancellationToken)
     {
@@ -27,6 +28,25 @@ public sealed class SqliteDatabase(IOptions<LocalRagOptions> options)
         pragma.CommandText = "PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000; PRAGMA journal_mode = WAL;";
         await pragma.ExecuteNonQueryAsync(cancellationToken);
         return connection;
+    }
+
+    public Task ResetAsync(CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var dataDirectory = Path.GetFullPath(DataDirectory);
+        var expected = Path.Combine(dataDirectory, "localrag.db");
+        if (!string.Equals(DatabasePath, expected, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException("The SQLite reset target is outside the configured data directory.");
+        }
+
+        SqliteConnection.ClearAllPools();
+        foreach (var path in new[] { DatabasePath, DatabasePath + "-wal", DatabasePath + "-shm" })
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (File.Exists(path)) File.Delete(path);
+        }
+        return Task.CompletedTask;
     }
 
     /// <summary>Acquires an immediate write transaction with bounded replay for SQLite writer contention.</summary>

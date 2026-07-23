@@ -6,12 +6,17 @@ using System.Text.Json;
 using LocalRag.Application;
 using LocalRag.Configuration;
 using LocalRag.Domain;
+using LocalRag.Infrastructure.Management;
 using Microsoft.Extensions.Options;
 
 namespace LocalRag.Infrastructure.Weaviate;
 
-public sealed class WeaviateVectorStore(HttpClient client, IOptions<LocalRagOptions> options) : IVectorStore
+public sealed class WeaviateVectorStore(
+    HttpClient client,
+    IOptions<LocalRagOptions> options,
+    InstallationOwnershipStore? ownershipStore = null) : IVectorStore, IManagementVectorStore
 {
+    private const string OwnershipMarkerPrefix = "local-rag-owned:v1:";
     private readonly WeaviateOptions _options = options.Value.Weaviate;
     private readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web);
     private static readonly PropertyDefinition[] RequiredProperties =
@@ -47,12 +52,79 @@ public sealed class WeaviateVectorStore(HttpClient client, IOptions<LocalRagOpti
         using var schema = await client.GetAsync($"v1/schema/{Uri.EscapeDataString(_options.Collection)}", cancellationToken);
         if (schema.StatusCode == HttpStatusCode.NotFound)
         {
-            await CreateSchemaAsync(cancellationToken);
+            var ownershipId = ownershipStore is null
+                ? null
+                : await ownershipStore.GetOrCreateAsync(cancellationToken);
+            await CreateSchemaAsync(ownershipId, cancellationToken);
             return;
         }
         await EnsureSuccessAsync(schema, cancellationToken);
         await ValidateSchemaAsync(schema, cancellationToken);
     }
+
+    public async Task<bool> VerifyOwnershipAsync(string ownershipId, CancellationToken cancellationToken)
+    {
+        if (!IsLoopbackEndpoint())
+        {
+            return false;
+        }
+
+        using var schema = await client.GetAsync(
+            $"v1/schema/{Uri.EscapeDataString(_options.Collection)}",
+            cancellationToken);
+        if (!schema.IsSuccessStatusCode) return false;
+        using var document = JsonDocument.Parse(await schema.Content.ReadAsStreamAsync(cancellationToken));
+        return document.RootElement.TryGetProperty("description", out var description) &&
+            string.Equals(description.GetString(), OwnershipMarkerPrefix + ownershipId, StringComparison.Ordinal);
+    }
+
+    public async Task ResetOwnedCollectionAsync(string ownershipId, CancellationToken cancellationToken)
+    {
+        if (!await VerifyOwnershipAsync(ownershipId, cancellationToken))
+        {
+            throw new InvalidOperationException("The configured collection is not owned by this Local RAG installation.");
+        }
+
+        using var delete = await client.DeleteAsync(
+            $"v1/schema/{Uri.EscapeDataString(_options.Collection)}",
+            cancellationToken);
+        await EnsureSuccessAsync(delete, cancellationToken);
+        await CreateSchemaAsync(ownershipId, cancellationToken);
+    }
+
+    public async Task RecoverOwnedCollectionAsync(string ownershipId, CancellationToken cancellationToken)
+    {
+        if (!IsLoopbackEndpoint()) throw new InvalidOperationException("Weaviate reset recovery requires a loopback endpoint.");
+
+        using var schema = await client.GetAsync(
+            $"v1/schema/{Uri.EscapeDataString(_options.Collection)}",
+            cancellationToken);
+        if (schema.StatusCode == HttpStatusCode.NotFound)
+        {
+            await CreateSchemaAsync(ownershipId, cancellationToken);
+            return;
+        }
+
+        await EnsureSuccessAsync(schema, cancellationToken);
+        using var document = JsonDocument.Parse(await schema.Content.ReadAsStreamAsync(cancellationToken));
+        if (!document.RootElement.TryGetProperty("description", out var description) ||
+            !string.Equals(description.GetString(), OwnershipMarkerPrefix + ownershipId, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException("The configured collection is not owned by this Local RAG installation.");
+        }
+
+        using var delete = await client.DeleteAsync(
+            $"v1/schema/{Uri.EscapeDataString(_options.Collection)}",
+            cancellationToken);
+        await EnsureSuccessAsync(delete, cancellationToken);
+        await CreateSchemaAsync(ownershipId, cancellationToken);
+    }
+
+    private bool IsLoopbackEndpoint() =>
+        Uri.TryCreate(_options.Endpoint, UriKind.Absolute, out var endpoint) &&
+        endpoint.Scheme is "http" or "https" &&
+        IPAddress.TryParse(endpoint.Host, out var address) &&
+        IPAddress.IsLoopback(address);
 
     public async Task UpsertAsync(IReadOnlyList<VectorDocument> documents, CancellationToken cancellationToken)
     {
@@ -160,11 +232,12 @@ public sealed class WeaviateVectorStore(HttpClient client, IOptions<LocalRagOpti
         return results;
     }
 
-    private async Task CreateSchemaAsync(CancellationToken cancellationToken)
+    private async Task CreateSchemaAsync(string? ownershipId, CancellationToken cancellationToken)
     {
         var schema = new
         {
             @class = _options.Collection,
+            description = ownershipId is null ? null : OwnershipMarkerPrefix + ownershipId,
             vectorizer = "none",
             vectorIndexConfig = new { distance = "cosine" },
             properties = RequiredProperties.Select(CreatePropertyBody).ToArray()

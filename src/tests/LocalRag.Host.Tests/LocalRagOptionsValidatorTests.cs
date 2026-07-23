@@ -80,4 +80,32 @@ public sealed class LocalRagOptionsValidatorTests
         Assert.True(result.Failed);
         Assert.Contains(result.Failures, failure => failure.Contains("shorter", StringComparison.Ordinal));
     }
+
+    [Fact]
+    public void ManagementIsDisabledByDefaultAndRequiresADistinctTokenWhenEnabled()
+    {
+        Assert.True(new LocalRagOptionsValidator().Validate(null, new LocalRagOptions()).Succeeded);
+
+        var missing = new LocalRagOptions
+        {
+            Authentication = new AuthenticationOptions { Token = "standard" },
+            Management = new ManagementOptions { Enabled = true }
+        };
+        var missingResult = new LocalRagOptionsValidator().Validate(null, missing);
+        Assert.NotNull(missingResult.Failures);
+        Assert.Contains(
+            missingResult.Failures,
+            failure => failure.Contains("Management.Token", StringComparison.Ordinal));
+
+        var equal = new LocalRagOptions
+        {
+            Authentication = new AuthenticationOptions { Token = "same" },
+            Management = new ManagementOptions { Enabled = true, Token = "same" }
+        };
+        var equalResult = new LocalRagOptionsValidator().Validate(null, equal);
+        Assert.NotNull(equalResult.Failures);
+        Assert.Contains(
+            equalResult.Failures,
+            failure => failure.Contains("distinct", StringComparison.Ordinal));
+    }
 }

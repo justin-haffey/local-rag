@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "local_rag_mgmt": {
+      "type": "http",
+      "url": "http://127.0.0.1:5198/management/mcp",
+      "bearer_token_env_var": "LOCALRAG_MANAGEMENT_TOKEN",
+      "enabled": true,
+      "required": false,
+      "startup_timeout_sec": 20.0,
+      "tool_timeout_sec": 120.0
+    }
+  }
+}

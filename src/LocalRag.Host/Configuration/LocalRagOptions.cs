@@ -8,10 +8,19 @@ public sealed class LocalRagOptions
     /// <summary>Root for application data; the default uses the <c>LOCALAPPDATA</c> placeholder.</summary>
     public string DataDirectory { get; init; } = "%LOCALAPPDATA%\\LocalRag";
     public AuthenticationOptions Authentication { get; init; } = new();
+    public ManagementOptions Management { get; init; } = new();
     public WeaviateOptions Weaviate { get; init; } = new();
     public IndexingOptions Indexing { get; init; } = new();
     public ChunkingOptions Chunking { get; init; } = new();
     public EmbeddingOptions Embedding { get; init; } = new();
+}
+
+public sealed class ManagementOptions
+{
+    public bool Enabled { get; init; }
+    public string Token { get; init; } = string.Empty;
+    public int ConfirmationLifetimeSeconds { get; init; } = 120;
+    public int MaintenanceDrainTimeoutSeconds { get; init; } = 30;
 }
 
 public sealed class AuthenticationOptions

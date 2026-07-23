@@ -1,6 +1,6 @@
 ---
 name: local-rag-list-sources
-description: Lists developer-folder sources visible through the repository-configured Local RAG MCP server. Use when a user asks what is indexed, needs source IDs before a scoped search, or needs to confirm source visibility. Do not use for source creation, deletion, or reindexing.
+description: Lists developer-folder sources visible through the plugin-provided Local RAG MCP server. Use when a user asks what is indexed, needs source IDs before a scoped search, or needs to confirm source visibility. Do not use for source creation, deletion, or reindexing.
 ---
 
 # List Local RAG Sources

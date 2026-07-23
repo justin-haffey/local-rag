@@ -1,4 +1,3 @@
-using System.Net;
 using System.Text.Json;
 using LocalRag.Api;
 using LocalRag.Application;
@@ -8,6 +7,7 @@ using LocalRag.Health;
 using LocalRag.Infrastructure.Embeddings;
 using LocalRag.Infrastructure.Diagnostics;
 using LocalRag.Infrastructure.Indexing;
+using LocalRag.Infrastructure.Management;
 using LocalRag.Infrastructure.Processing;
 using LocalRag.Infrastructure.Sqlite;
 using LocalRag.Infrastructure.Weaviate;
@@ -21,7 +21,7 @@ builder.Services.AddSingleton<Microsoft.Extensions.Options.IValidateOptions<Loca
 builder.Services.AddOptions<LocalRagOptions>()
     .Bind(builder.Configuration.GetSection(LocalRagOptions.SectionName))
     .ValidateOnStart();
-ValidateLocalHosting(builder.Configuration);
+LocalHostingPolicy.ValidateConfiguredBindings(builder.Configuration);
 var configuredOptions = builder.Configuration.GetSection(LocalRagOptions.SectionName).Get<LocalRagOptions>() ?? new LocalRagOptions();
 if (string.IsNullOrWhiteSpace(configuredOptions.Authentication.Token))
 {
@@ -30,6 +30,10 @@ if (string.IsNullOrWhiteSpace(configuredOptions.Authentication.Token))
 builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 1_048_576);
 
 builder.Services.AddSingleton<SqliteDatabase>();
+builder.Services.AddSingleton<HostMaintenanceCoordinator>();
+builder.Services.AddSingleton<ManagementConfirmationStore>();
+builder.Services.AddSingleton<InstallationOwnershipStore>();
+builder.Services.AddSingleton<ResetStateStore>();
 builder.Services.AddSingleton<SqliteSourceRegistry>();
 builder.Services.AddSingleton<ISourceRegistry>(services => services.GetRequiredService<SqliteSourceRegistry>());
 builder.Services.AddSingleton<SqliteIndexStateStore>();
@@ -88,6 +92,8 @@ builder.Services.AddHttpClient<IVectorStore, WeaviateVectorStore>((services, cli
     client.Timeout = TimeSpan.FromSeconds(options.RequestTimeoutSeconds);
     if (!string.IsNullOrWhiteSpace(options.ApiKey)) client.DefaultRequestHeaders.Authorization = new("Bearer", options.ApiKey);
 });
+builder.Services.AddTransient<IManagementVectorStore>(services =>
+    (IManagementVectorStore)services.GetRequiredService<IVectorStore>());
 builder.Services.AddSingleton<IndexWorkChannel>();
 builder.Services.AddSingleton<OperationalMetrics>();
 builder.Services.AddSingleton<IndexJobStore>();
@@ -101,6 +107,7 @@ builder.Services.AddSingleton<MissingSourcePolicy>();
 builder.Services.AddSingleton<IndexCoordinator>();
 builder.Services.AddSingleton<IIndexCoordinator>(services => services.GetRequiredService<IndexCoordinator>());
 builder.Services.AddSingleton<IRagSearchService, RagSearchService>();
+builder.Services.AddSingleton<ILocalRagManagementService, LocalRagManagementService>();
 builder.Services.AddHostedService<StartupInitializationService>();
 builder.Services.AddHostedService<ReconciliationDispatcher>();
 builder.Services.AddHostedService<IndexWorker>();
@@ -108,17 +115,41 @@ builder.Services.AddHostedService<ReconciliationService>();
 builder.Services.AddHealthChecks()
     .AddCheck<SqliteHealthCheck>("sqlite", failureStatus: HealthStatus.Unhealthy)
     .AddCheck<WeaviateHealthCheck>("weaviate", failureStatus: HealthStatus.Degraded)
+    .AddCheck<MaintenanceHealthCheck>("maintenance", failureStatus: HealthStatus.Unhealthy)
     .AddCheck<EmbeddingAssetsHealthCheck>("embedding-assets", failureStatus: HealthStatus.Degraded);
 builder.Services.AddAuthentication(LocalTokenAuthenticationHandler.SchemeName)
-    .AddScheme<AuthenticationSchemeOptions, LocalTokenAuthenticationHandler>(LocalTokenAuthenticationHandler.SchemeName, _ => { });
-builder.Services.AddAuthorization();
-builder.Services.AddMcpServer().WithHttpTransport(options => options.Stateless = true).WithTools<RagMcpTools>();
+    .AddScheme<AuthenticationSchemeOptions, LocalTokenAuthenticationHandler>(LocalTokenAuthenticationHandler.SchemeName, _ => { })
+    .AddScheme<AuthenticationSchemeOptions, ManagementTokenAuthenticationHandler>(ManagementTokenAuthenticationHandler.SchemeName, _ => { });
+builder.Services.AddAuthorization(options =>
+    options.AddPolicy(
+        ManagementTokenAuthenticationHandler.PolicyName,
+        policy => policy.AddAuthenticationSchemes(ManagementTokenAuthenticationHandler.SchemeName)
+            .RequireAuthenticatedUser()));
+builder.Services.AddMcpServer()
+    .WithHttpTransport(options =>
+    {
+        options.Stateless = true;
+        options.ConfigureSessionOptions = (context, serverOptions, _) =>
+        {
+            var management = context.Request.Path.StartsWithSegments("/management/mcp");
+            string[] allowedNames = management
+                ? ["rag_index", "rag_remove_index", "rag_reset"]
+                : ["rag_search", "rag_get_chunk", "rag_list_sources", "rag_get_source_status"];
+            serverOptions.ToolCollection =
+            [
+                .. (serverOptions.ToolCollection ?? []).Where(tool =>
+                    allowedNames.Contains(tool.ProtocolTool.Name, StringComparer.Ordinal))
+            ];
+            return Task.CompletedTask;
+        };
+    })
+    .WithTools<RagMcpTools>()
+    .WithTools<RagManagementMcpTools>();
 
 var app = builder.Build();
 app.Use(async (context, next) =>
 {
-    var host = context.Request.Host.Host;
-    if (!string.IsNullOrEmpty(host) && (!IPAddress.TryParse(host, out var address) || !IPAddress.IsLoopback(address)))
+    if (!LocalHostingPolicy.IsLoopbackRequest(context))
     {
         context.Response.StatusCode = StatusCodes.Status400BadRequest;
         await context.Response.WriteAsync("Only loopback Host headers are accepted.");
@@ -132,7 +163,7 @@ app.UseAuthorization();
 app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions { Predicate = _ => false });
 app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
 {
-    Predicate = check => check.Name is "sqlite" or "weaviate" or "embedding-assets",
+    Predicate = check => check.Name is "sqlite" or "weaviate" or "embedding-assets" or "maintenance",
     ResultStatusCodes =
     {
         [HealthStatus.Healthy] = StatusCodes.Status200OK,
@@ -151,14 +182,19 @@ app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.Health
 });
 
 var api = app.MapGroup("/api/v1").RequireAuthorization();
+var managementApi = app.MapGroup("/api/v1/management")
+    .RequireAuthorization(ManagementTokenAuthenticationHandler.PolicyName);
 app.MapGet("/metrics", (OperationalMetrics metrics) => Results.Ok(metrics.Snapshot())).RequireAuthorization();
-api.MapPost("/sources", async (RegisterSourceRequest request, ISourceRegistry sources, IReconciliationStore reconciliations, IIndexCoordinator coordinator, CancellationToken cancellationToken) =>
+api.MapPost("/sources", async (RegisterSourceRequest request, ISourceRegistry sources, IReconciliationStore reconciliations, IIndexCoordinator coordinator, HostMaintenanceCoordinator maintenance, CancellationToken cancellationToken) =>
 {
-    var source = await sources.RegisterAsync(request.RootPath, request.DisplayName, cancellationToken);
-    await coordinator.QueueInitialIndexAsync(source.SourceId, cancellationToken);
+    var operational = maintenance.TryAcquireOperational(cancellationToken);
+    if (operational is null) return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+    await using var lease = operational;
+    var source = await sources.RegisterAsync(request.RootPath, request.DisplayName, lease.CancellationToken);
+    await coordinator.QueueInitialIndexAsync(source.SourceId, lease.CancellationToken);
     return Results.Created(
         $"/api/v1/sources/{source.SourceId}",
-        source.ToResponse(await reconciliations.GetAsync(source.SourceId, cancellationToken)));
+        source.ToResponse(await reconciliations.GetAsync(source.SourceId, lease.CancellationToken)));
 });
 api.MapGet("/sources", async (ISourceRegistry sources, IReconciliationStore reconciliations, CancellationToken cancellationToken) =>
 {
@@ -175,10 +211,13 @@ api.MapGet("/sources/{sourceId}/status", async (string sourceId, ISourceRegistry
     await sources.GetAsync(sourceId, cancellationToken) is { } source
         ? Results.Ok(source.ToResponse(await reconciliations.GetAsync(sourceId, cancellationToken)))
         : Results.NotFound());
-api.MapDelete("/sources/{sourceId}", async (string sourceId, ISourceRegistry sources, IIndexCoordinator coordinator, CancellationToken cancellationToken) =>
+api.MapDelete("/sources/{sourceId}", async (string sourceId, ISourceRegistry sources, IIndexCoordinator coordinator, HostMaintenanceCoordinator maintenance, CancellationToken cancellationToken) =>
 {
-    if (await sources.GetAsync(sourceId, cancellationToken) is null) return Results.NotFound();
-    await coordinator.RemoveSourceAsync(sourceId, cancellationToken);
+    var operational = maintenance.TryAcquireOperational(cancellationToken);
+    if (operational is null) return Results.StatusCode(StatusCodes.Status503ServiceUnavailable);
+    await using var lease = operational;
+    if (await sources.GetAsync(sourceId, lease.CancellationToken) is null) return Results.NotFound();
+    await coordinator.RemoveSourceAsync(sourceId, lease.CancellationToken);
     return Results.NoContent();
 });
 api.MapPost("/sources/{sourceId}/reindex", async (string sourceId, ISourceRegistry sources, IIndexCoordinator coordinator, CancellationToken cancellationToken) =>
@@ -193,6 +232,22 @@ api.MapGet("/chunks/{chunkId}", async (string chunkId, IRagSearchService search,
     await search.GetChunkAsync(chunkId, cancellationToken) is { } chunk ? Results.Ok(chunk) : Results.NotFound());
 
 app.MapMcp("/mcp").RequireAuthorization();
+app.MapMcp("/management/mcp").RequireAuthorization(ManagementTokenAuthenticationHandler.PolicyName);
+managementApi.MapPost("/index", async (
+    ManagementIndexRequest request,
+    ILocalRagManagementService management,
+    CancellationToken cancellationToken) =>
+    Results.Ok(await management.IndexAsync(request.RootPath, request.DisplayName, "local-management", cancellationToken)));
+managementApi.MapPost("/remove-index", async (
+    ManagementRemoveRequest request,
+    ILocalRagManagementService management,
+    CancellationToken cancellationToken) =>
+    Results.Ok(await management.RemoveAsync(request.RootPath, request.ConfirmationToken, "local-management", cancellationToken)));
+managementApi.MapPost("/reset", async (
+    ManagementResetRequest request,
+    ILocalRagManagementService management,
+    CancellationToken cancellationToken) =>
+    Results.Ok(await management.ResetAsync(request.ConfirmationToken, "local-management", cancellationToken)));
 await app.RunAsync();
 
 static void ConfigureLocalOverridePrecedence(ConfigurationManager configuration)
@@ -201,17 +256,4 @@ static void ConfigureLocalOverridePrecedence(ConfigurationManager configuration)
     foreach (var source in lateSources) configuration.Sources.Remove(source);
     configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
     foreach (var source in lateSources) configuration.Sources.Add(source);
-}
-
-static void ValidateLocalHosting(IConfiguration configuration)
-{
-    var urls = configuration["urls"] ?? configuration["ASPNETCORE_URLS"];
-    if (string.IsNullOrWhiteSpace(urls)) return;
-    foreach (var rawUrl in urls.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-    {
-        if (!Uri.TryCreate(rawUrl, UriKind.Absolute, out var url) || !IPAddress.TryParse(url.Host, out var address) || !IPAddress.IsLoopback(address))
-        {
-            throw new InvalidOperationException("Local RAG only permits loopback server bindings.");
-        }
-    }
 }

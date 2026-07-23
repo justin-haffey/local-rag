@@ -66,7 +66,7 @@ For a degraded source, first verify that its registered folder, Weaviate endpoin
 
 The authenticated `/metrics` endpoint reports bounded request causes, watcher overflows, runs/outcomes/retries, recovered leases, durations, result counts, and current dirty/degraded gauges without source-, path-, content-, error-, or lease-labelled dimensions.
 
-The project-level `.codex/config.toml` registers the backend's Streamable HTTP MCP endpoint as `local_rag`. To let Codex and the extension share its bearer token without committing a secret, generate a high-entropy user environment variable once, then restart VS Code:
+The `local-rag-skills` Codex plugin bundles the backend's Streamable HTTP MCP endpoint as `local_rag`. To let Codex and the extension share its bearer token without committing a secret, generate a high-entropy user environment variable once, then restart VS Code:
 
 ```powershell
 $tokenBytes = [byte[]]::new(32)
@@ -80,7 +80,11 @@ $token = [Convert]::ToBase64String($tokenBytes)
 [Environment]::SetEnvironmentVariable('LOCALRAG_MCP_TOKEN', $token, 'User')
 ```
 
-When `LOCALRAG_MCP_TOKEN` is available, the extension uses it to launch the backend. Otherwise, the extension continues to use VS Code Secret Storage, but project-configured MCP clients cannot authenticate automatically.
+When `LOCALRAG_MCP_TOKEN` is available, the extension uses it to launch the backend and the plugin-provided MCP client uses it for bearer authentication. Otherwise, the extension continues to use VS Code Secret Storage, but the plugin-provided MCP client cannot authenticate automatically.
+
+The separate `local-rag-mgmt` plugin provides explicitly invoked `rag-index`, `rag-remove-index`, and `rag-reset` skills through `/management/mcp`. Management is disabled by default. To enable it, configure `LocalRag__Management__Enabled=true` and set a high-entropy `LocalRag__Management__Token` that is different from the standard token; expose the same value to the plugin as `LOCALRAG_MANAGEMENT_TOKEN`.
+
+Removal and reset use a two-call confirmation flow. Reset irreversibly recreates only the configured Local RAG SQLite database and the ownership-verified, loopback Weaviate collection; source folders, models, configuration, and unrelated collections/files are preserved. If reset fails after destructive work begins, `/health/ready` remains unhealthy and `reset-state.json` remains in the configured data directory. Correct the dependency problem and invoke `rag-reset` again, including a new explicit confirmation. Do not delete the recovery marker or retry against a shared, remote, or ownership-unverified Weaviate instance.
 
 ### Build and Run
 

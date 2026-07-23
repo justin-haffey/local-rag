@@ -422,6 +422,12 @@ await app.RunAsync();
 
 MCP tool classes should be thin adapters over `IRagSearchService`, `ISourceQueryService`, and `IIndexAdministrationService`.
 
+### 5.3.9 Optional Local Management Surface
+
+ADR-003 adds an opt-in `/management/mcp` adapter without changing the default `/mcp` capability set. The host filters each MCP session to either the read-only retrieval tools or the management tools and protects the management route with a distinct bearer-token policy. `rag_index`, `rag_remove_index`, and `rag_reset` delegate to shared application services; plugin code never accesses SQLite, source files, or Weaviate directly.
+
+Remove and reset require short-lived, one-use confirmation challenges bound to the action, target, and management principal. Reset also requires a loopback Weaviate endpoint and an installation ownership marker on the configured collection. A host-wide maintenance coordinator blocks new mutations, cancels and drains active indexing work, and keeps readiness unhealthy while an external `reset-state.json` marker records incomplete recovery. The reset scope is limited to `localrag.db` plus its WAL/SHM sidecars and the ownership-verified collection. Source folders, model assets, configuration, and unrelated files or collections are outside that boundary.
+
 ---
 
 ## 5.4 Source Registry and State Store
@@ -1118,6 +1124,13 @@ mcp:
   maxRequestBytes: 1048576
   maxResponseCharacters: 200000
   requestTimeoutSeconds: 30
+
+management:
+  enabled: false
+  path: /management/mcp
+  tokenEnvironmentVariable: LOCALRAG_MANAGEMENT_TOKEN
+  confirmationLifetimeSeconds: 120
+  maintenanceDrainTimeoutSeconds: 30
 
 indexing:
   debounceMilliseconds: 5000

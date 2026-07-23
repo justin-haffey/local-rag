@@ -10,7 +10,7 @@
 Related documents:
 
 - Design: [.swe/01-DESIGN/DESIGN.md](../01-DESIGN/DESIGN.md)
-- ADRs: [ADR-001: Language-Aware Structural Chunking](../02-ADR/ADR-001-language-aware-structural-chunking.md) and [ADR-002: Durable Reconciliation State and Watcher Recovery](../02-ADR/ADR-002-durable-reconciliation-state-and-watcher-recovery.md) are Accepted; remaining Phase 2 ADRs are created and reviewed at the start of their owning feature cycles.
+- ADRs: [ADR-001: Language-Aware Structural Chunking](../02-ADR/ADR-001-language-aware-structural-chunking.md), [ADR-002: Durable Reconciliation State and Watcher Recovery](../02-ADR/ADR-002-durable-reconciliation-state-and-watcher-recovery.md), and [ADR-003: Local Management and Destructive Reset](../02-ADR/ADR-003-local-management-and-destructive-reset.md) govern their owning features; remaining Phase 2 ADRs are created and reviewed at the start of their owning feature cycles.
 - Features: [.swe/04-FEATURE/](../04-FEATURE/)
 - Architecture: [DESIGN.md Sections 4–16](../01-DESIGN/DESIGN.md)
 
@@ -120,6 +120,12 @@ Phase 2 turns the working local Windows MVP into a higher-quality, recoverable r
    - Boundaries: project publish settings, scripts, extension host discovery, platform packages, CI matrix, and documentation.
    - Configuration/data: Use one versioned installation-discovery schema and platform-native per-user paths; Weaviate endpoint remains non-secret external configuration.
    - Verification: POS-08-001 through EDGE-08-001 on real or approved CI runners for every selected RID.
+9. **Privileged local index management**
+
+   - Change: Add the separately authenticated `local-rag-mgmt` Codex plugin and a management-only host surface for index-by-path, remove-by-path, and an explicitly confirmed full Local RAG reset.
+   - Boundaries: Plugin manifest/skills, management MCP and REST adapters, application management service, source/reconciliation fencing, SQLite reset, owned Weaviate collection reset, readiness, and bounded audit metrics.
+   - Configuration/data: Disabled by default; use a distinct management token, expiring one-use confirmations, loopback-only ownership validation, and no source-file mutation.
+   - Verification: POS-09-001 through EDGE-09-003 plus standard-MCP compatibility and destructive-boundary evidence.
 
 ### Delivery sequence
 
@@ -130,6 +136,7 @@ Phase 2 turns the working local Windows MVP into a higher-quality, recoverable r
 - [ ] Implement FEATURE-05 and FEATURE-06 over the shared retrieval/authorization contracts.
 - [ ] Implement FEATURE-07 after indexing, search, and authorization events are stable.
 - [ ] Implement FEATURE-08 after runtime contracts and discovery schema are stable.
+- [x] Implement FEATURE-09 only after ADR-003 is accepted; preserve the standard read-only MCP surface and externally managed Weaviate process boundary.
 - [ ] Run the complete quality, security, live-dependency, packaging, and documentation release gate.
 
 ---
@@ -148,6 +155,7 @@ Phase 2 turns the working local Windows MVP into a higher-quality, recoverable r
 | FEATURE-06 | VS Code search experience           | Must     | [FEATURE-06](../04-FEATURE/FEATURE-06-VSCODE-SEARCH-EXPERIENCE.md)            | R2.6-*       | POS-06/NEG-06/EDGE-06 | Not started |
 | FEATURE-07 | Metrics and diagnostics dashboard   | Must     | [FEATURE-07](../04-FEATURE/FEATURE-07-METRICS-AND-DIAGNOSTICS-DASHBOARD.md)   | R2.7-*       | POS-07/NEG-07/EDGE-07 | Not started |
 | FEATURE-08 | Cross-platform host packaging       | Rejected | [FEATURE-08](../04-FEATURE/FEATURE-08-CROSS-PLATFORM-HOST-PACKAGING.md)       | R2.8-*       | POS-08/NEG-08/EDGE-08 | Not started |
+| FEATURE-09 | Local RAG management plugin and host API | Must | [FEATURE-09](../04-FEATURE/FEATURE-09-LOCAL-RAG-MANAGEMENT-PLUGIN.md) | R2.9-* | POS-09/NEG-09/EDGE-09 | Completed |
 
 ### Feature blocks
 

@@ -10,4 +10,4 @@ dependencies:
   tools:
     - type: "mcp"
       value: "local_rag"
-      description: "Existing repository-configured Local RAG MCP server"
+      description: "Plugin-provided Local RAG MCP server"
