@@ -17,7 +17,7 @@ Engineers can extend the platform through pluggable parsers, language-aware chun
 ### Components
 
 - **Windows Host App -** Hosts the Synchronization engine, MCP Server and ONNX embedding model runtime.
-- **VS Code Extension (VSIX) -** `Right-click → Toggle RAG Source` turns any project folder into an agent-aware, searchable knowledge source without disrupting the developer workflow.
+- **VS Code Extension (VSIX) -** `Right-click → Local RAG` provides folder-scoped index, toggle, refresh, and status actions, while the **Local RAG Search** Explorer view provides safe in-editor retrieval.
 - **Weaviate -** Stored chunked vectors in a local Weaviate database (Docker hosted container or Weaviate cloud).
 
 ### Prerequisites
@@ -115,7 +115,8 @@ The extension manages only the packaged backend process. If Weaviate or model as
 
 ### Developer Experience
 
-* **VS Code Integration.** `Right-click → Toggle RAG Source` turns any project folder into an agent-aware, searchable knowledge source without disrupting the developer workflow.
+* **VS Code Integration.** `Right-click → Local RAG` provides **Index Folder**, **Toggle Indexing**, **Refresh Index**, and **Source Status** for the selected folder. Toggle removal requires confirmation and never targets another folder.
+* **In-Editor Search.** Open **Local RAG Search** in the Explorer, run **Local RAG: Search**, choose sources plus Hybrid/Lexical/Vector mode and optional language/path filters, then open a result at its line or copy bounded context with provenance. Navigation stays within the matching real workspace path.
 * **Multiple Client Surfaces.** Access retrieval and indexing capabilities through VS Code, REST APIs, MCP-compatible agents, command-line tools, and automation clients.
 * **Shared Retrieval Core.** Every integration uses the same application services, authorization policies, filters, ranking pipeline, and response contracts.
 

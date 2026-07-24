@@ -67,6 +67,33 @@ public sealed class RagSearchServiceTests
         Assert.False(vectors.WasSearched);
     }
 
+    [Fact]
+    public async Task SearchPassesValidatedModeAndFiltersToTheVectorStore()
+    {
+        var vectors = new FakeVectorStore();
+        var service = CreateService(vectors, isVisible: true);
+
+        await service.SearchAsync(new SearchRequest("retry", ["source"], 5, Mode: SearchMode.Vector, Language: "csharp", PathPrefix: "src/"), CancellationToken.None);
+
+        Assert.NotNull(vectors.LastRequest);
+        Assert.Equal(SearchMode.Vector, vectors.LastRequest!.Mode);
+        Assert.Equal("csharp", vectors.LastRequest.Language);
+        Assert.Equal("src/", vectors.LastRequest.PathPrefix);
+        Assert.Equal(20, vectors.LastRequest.Limit);
+    }
+
+    [Theory]
+    [InlineData("C:\\outside")]
+    [InlineData("../outside")]
+    public async Task SearchRejectsUnsafePathPrefixes(string pathPrefix)
+    {
+        var vectors = new FakeVectorStore();
+        var service = CreateService(vectors, isVisible: true);
+
+        await Assert.ThrowsAsync<ArgumentException>(() => service.SearchAsync(new SearchRequest("retry", PathPrefix: pathPrefix), CancellationToken.None));
+        Assert.False(vectors.WasSearched);
+    }
+
     private static RagSearchService CreateService(FakeVectorStore vectors, bool isVisible) => new(
         new FakeEmbeddings(),
         vectors,
@@ -87,6 +114,7 @@ public sealed class RagSearchServiceTests
     private sealed class FakeVectorStore : IVectorStore
     {
         public bool WasSearched { get; private set; }
+        public SearchRequest? LastRequest { get; private set; }
         public Task EnsureReadyAsync(CancellationToken cancellationToken) => Task.CompletedTask;
         public Task UpsertAsync(IReadOnlyList<VectorDocument> documents, CancellationToken cancellationToken) => Task.CompletedTask;
         public Task DeleteAsync(IReadOnlyList<string> chunkIds, CancellationToken cancellationToken) => Task.CompletedTask;
@@ -94,6 +122,7 @@ public sealed class RagSearchServiceTests
         public Task<IReadOnlyList<SearchResult>> SearchAsync(SearchRequest request, IReadOnlyList<float> queryVector, CancellationToken cancellationToken)
         {
             WasSearched = true;
+            LastRequest = request;
             return Task.FromResult<IReadOnlyList<SearchResult>>([]);
         }
     }

@@ -5,7 +5,7 @@ using LocalRag.Domain;
 namespace LocalRag.Api;
 
 public sealed record RegisterSourceRequest(string RootPath, string? DisplayName);
-public sealed record SearchApiRequest(string Query, IReadOnlyList<string>? SourceIds, int? Limit, double? Alpha);
+public sealed record SearchApiRequest(string Query, IReadOnlyList<string>? SourceIds, int? Limit, double? Alpha, SearchMode? Mode = null, string? Language = null, string? PathPrefix = null);
 public sealed record ManagementIndexRequest(string RootPath, string? DisplayName);
 public sealed record ManagementRemoveRequest(string RootPath, string? ConfirmationToken);
 public sealed record ManagementResetRequest(string? ConfirmationToken);

@@ -197,13 +197,15 @@ public sealed class WeaviateVectorStore(
     public async Task<IReadOnlyList<SearchResult>> SearchAsync(SearchRequest request, IReadOnlyList<float> queryVector, CancellationToken cancellationToken)
     {
         await EnsureReadyAsync(cancellationToken);
-        var sourceFilter = request.SourceIds is { Count: > 0 }
-            ? $", where: {{operator: Or, operands: [{string.Join(',', request.SourceIds.Select(sourceId => $"{{path: [\"sourceId\"], operator: Equal, valueText: {QuoteGraphQl(sourceId)}}}"))}]}}"
-            : string.Empty;
+        var filters = new List<string>();
+        if (request.SourceIds is { Count: > 0 }) filters.Add($"{{operator: Or, operands: [{string.Join(',', request.SourceIds.Select(sourceId => $"{{path: [\"sourceId\"], operator: Equal, valueText: {QuoteGraphQl(sourceId)}}}"))}]}}");
+        if (request.Language is { } language) filters.Add($"{{path: [\"language\"], operator: Equal, valueText: {QuoteGraphQl(language)}}}");
+        if (request.PathPrefix is { } prefix) filters.Add($"{{path: [\"relativePath\"], operator: Like, valueText: {QuoteGraphQl(prefix + "*")}}}");
+        var where = filters.Count switch { 0 => string.Empty, 1 => $", where: {filters[0]}", _ => $", where: {{operator: And, operands: [{string.Join(',', filters)}]}}" };
         var vector = string.Join(',', queryVector.Select(value => value.ToString(System.Globalization.CultureInfo.InvariantCulture)));
-        var alpha = request.Alpha.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        var alpha = (request.Mode switch { SearchMode.Lexical => 0d, SearchMode.Vector => 1d, _ => request.Alpha }).ToString(System.Globalization.CultureInfo.InvariantCulture);
         var query = "{ Get { " + _options.Collection +
-            "(hybrid: {query: " + QuoteGraphQl(request.Query) + ", vector: [" + vector + "], alpha: " + alpha + "}" + sourceFilter + ", limit: " + request.Limit + ") { " +
+            "(hybrid: {query: " + QuoteGraphQl(request.Query) + ", vector: [" + vector + "], alpha: " + alpha + "}" + where + ", limit: " + request.Limit + ") { " +
             "chunkId sourceId relativePath language symbolName chunkKind qualifiedSymbolName structuralLocator chunkerId chunkerVersion chunkProfileFingerprint startLine endLine content contentHash lastIndexedUtc _additional { score }" +
             " } } }";
         using var response = await client.PostAsJsonAsync("v1/graphql", new { query }, _json, cancellationToken);

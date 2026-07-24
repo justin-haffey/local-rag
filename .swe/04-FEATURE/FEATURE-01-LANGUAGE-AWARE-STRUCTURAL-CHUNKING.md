@@ -9,20 +9,18 @@ ADRs: [ADR-001: Language-Aware Structural Chunking](../02-ADR/ADR-001-language-a
 
 ## Implementation plan (step-by-step)
 
-- [x] Approve the Phase 2 language corpus, parser strategy, chunk metadata, versioning, and evaluation threshold through ADR-001.
-- [x] Extend chunk contracts and persistence with chunk kind, qualified symbol, structural locator, and chunker identity/version.
-- [x] Add a chunker selector/composite and retain `GenericChunker` as the mandatory fallback.
-- [x] Implement the approved structural chunkers in smallest-language increments with golden fixtures.
-- [x] Add deterministic oversized-symbol splitting and token-window enforcement.
-- [x] Add/update automated tests for every positive, negative, and edge scenario below.
-- [x] Run build, test, format, live-inference, live-Weaviate, and retrieval-evaluation commands; record results.
-- [x] Update schema/migration, configuration, architecture, and supported-language documentation.
+- [X] Approve the Phase 2 language corpus, parser strategy, chunk metadata, versioning, and evaluation threshold through ADR-001.
+- [X] Extend chunk contracts and persistence with chunk kind, qualified symbol, structural locator, and chunker identity/version.
+- [X] Add a chunker selector/composite and retain `GenericChunker` as the mandatory fallback.
+- [X] Implement the approved structural chunkers in smallest-language increments with golden fixtures.
+- [X] Add deterministic oversized-symbol splitting and token-window enforcement.
+- [X] Add/update automated tests for every positive, negative, and edge scenario below.
+- [X] Run build, test, format, live-inference, live-Weaviate, and retrieval-evaluation commands; record results.
+- [X] Update schema/migration, configuration, architecture, and supported-language documentation.
 
 ---
 
-## Purpose
-
-Produce higher-quality searchable chunks that preserve meaningful swe/configuration boundaries and provenance, while remaining deterministic, bounded, and safe when parsing is unsupported or fails.
+## Purpose>D
 
 ---
 

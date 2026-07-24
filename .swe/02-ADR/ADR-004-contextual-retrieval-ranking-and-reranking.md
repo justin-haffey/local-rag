@@ -9,8 +9,8 @@ Related Plan: [PLAN-02: Phase 2 Retrieval Quality and Operational Hardening](../
 
 ## Implementation plan (step-by-step)
 
-- [x] Analyze the current shared search, vector-store, SQLite chunk-state, REST, and MCP boundaries.
-- [x] Define candidate widening, deterministic shaping, optional local reranking, neighbor expansion, budgets, diagnostics, fallback, and compatibility rules.
+- [X] Analyze the current shared search, vector-store, SQLite chunk-state, REST, and MCP boundaries.
+- [X] Define candidate widening, deterministic shaping, optional local reranking, neighbor expansion, budgets, diagnostics, fallback, and compatibility rules.
 - [ ] Obtain explicit solution-architecture acceptance of this ADR.
 - [ ] Resolve PLAN-02's rejected FEATURE-04 authorization dependency before FEATURE-03 implementation or client exposure.
 - [ ] Implement the change in bounded application, infrastructure, and adapter increments.
@@ -56,12 +56,12 @@ The design requires validation and authorization before vector work, one applica
 
 ## Stakeholders (who needs this to be clear)
 
-| Role | What they need to know | Questions this ADR answers |
-| --- | --- | --- |
-| Product / Owner | Quality, latency, and compatibility behavior | What improves, and what remains unchanged by default? |
-| Engineering | Pipeline boundaries, algorithms, contracts, and failure semantics | Where do candidate retrieval, shaping, reranking, and neighbors live? |
-| DevOps / SRE | Configuration, model provenance, budgets, and safe diagnostics | How is the feature enabled, observed, and disabled safely? |
-| QA | Deterministic outcomes and live evaluation gates | Which positive, forbidden, edge, latency, and relevance cases must pass? |
+| Role            | What they need to know                                            | Questions this ADR answers                                               |
+| --------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Product / Owner | Quality, latency, and compatibility behavior                      | What improves, and what remains unchanged by default?                    |
+| Engineering     | Pipeline boundaries, algorithms, contracts, and failure semantics | Where do candidate retrieval, shaping, reranking, and neighbors live?    |
+| DevOps / SRE    | Configuration, model provenance, budgets, and safe diagnostics    | How is the feature enabled, observed, and disabled safely?               |
+| QA              | Deterministic outcomes and live evaluation gates                  | Which positive, forbidden, edge, latency, and relevance cases must pass? |
 
 ---
 
@@ -77,7 +77,7 @@ This decision is accepted only together with the following hard gate: **FEATURE-
 - `IVectorStore` remains a bounded candidate-retrieval adapter. It does not diversify, rerank, expand neighbors, or enforce client response budgets.
 - `IIndexStateStore` supplies committed chunk metadata needed for same-file ordinal neighbor lookup. It is not queried directly by adapters.
 - A new deterministic result shaper and optional `IReranker` are application/infrastructure seams called only by the shared search service.
-- Authorization and effective source scope must be resolved before embedding, vector retrieval, chunk lookup, reranking, or diagnostics. Until FEATURE-04 is accepted, no implementation may assume a client/grant model exists.
+- Authorization and effective source scope must be resolved before embedding, vector retrieval, chunk lookup, reranking, or diagnostics. Until FEATURE-04 is accepted, no implementation may assume a client/grant model exists. [Note: Bypass client to source auth for now]
 
 ### 2. Request modes and compatibility
 
@@ -289,19 +289,19 @@ flowchart LR
 
 ### New or changed tests
 
-| ID | Scenario | Level | Expected result |
-| --- | --- | --- | --- |
-| POS-03-001 | Repetitive candidates across files | Unit/Integration | Stable diversified top results within configured per-file limits |
-| POS-03-002 | Context around an authorized primary chunk | Integration/API | Ordered bounded same-file neighbors with provenance |
-| POS-03-003 | Valid configured local reranker | Unit/Live evaluation | Bounded candidates reorder deterministically and improve/hold quality gates |
-| NEG-03-001 | Source/filter rejected by policy | API/MCP | Denied before embedding, vector, state, or reranker calls |
-| NEG-03-002 | Reranker timeout/failure/non-finite output | Unit/Integration | Atomic deterministic fallback with safe bounded diagnostic |
-| NEG-03-003 | Oversized/invalid request or output budget | API/MCP | Rejected or clamped before expensive work as specified |
-| EDGE-03-001 | First/last/stale/cross-file neighbor | Integration | Clamp or omit; never leak another file/source/profile |
-| EDGE-03-002 | Equal scores and duplicate hashes | Unit | Stable tie order and one deterministic representative |
-| EDGE-03-003 | Caller cancellation during each stage | Unit/Integration | Downstream cancellation; no partial reranked/context response |
-| PERF-03-001 | Representative warm corpus | Live/Performance | Search p95 below 300 ms and bounded memory |
-| QUAL-03-001 | Paired judged-corpus comparison | Live/Evaluation | Aggregate and per-family thresholds pass |
+| ID          | Scenario                                   | Level                | Expected result                                                             |
+| ----------- | ------------------------------------------ | -------------------- | --------------------------------------------------------------------------- |
+| POS-03-001  | Repetitive candidates across files         | Unit/Integration     | Stable diversified top results within configured per-file limits            |
+| POS-03-002  | Context around an authorized primary chunk | Integration/API      | Ordered bounded same-file neighbors with provenance                         |
+| POS-03-003  | Valid configured local reranker            | Unit/Live evaluation | Bounded candidates reorder deterministically and improve/hold quality gates |
+| NEG-03-001  | Source/filter rejected by policy           | API/MCP              | Denied before embedding, vector, state, or reranker calls                   |
+| NEG-03-002  | Reranker timeout/failure/non-finite output | Unit/Integration     | Atomic deterministic fallback with safe bounded diagnostic                  |
+| NEG-03-003  | Oversized/invalid request or output budget | API/MCP              | Rejected or clamped before expensive work as specified                      |
+| EDGE-03-001 | First/last/stale/cross-file neighbor       | Integration          | Clamp or omit; never leak another file/source/profile                       |
+| EDGE-03-002 | Equal scores and duplicate hashes          | Unit                 | Stable tie order and one deterministic representative                       |
+| EDGE-03-003 | Caller cancellation during each stage      | Unit/Integration     | Downstream cancellation; no partial reranked/context response               |
+| PERF-03-001 | Representative warm corpus                 | Live/Performance     | Search p95 below 300 ms and bounded memory                                  |
+| QUAL-03-001 | Paired judged-corpus comparison            | Live/Evaluation      | Aggregate and per-family thresholds pass                                    |
 
 ### Regression and analysis
 
@@ -338,9 +338,9 @@ flowchart LR
 
 ## Filing checklist
 
-- [x] File saved under `.swe/02-ADR/ADR-004-contextual-retrieval-ranking-and-reranking.md`.
-- [x] Status reflects the current proposed state.
-- [x] Links to the related feature, plan, design, and ADRs are filled in.
-- [x] Diagram contains Mermaid.
+- [X] File saved under `.swe/02-ADR/ADR-004-contextual-retrieval-ranking-and-reranking.md`.
+- [X] Status reflects the current proposed state.
+- [X] Links to the related feature, plan, design, and ADRs are filled in.
+- [X] Diagram contains Mermaid.
 - [ ] Solution-architecture review is recorded.
 - [ ] DESIGN.md is updated if accepted implementation changes its module boundaries or interactions.

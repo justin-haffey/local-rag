@@ -4,11 +4,22 @@
   "description": "Register local folders for private RAG indexing.",
   "version": "0.1.0",
   "publisher": "starlinx-llc",
-  "engines": { "vscode": "^1.95.0" },
-  "categories": ["Other"],
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Other"
+  ],
   "activationEvents": [
     "onStartupFinished",
     "onCommand:localRag.markAsSource",
+    "onCommand:localRag.indexFolder",
+    "onCommand:localRag.toggleIndexing",
+    "onCommand:localRag.refreshFolderIndex",
+    "onCommand:localRag.showFolderStatus",
+    "onCommand:localRag.search",
+    "onCommand:localRag.openSearchResult",
+    "onCommand:localRag.copySearchContext",
     "onCommand:localRag.removeSource",
     "onCommand:localRag.reindexSource",
     "onCommand:localRag.showSourceStatus"
@@ -16,14 +27,121 @@
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
-      { "command": "localRag.markAsSource", "title": "Local RAG: Toggle RAG Source" },
-      { "command": "localRag.removeSource", "title": "Local RAG: Remove Source" },
-      { "command": "localRag.reindexSource", "title": "Local RAG: Reindex Source" },
-      { "command": "localRag.showSourceStatus", "title": "Local RAG: Show Source Status" }
+      {
+        "command": "localRag.markAsSource",
+        "title": "Toggle RAG Source",
+        "category": "Local RAG",
+        "icon": "$(database)"
+      },
+      {
+        "command": "localRag.indexFolder",
+        "title": "Index Folder",
+        "category": "Local RAG",
+        "icon": "$(database)"
+      },
+      {
+        "command": "localRag.toggleIndexing",
+        "title": "Turn Indexing On/Off",
+        "category": "Local RAG",
+        "icon": "$(sync)"
+      },
+      {
+        "command": "localRag.refreshFolderIndex",
+        "title": "Refresh Index",
+        "category": "Local RAG",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "localRag.showFolderStatus",
+        "title": "View Status",
+        "category": "Local RAG",
+        "icon": "$(info)"
+      },
+      {
+        "command": "localRag.search",
+        "title": "Search",
+        "category": "Local RAG",
+        "icon": "$(search)"
+      },
+      {
+        "command": "localRag.openSearchResult",
+        "title": "Local RAG: Open Search Result"
+      },
+      {
+        "command": "localRag.copySearchContext",
+        "title": "Local RAG: Copy Search Context"
+      },
+      {
+        "command": "localRag.removeSource",
+        "title": "Local RAG: Remove Source"
+      },
+      {
+        "command": "localRag.reindexSource",
+        "title": "Local RAG: Reindex Source"
+      },
+      {
+        "command": "localRag.showSourceStatus",
+        "title": "Local RAG: Show Source Status"
+      }
     ],
     "menus": {
       "explorer/context": [
-        { "command": "localRag.markAsSource", "when": "resourceScheme == file", "group": "navigation@50" }
+        {
+          "submenu": "localRag.explorer",
+          "when": "resourceScheme == file && explorerResourceIsFolder",
+          "group": "navigation@10"
+        }
+      ],
+      "localRag.explorer": [
+        {
+          "command": "localRag.indexFolder",
+          "group": "1_index@10"
+        },
+        {
+          "command": "localRag.refreshFolderIndex",
+          "group": "2_index@10"
+        },
+        {
+          "command": "localRag.showFolderStatus",
+          "group": "3_status@10"
+        },
+        {
+          "command": "localRag.toggleIndexing",
+          "group": "4_index@10"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "localRag.search",
+          "when": "view == localRag.main",
+          "group": "navigation@10"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "localRag.openSearchResult",
+          "when": "view == localRag.main && viewItem == localRag.searchResult",
+          "group": "inline@10"
+        },
+        {
+          "command": "localRag.copySearchContext",
+          "when": "view == localRag.main && viewItem == localRag.searchResult",
+          "group": "inline@20"
+        }
+      ]
+    },
+    "submenus": [
+      {
+        "id": "localRag.explorer",
+        "label": "Local RAG"
+      }
+    ],
+    "views": {
+      "explorer": [
+        {
+          "id": "localRag.main",
+          "name": "LOCAL RAG"
+        }
       ]
     },
     "configuration": {
@@ -54,5 +172,9 @@
     "@types/vscode": "^1.95.0",
     "@vsswe/vsce": "^3.2.1",
     "typescript": "^5.7.2"
+  },
+  "allowScripts": {
+    "@vsswe/vsce-sign@2.0.9": true,
+    "keytar@7.9.0": true
   }
 }

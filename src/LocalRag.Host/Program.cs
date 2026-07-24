@@ -227,7 +227,7 @@ api.MapPost("/sources/{sourceId}/reindex", async (string sourceId, ISourceRegist
     return Results.Accepted($"/api/v1/sources/{sourceId}/status");
 });
 api.MapPost("/search", async (SearchApiRequest request, IRagSearchService search, CancellationToken cancellationToken) =>
-    Results.Ok(await search.SearchAsync(new LocalRag.Domain.SearchRequest(request.Query, request.SourceIds, request.Limit ?? 12, request.Alpha ?? 0.65), cancellationToken)));
+    Results.Ok(await search.SearchAsync(new LocalRag.Domain.SearchRequest(request.Query, request.SourceIds, request.Limit ?? 12, request.Alpha ?? 0.65, request.Mode ?? LocalRag.Domain.SearchMode.Hybrid, request.Language, request.PathPrefix), cancellationToken)));
 api.MapGet("/chunks/{chunkId}", async (string chunkId, IRagSearchService search, CancellationToken cancellationToken) =>
     await search.GetChunkAsync(chunkId, cancellationToken) is { } chunk ? Results.Ok(chunk) : Results.NotFound());
 

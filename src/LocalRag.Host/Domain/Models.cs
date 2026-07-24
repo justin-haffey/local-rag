@@ -81,7 +81,12 @@ public sealed record SearchRequest(
     string Query,
     IReadOnlyList<string>? SourceIds = null,
     int Limit = 12,
-    double Alpha = 0.65);
+    double Alpha = 0.65,
+    SearchMode Mode = SearchMode.Hybrid,
+    string? Language = null,
+    string? PathPrefix = null);
+
+public enum SearchMode { Hybrid, Lexical, Vector }
 
 public sealed record SearchResult(
     string ChunkId,
