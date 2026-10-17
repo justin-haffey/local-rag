@@ -30,12 +30,25 @@ export interface SourceState {
     lastSuccessfulIndexUtc?: string;
     lastError?: string;
     recovery?: RecoveryState;
+    indexingState?: string;
+    desiredIndexingState?: string;
+}
+
+export interface SourceLifecycle { sourceId: string; state: string; desiredState: string }
+
+export function withLifecycle<T extends SourceState>(sources: readonly T[], states: readonly SourceLifecycle[]): T[] {
+    const byId = new Map(states.map(state => [state.sourceId, state]));
+    return sources.map(source => ({ ...source, indexingState: byId.get(source.sourceId)?.state, desiredIndexingState: byId.get(source.sourceId)?.desiredState }));
+}
+
+export function sourceCanContribute(source: SourceState): boolean {
+    return source.status.toLowerCase() !== "paused" && (!source.indexingState || source.indexingState === "Running");
 }
 
 export interface RecoveryPresentation {
     label: string;
     detail?: string;
-    action?: "Queue recovery";
+    action?: "Queue recovery" | "Retry resume";
 }
 
 /** Produces the same opaque, case-insensitive Windows path identity returned by the backend. */
@@ -52,6 +65,14 @@ export function isMissingSource(source: SourceState): boolean {
 
 /** Converts additive recovery state into a concise, actionable status without exposing private diagnostics. */
 export function recoveryPresentation(source: SourceState): RecoveryPresentation {
+    if (source.indexingState === "Paused" || source.status.toLowerCase() === "paused")
+        return { label: "Paused; not searched", detail: "Indexing pause is persistent. Resume to reconcile changes and make this source searchable." };
+    if (source.indexingState === "Pausing")
+        return { label: "Pausing; draining work", detail: "Search is unavailable while in-flight indexing drains." };
+    if (source.indexingState === "Resuming") {
+        const failed = ["degraded", "failed"].includes(source.status.toLowerCase());
+        return { label: failed ? "Resume needs attention; not searched" : "Resuming; not searched", detail: source.recovery?.lastErrorSummary ?? "The source will become searchable after reconciliation completes.", action: failed ? "Retry resume" : undefined };
+    }
     const recovery = source.recovery;
     if (!recovery) return { label: source.status, detail: source.lastError };
 

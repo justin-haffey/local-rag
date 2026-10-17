@@ -11,7 +11,8 @@ public sealed class ReconciliationScheduler(
     IndexWorkChannel wakeups,
     OperationalMetrics metrics,
     ReconciliationDispatchSignal? dispatchSignal = null,
-    HostMaintenanceCoordinator? maintenance = null)
+    HostMaintenanceCoordinator? maintenance = null,
+    SourceIndexingStateStore? indexingStates = null)
 {
     public Task<ReconciliationRequestResult> RequestAsync(
         string sourceId,
@@ -38,6 +39,8 @@ public sealed class ReconciliationScheduler(
         }
         await using var _ = operational;
         var effectiveToken = operational?.CancellationToken ?? cancellationToken;
+        if (indexingStates is not null && !(await indexingStates.GetAsync(sourceId, effectiveToken)).AllowsWork)
+            throw new InvalidOperationException("Source is paused; resume before requesting indexing.");
         var result = await store.RequestAsync(
             new ReconciliationRequest(sourceId, causes, targetChunkProfileFingerprint, forceContentProcessing),
             effectiveToken);

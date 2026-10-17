@@ -2,8 +2,10 @@
   <PropertyGroup>
     <AssemblyName>LocalRag.Host</AssemblyName>
     <RootNamespace>LocalRag</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Apache.Arrow" />
     <PackageReference Include="Microsoft.Data.Sqlite" />
     <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" />
     <PackageReference Include="Microsoft.ML.OnnxRuntime" />
@@ -15,5 +17,7 @@
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="LocalRag.Host.Tests" />
+    <Content Include="LocalRag.Launcher.psm1" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="Start-LocalRag.ps1" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

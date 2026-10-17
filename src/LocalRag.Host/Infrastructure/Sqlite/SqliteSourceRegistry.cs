@@ -40,10 +40,14 @@ public sealed class SqliteSourceRegistry(SqliteDatabase database, IOptions<Local
         command.Parameters.AddWithValue("$now", DateTimeOffset.UtcNow.ToString("O"));
         await command.ExecuteNonQueryAsync(cancellationToken);
         await EnsureLifecycleColumnsAsync(connection, transaction, cancellationToken);
+        await EnsureMetadataColumnsAsync(connection, transaction, cancellationToken);
         await transaction.CommitAsync(cancellationToken);
     }
 
     public async Task<SourceRecord> RegisterAsync(string rootPath, string? displayName, CancellationToken cancellationToken)
+        => await RegisterCatalogAsync(rootPath, displayName, "", "unclassified", null, cancellationToken);
+
+    public async Task<SourceRecord> RegisterCatalogAsync(string rootPath, string? displayName, string description, string scope, string? owningProjectRoot, CancellationToken cancellationToken)
     {
         if (!Directory.Exists(rootPath))
         {
@@ -60,10 +64,12 @@ public sealed class SqliteSourceRegistry(SqliteDatabase database, IOptions<Local
             UpdatedUtc: DateTimeOffset.UtcNow,
             LastScanUtc: null,
             LastSuccessfulIndexUtc: null,
-            EmbeddingProfileId: options.Value.Embedding.ProfileId);
+            EmbeddingProfileId: options.Value.Embedding.ProfileId, Description: description, Scope: scope, OwningProjectRoot: owningProjectRoot);
 
         await using var connection = await database.OpenAsync(cancellationToken);
+        await using var transaction = await database.BeginImmediateTransactionAsync(connection, cancellationToken);
         await using var overlap = connection.CreateCommand();
+        overlap.Transaction = transaction;
         overlap.CommandText = "SELECT CanonicalRootPath FROM Sources;";
         {
             await using var reader = await overlap.ExecuteReaderAsync(cancellationToken);
@@ -78,12 +84,17 @@ public sealed class SqliteSourceRegistry(SqliteDatabase database, IOptions<Local
         }
 
         await using var insert = connection.CreateCommand();
+        insert.Transaction = transaction;
         insert.CommandText = """
-            INSERT INTO Sources(SourceId, CanonicalRootPath, DisplayName, Status, CreatedUtc, UpdatedUtc, EmbeddingProfileId, LifecycleState, LifecycleEpoch)
-            VALUES ($id, $root, $name, $status, $created, $updated, $profile, 'Active', 0);
+            INSERT INTO Sources(SourceId, CanonicalRootPath, DisplayName, Status, CreatedUtc, UpdatedUtc, EmbeddingProfileId, LifecycleState, LifecycleEpoch, Description, Scope, OwningProjectRoot, MetadataRevision)
+            VALUES ($id, $root, $name, $status, $created, $updated, $profile, 'Active', 0, $description, $scope, $project, 0);
             """;
         AddSourceParameters(insert, source);
+        insert.Parameters.AddWithValue("$description", description);
+        insert.Parameters.AddWithValue("$scope", scope);
+        insert.Parameters.AddWithValue("$project", (object?)owningProjectRoot ?? DBNull.Value);
         await insert.ExecuteNonQueryAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
         return source;
     }
 
@@ -92,7 +103,7 @@ public sealed class SqliteSourceRegistry(SqliteDatabase database, IOptions<Local
         var results = new List<SourceRecord>();
         await using var connection = await database.OpenAsync(cancellationToken);
         await using var command = connection.CreateCommand();
-        command.CommandText = "SELECT SourceId, CanonicalRootPath, DisplayName, Status, CreatedUtc, UpdatedUtc, LastScanUtc, LastSuccessfulIndexUtc, EmbeddingProfileId, LastError, LifecycleState, LifecycleEpoch FROM Sources ORDER BY DisplayName;";
+        command.CommandText = "SELECT SourceId, CanonicalRootPath, DisplayName, Status, CreatedUtc, UpdatedUtc, LastScanUtc, LastSuccessfulIndexUtc, EmbeddingProfileId, LastError, LifecycleState, LifecycleEpoch, Description, Scope, OwningProjectRoot, MetadataRevision FROM Sources ORDER BY DisplayName;";
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);
         while (await reader.ReadAsync(cancellationToken))
         {
@@ -106,7 +117,7 @@ public sealed class SqliteSourceRegistry(SqliteDatabase database, IOptions<Local
     {
         await using var connection = await database.OpenAsync(cancellationToken);
         await using var command = connection.CreateCommand();
-        command.CommandText = "SELECT SourceId, CanonicalRootPath, DisplayName, Status, CreatedUtc, UpdatedUtc, LastScanUtc, LastSuccessfulIndexUtc, EmbeddingProfileId, LastError, LifecycleState, LifecycleEpoch FROM Sources WHERE SourceId = $id;";
+        command.CommandText = "SELECT SourceId, CanonicalRootPath, DisplayName, Status, CreatedUtc, UpdatedUtc, LastScanUtc, LastSuccessfulIndexUtc, EmbeddingProfileId, LastError, LifecycleState, LifecycleEpoch, Description, Scope, OwningProjectRoot, MetadataRevision FROM Sources WHERE SourceId = $id;";
         command.Parameters.AddWithValue("$id", sourceId);
         await using var reader = await command.ExecuteReaderAsync(cancellationToken);
         return await reader.ReadAsync(cancellationToken) ? ReadSource(reader) : null;
@@ -165,7 +176,7 @@ public sealed class SqliteSourceRegistry(SqliteDatabase database, IOptions<Local
         reader.IsDBNull(7) ? null : DateTimeOffset.Parse(reader.GetString(7), System.Globalization.CultureInfo.InvariantCulture), reader.GetString(8),
         reader.IsDBNull(9) ? null : reader.GetString(9),
         Enum.Parse<SourceLifecycleState>(reader.GetString(10), ignoreCase: false),
-        reader.GetInt64(11));
+        reader.GetInt64(11), reader.GetString(12), reader.GetString(13), reader.IsDBNull(14) ? null : reader.GetString(14), reader.GetInt64(15));
 
     private static async Task EnsureLifecycleColumnsAsync(
         SqliteConnection connection,
@@ -194,6 +205,49 @@ public sealed class SqliteSourceRegistry(SqliteDatabase database, IOptions<Local
             addEpoch.Transaction = transaction;
             addEpoch.CommandText = "ALTER TABLE Sources ADD COLUMN LifecycleEpoch INTEGER NOT NULL DEFAULT 0;";
             await addEpoch.ExecuteNonQueryAsync(cancellationToken);
+        }
+    }
+
+    public async Task<SourceRecord> UpdateMetadataAsync(string sourceId, string name, string description, string scope, string? projectRoot, long expectedRevision, CancellationToken cancellationToken)
+    {
+        await using var connection = await database.OpenAsync(cancellationToken);
+        await using var command = connection.CreateCommand();
+        command.CommandText = """
+            UPDATE Sources SET DisplayName=$name, Description=$description, Scope=$scope,
+              OwningProjectRoot=$project, MetadataRevision=MetadataRevision+1, UpdatedUtc=$now
+            WHERE SourceId=$id AND MetadataRevision=$revision AND LifecycleState='Active';
+            """;
+        command.Parameters.AddWithValue("$name", name);
+        command.Parameters.AddWithValue("$description", description);
+        command.Parameters.AddWithValue("$scope", scope);
+        command.Parameters.AddWithValue("$project", (object?)projectRoot ?? DBNull.Value);
+        command.Parameters.AddWithValue("$now", DateTimeOffset.UtcNow.ToString("O"));
+        command.Parameters.AddWithValue("$id", sourceId);
+        command.Parameters.AddWithValue("$revision", expectedRevision);
+        if (await command.ExecuteNonQueryAsync(cancellationToken) != 1)
+            throw new LocalRag.Application.CatalogConflictException("Knowledge base changed or was removed. Reload before editing.");
+        return (await GetAsync(sourceId, cancellationToken))!;
+    }
+
+    private static async Task EnsureMetadataColumnsAsync(SqliteConnection connection, SqliteTransaction transaction, CancellationToken cancellationToken)
+    {
+        var columns = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        await using (var info = connection.CreateCommand())
+        {
+            info.Transaction = transaction;
+            info.CommandText = "PRAGMA table_info(Sources);";
+            await using var reader = await info.ExecuteReaderAsync(cancellationToken);
+            while (await reader.ReadAsync(cancellationToken)) columns.Add(reader.GetString(1));
+        }
+        foreach (var (name, definition) in new[] {
+            ("Description", "TEXT NOT NULL DEFAULT ''"), ("Scope", "TEXT NOT NULL DEFAULT 'unclassified'"),
+            ("OwningProjectRoot", "TEXT NULL"), ("MetadataRevision", "INTEGER NOT NULL DEFAULT 0") })
+        {
+            if (columns.Contains(name)) continue;
+            await using var alter = connection.CreateCommand();
+            alter.Transaction = transaction;
+            alter.CommandText = $"ALTER TABLE Sources ADD COLUMN {name} {definition};";
+            await alter.ExecuteNonQueryAsync(cancellationToken);
         }
     }
 

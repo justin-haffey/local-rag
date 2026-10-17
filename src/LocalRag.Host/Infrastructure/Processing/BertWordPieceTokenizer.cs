@@ -1,4 +1,5 @@
 using System.Collections.Frozen;
+using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 
 namespace LocalRag.Infrastructure.Processing;
@@ -14,6 +15,9 @@ internal sealed partial class BertWordPieceTokenizer : IChunkTokenCounter
     public BertWordPieceTokenizer(string vocabularyPath)
     {
         if (!File.Exists(vocabularyPath)) throw new FileNotFoundException("ONNX model vocabulary was not found.", vocabularyPath);
+        // Keep Windows writers/replacement fenced through hashing and full vocabulary enumeration.
+        using var vocabularyLock = new FileStream(vocabularyPath, FileMode.Open, FileAccess.Read, FileShare.Read);
+        VocabularySha256 = Convert.ToHexString(SHA256.HashData(vocabularyLock));
         _vocabulary = File.ReadLines(vocabularyPath)
             .Select((token, index) => (token, index))
             .ToFrozenDictionary(pair => pair.token, pair => pair.index, StringComparer.Ordinal);
@@ -22,6 +26,8 @@ internal sealed partial class BertWordPieceTokenizer : IChunkTokenCounter
         _sepId = GetRequiredId("[SEP]");
         _padId = GetRequiredId("[PAD]");
     }
+
+    internal string VocabularySha256 { get; }
 
     public long[] Encode(string content, int maximumTokens)
     {

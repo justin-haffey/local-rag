@@ -34,7 +34,11 @@ public sealed record SourceResponse(
     DateTimeOffset? LastScanUtc,
     DateTimeOffset? LastSuccessfulIndexUtc,
     string? LastError,
-    RecoveryResponse? Recovery = null);
+    RecoveryResponse? Recovery = null,
+    string Description = "",
+    string Scope = "unclassified",
+    string? OwningProjectRoot = null,
+    long MetadataRevision = 0);
 
 public static class ApiContractMapping
 {
@@ -49,7 +53,7 @@ public static class ApiContractMapping
         source.LastScanUtc,
         source.LastSuccessfulIndexUtc,
         SafeSourceError(source.LastError, recovery),
-        recovery?.ToResponse());
+        recovery?.ToResponse(), source.Description, source.Scope, source.OwningProjectRoot, source.MetadataRevision);
 
     public static RecoveryResponse ToResponse(this SourceReconciliation recovery)
     {

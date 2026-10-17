@@ -209,7 +209,7 @@ public sealed class WordDocumentIndexingTests
         public Task ValidateAsync(CancellationToken cancellationToken) => Task.CompletedTask;
     }
 
-    private sealed class RecordingIndexState : IIndexStateStore
+    private sealed class RecordingIndexState : TestVectorWriteIntents, IIndexStateStore
     {
         public IndexedFile? SavedFile { get; private set; }
         public IReadOnlyList<ChunkRecord> SavedChunks { get; private set; } = [];
@@ -220,6 +220,7 @@ public sealed class WordDocumentIndexingTests
         {
             SavedFile = file;
             SavedChunks = chunks;
+            CommitVectorIntents(file, chunks);
             return Task.CompletedTask;
         }
         public Task DeleteFileAsync(string sourceId, string relativePath, CancellationToken cancellationToken) => Task.CompletedTask;

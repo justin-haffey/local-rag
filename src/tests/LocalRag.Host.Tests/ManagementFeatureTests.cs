@@ -210,6 +210,7 @@ public sealed class ManagementFeatureTests
         Assert.Empty(await fixture.Sources.ListAsync(CancellationToken.None));
         Assert.True(File.Exists(file));
         Assert.True(File.Exists(fixture.Database.DatabasePath));
+        Assert.NotNull(await new SqliteVectorStoreIdentityStore(fixture.Database).GetAsync(CancellationToken.None));
         Assert.False(fixture.ResetState.HasIncompleteReset);
         Assert.True(fixture.Maintenance.IsReady);
     }
@@ -352,6 +353,7 @@ public sealed class ManagementFeatureTests
                 chunkProfiles,
                 jobs,
                 reconciliations,
+                new SqliteVectorStoreIdentityStore(Database),
                 Options);
         }
 
@@ -410,11 +412,13 @@ public sealed class ManagementFeatureTests
         public bool CollectionExists { get; private set; } = true;
         public int ResetCount { get; private set; }
         public int RecoveryCount { get; private set; }
+        public string ResetTarget => "fake:owned-store";
+        public string ResetDescription => "the owned fake vector store";
 
         public Task<bool> VerifyOwnershipAsync(string ownershipId, CancellationToken cancellationToken) =>
             Task.FromResult(Owned && CollectionExists);
 
-        public Task ResetOwnedCollectionAsync(string ownershipId, CancellationToken cancellationToken)
+        public Task ResetOwnedStoreAsync(string ownershipId, CancellationToken cancellationToken)
         {
             if (FailNextReset)
             {
@@ -426,7 +430,7 @@ public sealed class ManagementFeatureTests
             return Task.CompletedTask;
         }
 
-        public Task RecoverOwnedCollectionAsync(string ownershipId, CancellationToken cancellationToken)
+        public Task RecoverOwnedStoreAsync(string ownershipId, CancellationToken cancellationToken)
         {
             RecoveryCount++;
             CollectionExists = true;

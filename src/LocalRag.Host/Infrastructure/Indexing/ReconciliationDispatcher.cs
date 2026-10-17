@@ -16,7 +16,8 @@ public sealed partial class ReconciliationDispatcher(
     IOptions<LocalRagOptions> options,
     OperationalMetrics metrics,
     HostMaintenanceCoordinator maintenance,
-    ILogger<ReconciliationDispatcher> logger) : BackgroundService
+    ILogger<ReconciliationDispatcher> logger,
+    SourceIndexingStateStore? indexingStates = null) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -40,7 +41,8 @@ public sealed partial class ReconciliationDispatcher(
                 var due = await store.GetDueSourceIdsAsync(now, operationToken);
                 foreach (var sourceId in recovered.Concat(due).Distinct(StringComparer.Ordinal))
                 {
-                    await scheduler.WakeAsync(sourceId, operationToken);
+                    if (indexingStates is null || (await indexingStates.GetAsync(sourceId, operationToken)).AllowsWork)
+                        await scheduler.WakeAsync(sourceId, operationToken);
                 }
                 var states = await store.ListAsync(operationToken);
                 metrics.SetRecoveryGauges(
@@ -48,7 +50,7 @@ public sealed partial class ReconciliationDispatcher(
                     states.Count(state => state.State == ReconciliationState.Degraded));
                 var delayStarted = DateTimeOffset.UtcNow;
                 var nextDue = await store.GetNextDueUtcAsync(delayStarted, operationToken);
-                if (nextDue is not null)
+                if (nextDue is not null && nextDue > delayStarted)
                 {
                     var untilDue = nextDue.Value - delayStarted;
                     delay = untilDue <= TimeSpan.Zero

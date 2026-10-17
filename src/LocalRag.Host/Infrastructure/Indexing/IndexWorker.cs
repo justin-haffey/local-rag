@@ -16,7 +16,8 @@ public sealed partial class IndexWorker(
     ReconciliationDispatchSignal dispatchSignal,
     IOptions<LocalRagOptions> options,
     OperationalMetrics metrics,
-    ILogger<IndexWorker> logger) : BackgroundService
+    ILogger<IndexWorker> logger,
+    SourceIndexingStateStore? indexingStates = null) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -49,6 +50,7 @@ public sealed partial class IndexWorker(
         if (operational is null) return;
         await using var operationalLease = operational;
         await using var sourceOperation = await operationGate.AcquireAsync(sourceId, operational.CancellationToken);
+        if (indexingStates is not null && !(await indexingStates.GetAsync(sourceId, sourceOperation.CancellationToken)).AllowsWork) return;
         var leaseDuration = TimeSpan.FromSeconds(options.Value.Indexing.ReconciliationLeaseDurationSeconds);
         var lease = await reconciliations.TryLeaseAsync(sourceId, leaseDuration, sourceOperation.CancellationToken);
         if (lease is null) return;
@@ -80,6 +82,8 @@ public sealed partial class IndexWorker(
                 return;
             }
 
+            if (!completion.HasSuccessor && indexingStates is not null)
+                await indexingStates.CompleteResumeAsync(sourceId, processing.Token);
             metrics.JobCompleted();
             metrics.ReconciliationFinished(
                 "Succeeded",

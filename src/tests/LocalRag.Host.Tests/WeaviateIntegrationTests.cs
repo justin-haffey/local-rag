@@ -17,7 +17,11 @@ public sealed class WeaviateIntegrationTests
         using var client = new HttpClient { BaseAddress = new Uri(endpoint.TrimEnd('/') + "/") };
         var store = new WeaviateVectorStore(client, Options.Create(new LocalRagOptions
         {
-            Weaviate = new WeaviateOptions { Endpoint = endpoint, Collection = collection, Vectorizer = "none", BatchSize = 10 }
+            VectorStore = new VectorStoreOptions
+            {
+                Provider = VectorStoreProvider.Weaviate,
+                Weaviate = new WeaviateOptions { Endpoint = endpoint, Collection = collection, Vectorizer = "none", BatchSize = 10 }
+            }
         }));
         var chunk = new ChunkRecord("contract-chunk", "contract-source", "contract-file", "README.md", "markdown", "Retrieval", 1, 1, 0,
             "hybrid retrieval integration test", "hash", 5, "test", DateTimeOffset.UtcNow,

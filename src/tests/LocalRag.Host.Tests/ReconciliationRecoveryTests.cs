@@ -679,7 +679,7 @@ public sealed class ReconciliationRecoveryTests
         }
     }
 
-    private sealed class ExistingFileState(IndexedFile file) : IIndexStateStore
+    private sealed class ExistingFileState(IndexedFile file) : TestVectorWriteIntents, IIndexStateStore
     {
         public int SaveCalls { get; private set; }
         public Task InitializeAsync(CancellationToken cancellationToken) => Task.CompletedTask;
@@ -688,6 +688,7 @@ public sealed class ReconciliationRecoveryTests
         public Task SaveFileAndChunksAsync(IndexedFile indexedFile, IReadOnlyList<ChunkRecord> chunks, CancellationToken cancellationToken)
         {
             SaveCalls++;
+            CommitVectorIntents(indexedFile, chunks);
             return Task.CompletedTask;
         }
         public Task DeleteFileAsync(string sourceId, string relativePath, CancellationToken cancellationToken) => Task.CompletedTask;
@@ -729,7 +730,7 @@ public sealed class ReconciliationRecoveryTests
         public Task<IReadOnlyList<SearchResult>> SearchAsync(SearchRequest request, IReadOnlyList<float> queryVector, CancellationToken cancellationToken) => Task.FromResult<IReadOnlyList<SearchResult>>([]);
     }
 
-    private sealed class FailFirstSaveIndexState : IIndexStateStore
+    private sealed class FailFirstSaveIndexState : TestVectorWriteIntents, IIndexStateStore
     {
         private bool _fail = true;
         private IReadOnlyList<ChunkRecord> _chunks = [];
@@ -749,6 +750,7 @@ public sealed class ReconciliationRecoveryTests
             }
             File = file;
             _chunks = chunks;
+            CommitVectorIntents(file, chunks);
             return Task.CompletedTask;
         }
         public Task DeleteFileAsync(string sourceId, string relativePath, CancellationToken cancellationToken) => Task.CompletedTask;

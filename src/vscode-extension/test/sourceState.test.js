@@ -76,3 +76,16 @@ test("degraded recovery provides a bounded actionable retry presentation", () =>
     assert.match(presentation.detail, /Restore local dependencies/);
     assert.doesNotMatch(presentation.detail, /C:\\\\/);
 });
+
+test('persistent lifecycle states override transient status and failed resume exposes a safe retry action', () => {
+  const { withLifecycle, recoveryPresentation, sourceCanContribute } = require('../out/sourceState.js');
+  const base = {sourceId:'one',rootPathHash:'hash',displayName:'One',status:'Ready'};
+  for(const state of ['Pausing','Paused','Resuming']) {
+    const [source]=withLifecycle([base],[{sourceId:'one',state,desiredState:state==='Resuming'?'Running':'Paused'}]);
+    assert.equal(sourceCanContribute(source),false);
+    assert.match(recoveryPresentation(source).label,state==='Pausing'?/Pausing/:/not searched/);
+  }
+  const [failed]=withLifecycle([{...base,status:'Degraded'}],[{sourceId:'one',state:'Resuming',desiredState:'Running'}]);
+  assert.equal(recoveryPresentation(failed).action,'Retry resume');
+  assert.equal(sourceCanContribute(withLifecycle([base],[{sourceId:'one',state:'Running',desiredState:'Running'}])[0]),true);
+});

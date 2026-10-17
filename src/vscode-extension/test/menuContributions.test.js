@@ -29,7 +29,7 @@ test("folder commands use plain language, icons, and a Local RAG Command Palette
     assert.equal(commands.get("localRag.indexFolder").title, "Index Folder");
     assert.equal(commands.get("localRag.refreshFolderIndex").title, "Refresh Index");
     assert.equal(commands.get("localRag.showFolderStatus").title, "View Status");
-    assert.equal(commands.get("localRag.toggleIndexing").title, "Turn Indexing On/Off");
+    assert.equal(commands.get("localRag.toggleIndexing").title, "Pause/Resume Indexing");
     for (const commandId of ["localRag.indexFolder", "localRag.refreshFolderIndex", "localRag.showFolderStatus", "localRag.toggleIndexing"]) {
         const command = commands.get(commandId);
         assert.equal(command.category, "Local RAG");

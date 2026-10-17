@@ -72,15 +72,14 @@ test("indexing posts only the selected folder root", async () => {
     }]);
 });
 
-test("toggle cancellation prevents deletion and confirmed toggle deletes only the matched source", async () => {
+test("toggle pauses and resumes the matched source without destructive deletion", async () => {
     const selected = source("selected");
-    const cancelledClient = recordingClient();
-    assert.equal(await toggleSelectedFolder(cancelledClient, selected, "C:\\LocalRagFixture\\selected", async () => false), "cancelled");
-    assert.deepEqual(cancelledClient.calls, []);
-
-    const confirmedClient = recordingClient();
-    assert.equal(await toggleSelectedFolder(confirmedClient, selected, "C:\\LocalRagFixture\\selected", async () => true), "removed");
-    assert.deepEqual(confirmedClient.calls, [{ method: "DELETE", pathName: "/api/v1/sources/selected" }]);
+    const client = recordingClient();
+    assert.equal(await toggleSelectedFolder(client, selected, "C:\\LocalRagFixture\\selected"), "paused");
+    assert.deepEqual(client.calls, [{ method: "POST", pathName: "/api/v1/sources/selected/pause", body: undefined }]);
+    const resume = recordingClient();
+    assert.equal(await toggleSelectedFolder(resume, { ...selected, status: "Paused" }, "C:\\LocalRagFixture\\selected"), "resumed");
+    assert.deepEqual(resume.calls, [{ method: "POST", pathName: "/api/v1/sources/selected/resume", body: undefined }]);
 });
 
 test("refresh uses only the matched source ID and refuses an unmatched folder", async () => {
@@ -133,4 +132,11 @@ test("context copy validates provenance and applies its character bound", () => 
     assert.equal(
         boundedContextText(context, selected, 12),
         "src/feature.ts:4-8\n\nabcdefghijkl\n\n[Context truncated by Local RAG]");
+});
+
+test('retrying a degraded resume preserves Running intent and uses resume instead of pausing it', async () => {
+  const client=recordingClient();
+  const existing={...source(),status:'Degraded',indexingState:'Resuming',desiredIndexingState:'Running'};
+  assert.equal(await toggleSelectedFolder(client,existing,'unused-root'),'resumed');
+  assert.deepEqual(client.calls,[{method:'POST',pathName:'/api/v1/sources/selected/resume',body:undefined}]);
 });

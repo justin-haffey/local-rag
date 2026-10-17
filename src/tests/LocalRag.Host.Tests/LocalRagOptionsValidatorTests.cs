@@ -1,4 +1,5 @@
 using LocalRag.Configuration;
+using Microsoft.Extensions.Configuration;
 using Xunit;
 
 namespace LocalRag.Host.Tests;
@@ -107,5 +108,80 @@ public sealed class LocalRagOptionsValidatorTests
         Assert.Contains(
             equalResult.Failures,
             failure => failure.Contains("distinct", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void LanceDbRequiresOwnedPathTableAndPositiveBatchSize()
+    {
+        var options = new LocalRagOptions
+        {
+            VectorStore = new VectorStoreOptions
+            {
+                Provider = VectorStoreProvider.LanceDb,
+                LanceDb = new LanceDbOptions { Path = "", Table = "", BatchSize = 0 }
+            }
+        };
+
+        var result = new LocalRagOptionsValidator().Validate(null, options);
+
+        Assert.True(result.Failed);
+        Assert.Contains(result.Failures, failure => failure.Contains("LanceDb.Path", StringComparison.Ordinal));
+        Assert.Contains(result.Failures, failure => failure.Contains("LanceDb.Table", StringComparison.Ordinal));
+        Assert.Contains(result.Failures, failure => failure.Contains("LanceDb.BatchSize", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void DefaultProviderIsWeaviateForSchemaV1Compatibility()
+    {
+        var options = new LocalRagOptions();
+
+        Assert.Equal(VectorStoreProvider.Weaviate, options.VectorStore.Provider);
+        Assert.True(new LocalRagOptionsValidator().Validate(null, options).Succeeded);
+    }
+
+    [Fact]
+    public void SchemaV1WeaviateSettingsArePromotedWhenSchemaV2SectionIsAbsent()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["LocalRag:Weaviate:Endpoint"] = "http://127.0.0.1:9090"
+            })
+            .Build();
+        var options = new LocalRagOptions
+        {
+            Weaviate = new WeaviateOptions { Endpoint = "http://127.0.0.1:9090", Collection = "Legacy" }
+        };
+
+        new LocalRagOptionsCompatibilityPostConfigure(configuration).PostConfigure(null, options);
+
+        Assert.Equal("http://127.0.0.1:9090", options.VectorStore.Weaviate.Endpoint);
+        Assert.Equal("Legacy", options.VectorStore.Weaviate.Collection);
+    }
+
+    [Fact]
+    public void SchemaV2WeaviateSettingsTakePrecedenceOverLegacySettings()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["LocalRag:VectorStore:Weaviate:Endpoint"] = "http://127.0.0.1:7070",
+                ["LocalRag:Weaviate:Endpoint"] = "http://127.0.0.1:9090"
+            })
+            .Build();
+        var options = new LocalRagOptions
+        {
+            VectorStore = new VectorStoreOptions
+            {
+                Provider = VectorStoreProvider.Weaviate,
+                Weaviate = new WeaviateOptions { Endpoint = "http://127.0.0.1:7070", Collection = "Current" }
+            },
+            Weaviate = new WeaviateOptions { Endpoint = "http://127.0.0.1:9090", Collection = "Legacy" }
+        };
+
+        new LocalRagOptionsCompatibilityPostConfigure(configuration).PostConfigure(null, options);
+
+        Assert.Equal("http://127.0.0.1:7070", options.VectorStore.Weaviate.Endpoint);
+        Assert.Equal("Current", options.VectorStore.Weaviate.Collection);
     }
 }

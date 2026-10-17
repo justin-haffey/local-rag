@@ -6,6 +6,7 @@ const test = require("node:test");
 
 const {
     packagedWeaviateEndpoint,
+    providerEnvironment,
     readInstallationManifest,
     readInstallerSettings,
     resolveInstallerConfiguration
@@ -49,9 +50,59 @@ test("installer endpoint and installed host override packaged defaults", async (
         weaviateEndpoint: "http://localhost:8081/"
     }, async root => {
         const result = await resolveInstallerConfiguration(configuration(undefined), root);
+        assert.equal(result.provider, "Weaviate");
         assert.equal(result.weaviateEndpoint, "http://localhost:8081");
         assert.match(result.hostExecutable, /Programs[\\/]LocalRag[\\/]Host[\\/]0\.1\.0[\\/]LocalRag\.Host\.exe$/);
     });
+});
+
+test("schema v2 Weaviate settings are discriminated and use only Weaviate launch keys", async () => {
+    await withSettings({
+        schemaVersion: 2,
+        provider: "Weaviate",
+        weaviate: { endpoint: "http://127.0.0.1:8090/" }
+    }, async root => {
+        const result = await resolveInstallerConfiguration(configuration(undefined), root);
+        assert.deepEqual(providerEnvironment(result), {
+            LocalRag__VectorStore__Provider: "Weaviate",
+            LocalRag__VectorStore__Weaviate__Endpoint: "http://127.0.0.1:8090"
+        });
+        assert.equal("lanceDbPath" in result, false);
+    });
+});
+
+test("schema v2 LanceDb settings ignore the Weaviate workspace override and use only LanceDb launch keys", async () => {
+    const lanceDbPath = path.resolve("test-lancedb");
+    await withSettings({
+        schemaVersion: 2,
+        provider: "LanceDb",
+        lanceDb: { path: lanceDbPath }
+    }, async root => {
+        const result = await resolveInstallerConfiguration(configuration("https://ignored.example.test:8443"), root);
+        assert.equal(result.provider, "LanceDb");
+        assert.deepEqual(providerEnvironment(result), {
+            LocalRag__VectorStore__Provider: "LanceDb",
+            LocalRag__VectorStore__LanceDb__Path: path.normalize(lanceDbPath)
+        });
+        assert.equal("weaviateEndpoint" in result, false);
+    });
+});
+
+test("schema v2 rejects mixed, missing, unknown, and newer provider settings", async () => {
+    const settingsPath = path.join(await fs.mkdtemp(path.join(os.tmpdir(), "local-rag-invalid-settings-")), "settings.json");
+    try {
+        for (const candidate of [
+            { schemaVersion: 2, provider: "Weaviate", weaviate: { endpoint: "http://localhost:8080" }, lanceDb: { path: path.resolve("db") } },
+            { schemaVersion: 2, provider: "LanceDb", lanceDb: { path: "relative" } },
+            { schemaVersion: 2, provider: "Other" },
+            { schemaVersion: 3, provider: "Weaviate", weaviate: { endpoint: "http://localhost:8080" } }
+        ]) {
+            await fs.writeFile(settingsPath, JSON.stringify(candidate));
+            assert.equal(await readInstallerSettings(settingsPath), undefined);
+        }
+    } finally {
+        await fs.rm(path.dirname(settingsPath), { recursive: true, force: true });
+    }
 });
 
 test("an explicit VS Code endpoint overrides installer settings", async () => {

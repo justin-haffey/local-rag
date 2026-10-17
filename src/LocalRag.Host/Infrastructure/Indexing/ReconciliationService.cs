@@ -14,7 +14,8 @@ public sealed partial class ReconciliationService(
     MissingSourcePolicy missingSourcePolicy,
     IOptions<LocalRagOptions> options,
     HostMaintenanceCoordinator maintenance,
-    ILogger<ReconciliationService> logger) : BackgroundService
+    ILogger<ReconciliationService> logger,
+    SourceIndexingStateStore? indexingStates = null) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -34,6 +35,8 @@ public sealed partial class ReconciliationService(
                         await coordinator.RemoveSourceAsync(source.SourceId, operational.CancellationToken);
                         continue;
                     }
+
+                    if (indexingStates is not null && !(await indexingStates.GetAsync(source.SourceId, operational.CancellationToken)).AllowsWork) continue;
 
                     if (!Directory.Exists(source.CanonicalRootPath))
                     {

@@ -25,6 +25,44 @@ public interface IIndexStateStore
     Task<IReadOnlyList<ChunkRecord>> GetChunksForSourceAsync(string sourceId, CancellationToken cancellationToken);
 }
 
+/// <summary>Durably records attempted vector mutations; committed IDs are preserved and obsolete IDs remain pending until deletion succeeds.</summary>
+public interface IVectorWriteIntentStore
+{
+    Task StageVectorWritesAsync(string sourceId, string fileId, IReadOnlyList<string> chunkIds, CancellationToken cancellationToken);
+    Task<IReadOnlyList<PendingVectorWrite>> GetPendingVectorWritesAsync(string sourceId, CancellationToken cancellationToken);
+    Task ClearPendingVectorWritesAsync(string sourceId, IReadOnlyList<string> chunkIds, CancellationToken cancellationToken);
+}
+
+public sealed record PendingVectorWrite(string SourceId, string FileId, string ChunkId);
+
+/// <summary>Persists and validates the vector-store identity associated with indexed chunk state.</summary>
+public interface IVectorStoreIdentityStore
+{
+    Task InitializeAsync(CancellationToken cancellationToken);
+    Task<VectorStoreIdentity?> GetAsync(CancellationToken cancellationToken);
+    Task<VectorStoreIdentityEnforcementResult> EnforceAsync(
+        VectorStoreIdentity configuredIdentity,
+        CancellationToken cancellationToken);
+}
+
+/// <summary>Versioned, reproducible identity for one vector-store schema and embedding space.</summary>
+public sealed record VectorStoreIdentity(
+    int SchemaVersion,
+    string Provider,
+    string StorageIdentity,
+    string SchemaIdentity,
+    string EmbeddingProfileId,
+    int EmbeddingDimensions,
+    string DistanceMetric,
+    string Fingerprint);
+
+public enum VectorStoreIdentityEnforcementResult
+{
+    Matched,
+    Adopted,
+    ReplacedEmptyState
+}
+
 /// <summary>Produces vectors using one stable, named embedding profile.</summary>
 public interface IEmbeddingService
 {

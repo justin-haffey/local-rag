@@ -211,7 +211,7 @@ public sealed class FileIndexingProfileTransitionTests
         public Task ValidateAsync(CancellationToken cancellationToken) => Task.CompletedTask;
     }
 
-    private sealed class RecordingState : IIndexStateStore
+    private sealed class RecordingState : TestVectorWriteIntents, IIndexStateStore
     {
         public IndexedFile? File { get; private set; }
         public IReadOnlyList<ChunkRecord> Chunks { get; private set; } = [];
@@ -224,6 +224,7 @@ public sealed class FileIndexingProfileTransitionTests
         {
             File = file;
             Chunks = chunks;
+            CommitVectorIntents(file, chunks);
             return Task.CompletedTask;
         }
         public Task DeleteFileAsync(string sourceId, string relativePath, CancellationToken cancellationToken) => Task.CompletedTask;

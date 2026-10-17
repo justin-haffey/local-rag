@@ -23,7 +23,7 @@ public sealed class ManagementTokenAuthenticationHandler(
         var management = localRagOptions.Value.Management;
         var supplied = Request.Headers.Authorization.ToString();
         if (!management.Enabled || string.IsNullOrWhiteSpace(management.Token) ||
-            !supplied.StartsWith("Bearer ", StringComparison.Ordinal))
+            !supplied.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
         {
             return Task.FromResult(AuthenticateResult.Fail("Management access is unavailable."));
         }
