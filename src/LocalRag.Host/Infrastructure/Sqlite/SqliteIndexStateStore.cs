@@ -6,12 +6,13 @@ using Microsoft.Extensions.Options;
 
 namespace LocalRag.Infrastructure.Sqlite;
 
-public sealed class SqliteIndexStateStore(SqliteDatabase database, IOptions<LocalRagOptions> options) : IIndexStateStore
+public sealed class SqliteIndexStateStore(SqliteDatabase database, IOptions<LocalRagOptions> options) : IIndexStateStore, IVectorWriteIntentStore
 {
     public async Task InitializeAsync(CancellationToken cancellationToken)
     {
         await using var connection = await database.OpenAsync(cancellationToken);
         await using var transaction = (SqliteTransaction)await connection.BeginTransactionAsync(cancellationToken);
+        await InitializeVectorWriteIntentsAsync(connection, transaction, cancellationToken);
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
         command.CommandText = """
@@ -157,7 +158,85 @@ public sealed class SqliteIndexStateStore(SqliteDatabase database, IOptions<Loca
             await insert.ExecuteNonQueryAsync(cancellationToken);
         }
 
+        // Manifest publication and intent retirement share one SQLite commit, including crash recovery.
+        await using (var clear = connection.CreateCommand())
+        {
+            clear.Transaction = transaction;
+            clear.CommandText = "DELETE FROM PendingVectorWrites WHERE SourceId=$source AND FileId=$file AND ChunkId IN (SELECT ChunkId FROM Chunks WHERE SourceId=$source AND FileId=$file);";
+            clear.Parameters.AddWithValue("$source", file.SourceId);
+            clear.Parameters.AddWithValue("$file", file.FileId);
+            await clear.ExecuteNonQueryAsync(cancellationToken);
+        }
+
         await transaction.CommitAsync(cancellationToken);
+    }
+
+    public async Task StageVectorWritesAsync(string sourceId, string fileId, IReadOnlyList<string> chunkIds, CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(sourceId); ArgumentException.ThrowIfNullOrWhiteSpace(fileId);
+        ArgumentNullException.ThrowIfNull(chunkIds);
+        if (chunkIds.Any(string.IsNullOrWhiteSpace)) throw new ArgumentException("Vector intent IDs cannot be blank.", nameof(chunkIds));
+        if (chunkIds.Count == 0) return;
+        await using var connection = await database.OpenAsync(cancellationToken);
+        await using var transaction = await database.BeginImmediateTransactionAsync(connection, cancellationToken);
+        foreach (var chunkId in chunkIds.Distinct(StringComparer.Ordinal))
+        {
+            await using var insert = connection.CreateCommand(); insert.Transaction = transaction;
+            insert.CommandText = "INSERT OR IGNORE INTO PendingVectorWrites(SourceId,FileId,ChunkId) VALUES($source,$file,$chunk);";
+            insert.Parameters.AddWithValue("$source", sourceId); insert.Parameters.AddWithValue("$file", fileId); insert.Parameters.AddWithValue("$chunk", chunkId);
+            await insert.ExecuteNonQueryAsync(cancellationToken);
+        }
+        await transaction.CommitAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<PendingVectorWrite>> GetPendingVectorWritesAsync(string sourceId, CancellationToken cancellationToken)
+    {
+        await using var connection = await database.OpenAsync(cancellationToken);
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SELECT SourceId,FileId,ChunkId FROM PendingVectorWrites WHERE SourceId=$source ORDER BY ChunkId;";
+        command.Parameters.AddWithValue("$source", sourceId);
+        var rows = new List<PendingVectorWrite>();
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        while (await reader.ReadAsync(cancellationToken)) rows.Add(new(reader.GetString(0), reader.GetString(1), reader.GetString(2)));
+        return rows;
+    }
+
+    public async Task ClearPendingVectorWritesAsync(string sourceId, IReadOnlyList<string> chunkIds, CancellationToken cancellationToken)
+    {
+        if (chunkIds.Count == 0) return;
+        await using var connection = await database.OpenAsync(cancellationToken);
+        await using var transaction = await database.BeginImmediateTransactionAsync(connection, cancellationToken);
+        foreach (var chunkId in chunkIds.Distinct(StringComparer.Ordinal))
+        {
+            await using var command = connection.CreateCommand(); command.Transaction = transaction;
+            command.CommandText = "DELETE FROM PendingVectorWrites WHERE SourceId=$source AND ChunkId=$chunk;";
+            command.Parameters.AddWithValue("$source", sourceId); command.Parameters.AddWithValue("$chunk", chunkId);
+            await command.ExecuteNonQueryAsync(cancellationToken);
+        }
+        await transaction.CommitAsync(cancellationToken);
+    }
+
+    private static async Task InitializeVectorWriteIntentsAsync(SqliteConnection connection, SqliteTransaction transaction, CancellationToken cancellationToken)
+    {
+        await using var command = connection.CreateCommand(); command.Transaction = transaction;
+        command.CommandText = "CREATE TABLE IF NOT EXISTS SchemaVersions(Name TEXT PRIMARY KEY,Version INTEGER NOT NULL,AppliedUtc TEXT NOT NULL);";
+        await command.ExecuteNonQueryAsync(cancellationToken);
+        command.CommandText = "SELECT Version FROM SchemaVersions WHERE Name='vector-write-intents';";
+        var version = await command.ExecuteScalarAsync(cancellationToken);
+        if (version is not null && Convert.ToInt64(version, System.Globalization.CultureInfo.InvariantCulture) != 1)
+            throw new InvalidOperationException("The vector-write-intent schema version is unsupported. Use a compatible Local RAG host.");
+        command.CommandText = """
+            CREATE TABLE IF NOT EXISTS PendingVectorWrites (
+              SourceId TEXT NOT NULL REFERENCES Sources(SourceId) ON DELETE CASCADE,
+              FileId TEXT NOT NULL,
+              ChunkId TEXT NOT NULL,
+              PRIMARY KEY(SourceId,ChunkId)
+            );
+            CREATE INDEX IF NOT EXISTS IX_PendingVectorWrites_Source_File ON PendingVectorWrites(SourceId,FileId);
+            INSERT OR IGNORE INTO SchemaVersions(Name,Version,AppliedUtc) VALUES('vector-write-intents',1,$now);
+            """;
+        command.Parameters.AddWithValue("$now", DateTimeOffset.UtcNow.ToString("O"));
+        await command.ExecuteNonQueryAsync(cancellationToken);
     }
 
     public async Task DeleteFileAsync(string sourceId, string relativePath, CancellationToken cancellationToken)

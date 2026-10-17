@@ -9,10 +9,35 @@ public sealed class LocalRagOptions
     public string DataDirectory { get; init; } = "%LOCALAPPDATA%\\LocalRag";
     public AuthenticationOptions Authentication { get; init; } = new();
     public ManagementOptions Management { get; init; } = new();
+    public VectorStoreOptions VectorStore { get; set; } = new();
+    /// <summary>
+    /// Legacy schema-v1 Weaviate settings. These are copied to <see cref="VectorStoreOptions.Weaviate"/>
+    /// when no schema-v2 vector-store settings are supplied.
+    /// </summary>
     public WeaviateOptions Weaviate { get; init; } = new();
     public IndexingOptions Indexing { get; init; } = new();
     public ChunkingOptions Chunking { get; init; } = new();
     public EmbeddingOptions Embedding { get; init; } = new();
+}
+
+public enum VectorStoreProvider
+{
+    Weaviate,
+    LanceDb
+}
+
+public sealed class VectorStoreOptions
+{
+    public VectorStoreProvider Provider { get; init; } = VectorStoreProvider.Weaviate;
+    public WeaviateOptions Weaviate { get; init; } = new();
+    public LanceDbOptions LanceDb { get; init; } = new();
+}
+
+public sealed class LanceDbOptions
+{
+    public string Path { get; init; } = "%LOCALAPPDATA%\\LocalRag\\vectors\\lancedb";
+    public string Table { get; init; } = "rag_chunks_v1";
+    public int BatchSize { get; init; } = 100;
 }
 
 public sealed class ManagementOptions

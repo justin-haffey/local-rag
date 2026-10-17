@@ -12,6 +12,51 @@ public sealed class LocalRagOptionsValidator : IValidateOptions<LocalRagOptions>
     public ValidateOptionsResult Validate(string? name, LocalRagOptions options)
     {
         var errors = new List<string>();
+        if (!Enum.IsDefined(options.VectorStore.Provider))
+        {
+            errors.Add("VectorStore.Provider must be either Weaviate or LanceDb.");
+        }
+        if (options.Embedding.Dimensions is < 1 or > 65_536)
+        {
+            errors.Add("Embedding.Dimensions must be between 1 and 65536.");
+        }
+        switch (options.VectorStore.Provider)
+        {
+            case VectorStoreProvider.Weaviate:
+                if (!Uri.TryCreate(options.VectorStore.Weaviate.Endpoint, UriKind.Absolute, out var endpoint) ||
+                    endpoint.Scheme is not ("http" or "https"))
+                {
+                    errors.Add("VectorStore.Weaviate.Endpoint must be an absolute HTTP(S) URI.");
+                }
+                if (string.IsNullOrWhiteSpace(options.VectorStore.Weaviate.Collection))
+                {
+                    errors.Add("VectorStore.Weaviate.Collection is required.");
+                }
+                if (options.VectorStore.Weaviate.BatchSize < 1)
+                {
+                    errors.Add("VectorStore.Weaviate.BatchSize must be at least 1.");
+                }
+                break;
+            case VectorStoreProvider.LanceDb:
+                if (string.IsNullOrWhiteSpace(options.VectorStore.LanceDb.Path))
+                {
+                    errors.Add("VectorStore.LanceDb.Path is required when Provider is LanceDb.");
+                }
+                else if (!Path.IsPathFullyQualified(
+                    Environment.ExpandEnvironmentVariables(options.VectorStore.LanceDb.Path)))
+                {
+                    errors.Add("VectorStore.LanceDb.Path must resolve to an absolute path.");
+                }
+                if (!string.Equals(options.VectorStore.LanceDb.Table, "rag_chunks_v1", StringComparison.Ordinal))
+                {
+                    errors.Add("VectorStore.LanceDb.Table must be rag_chunks_v1 for schema version 1.");
+                }
+                if (options.VectorStore.LanceDb.BatchSize is < 1 or > 100)
+                {
+                    errors.Add("VectorStore.LanceDb.BatchSize must be between 1 and 100.");
+                }
+                break;
+        }
         var hardLimit = Math.Min(options.Chunking.MaximumTokens, options.Embedding.MaximumTokens);
         if (options.Chunking.MaximumTokens < 3) errors.Add("Chunking.MaximumTokens must be at least 3.");
         if (options.Embedding.MaximumTokens < 3) errors.Add("Embedding.MaximumTokens must be at least 3.");

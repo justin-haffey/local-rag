@@ -238,7 +238,11 @@ public sealed class StructuralRetrievalEvaluationTests
     private static WeaviateVectorStore CreateStore(HttpClient client, string endpoint, string collection) =>
         new(client, Options.Create(new LocalRagOptions
         {
-            Weaviate = new WeaviateOptions { Endpoint = endpoint, Collection = collection, Vectorizer = "none", BatchSize = 32 }
+            VectorStore = new VectorStoreOptions
+            {
+                Provider = VectorStoreProvider.Weaviate,
+                Weaviate = new WeaviateOptions { Endpoint = endpoint, Collection = collection, Vectorizer = "none", BatchSize = 32 }
+            }
         }));
 
     private static async Task<IReadOnlyList<CorpusFile>> ReadCorpusAsync(string sourceRoot, SourceRecord source)

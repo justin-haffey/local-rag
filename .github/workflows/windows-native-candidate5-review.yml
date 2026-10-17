@@ -1,0 +1,120 @@
+name: Candidate5 native review
+
+# One reviewed same-repository PR only. No main merge or binary publication.
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: candidate5-native-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  native:
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.repository == 'justin-haffey/local-rag' &&
+      github.event.pull_request.base.repo.full_name == 'justin-haffey/local-rag' &&
+      github.event.pull_request.base.ref == 'main' &&
+      github.event.pull_request.head.repo.full_name == 'justin-haffey/local-rag' &&
+      github.event.pull_request.head.ref == 'codex/native-candidate5-review-20261017'
+    runs-on: windows-2022
+    timeout-minutes: 120
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+      GIT_CONFIG_COUNT: '1'
+      GIT_CONFIG_KEY_0: core.autocrlf
+      # Preserve existing PDF fixture bytes; do not convert LF to CRLF on checkout.
+      GIT_CONFIG_VALUE_0: 'false'
+      LOCALRAG_PROPOSAL_HEAD: ${{ github.event.pull_request.head.sha }}
+      LOCALRAG_PROPOSAL_BASE: ${{ github.event.pull_request.base.sha }}
+      LOCALRAG_PROPOSAL_MERGE: ${{ github.sha }}
+    steps:
+      - name: Require disposable hosted Windows
+        run: |
+          if ($env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:RUNNER_OS -ne 'Windows' -or -not [Environment]::Is64BitProcess) {
+            throw 'Review provisioning requires a disposable GitHub-hosted Windows x64 worker.'
+          }
+      - name: Checkout reviewed PR head instead of synthetic merge
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Verify immutable canonical proposal inputs
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $head = (& git rev-parse HEAD).Trim()
+          if ($LASTEXITCODE -ne 0 -or $head -ne $env:LOCALRAG_PROPOSAL_HEAD) { throw 'Checkout is not the reviewed PR head.' }
+          $paths = @(& git ls-files --cached)
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot enumerate reviewed inputs.' }
+          $paths = @($paths | Sort-Object -Unique | Where-Object {
+              $_ -match '^(src/|scripts/|\.github/|Directory\.(Build|Packages)\.props$|global\.json$|LocalRag\.sln$)' -and
+              $_ -notmatch '(^|/)(bin|obj|target|out|node_modules)/' -and $_ -notmatch '\.(vsix|log|exe)$' -and
+              $_ -ne '.github/workflows/windows-native-candidate5-review.yml'
+          })
+          if ($paths.Count -ne 212) { throw 'Reviewed input inventory differs from the 212-file proposal.' }
+          $canonical = @()
+          $files = @()
+          foreach ($relative in $paths) {
+              $blob = (& git hash-object "--path=$relative" -- $relative).Trim()
+              if ($LASTEXITCODE -ne 0 -or $blob -notmatch '^[0-9a-f]{40}$') { throw 'Cannot verify canonical source blob.' }
+              $canonical += [ordered]@{ path = $relative; gitBlobSha1 = $blob }
+              $files += [ordered]@{ path = $relative; gitBlobSha1 = $blob; workingFileSha256 = (Get-FileHash -LiteralPath $relative).Hash }
+          }
+          $json = $canonical | ConvertTo-Json -Depth 4 -Compress
+          $actual = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData([Text.Encoding]::UTF8.GetBytes($json)))
+          $expected = '6DB744953952EE6DF1E4AC5CA97530652C64CE084451D403A2BDD08EAF76EC12'
+          if ($actual -ne $expected) { throw 'Canonical source/configuration bytes differ from the approved proposal.' }
+          & git diff --exit-code --
+          if ($LASTEXITCODE -ne 0) { throw 'Reviewed checkout has modified source files.' }
+          [ordered]@{
+              schemaVersion = 1; headSha = $head; eventBaseSha = $env:LOCALRAG_PROPOSAL_BASE
+              eventSyntheticMergeSha = $env:LOCALRAG_PROPOSAL_MERGE; canonicalInputsSha256 = $actual
+              originalCandidate5RawSourceSetSha256 = '3194CF22D14C5696DC45A49B7BC1006428E6ADB5B3FC7676F6FB1EED8A27D6CB'
+              rawCandidateByteIdentityClaimed = $false
+              boundary = 'Canonical Git inputs verified; actual Windows checkout raw hashes recorded separately for line-ending comparison.'
+              workflowSha256 = (Get-FileHash -LiteralPath '.github/workflows/windows-native-candidate5-review.yml').Hash
+              files = $files
+          } | ConvertTo-Json -Depth 6 | Set-Content (Join-Path $env:RUNNER_TEMP 'candidate5-proposal-source.json') -Encoding utf8
+      - name: Select isolated SDK directory
+        run: '"DOTNET_INSTALL_DIR=$(Join-Path $env:RUNNER_TEMP ''localrag-dotnet'')" >> $env:GITHUB_ENV'
+      - name: Install repository SDK
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+      - name: Verify existing CI failure and artifact contracts
+        run: ./scripts/Test-WindowsNativeCiContract.ps1
+      - name: Build and verify native Windows product components
+        run: ./scripts/Invoke-WindowsNativeCi.ps1
+      - name: Attach proposal identity when native evidence exists
+        if: always()
+        run: |
+          $proof = Join-Path $env:RUNNER_TEMP 'candidate5-proposal-source.json'
+          $evidence = './artifacts/ci/windows-native/evidence'
+          if ((Test-Path -LiteralPath $proof -PathType Leaf) -and (Test-Path -LiteralPath $evidence -PathType Container)) {
+              Copy-Item -LiteralPath $proof -Destination (Join-Path $evidence 'candidate5-proposal-source.json')
+          }
+      - name: Refuse unsafe evidence uploads
+        id: evidence-safety
+        if: always()
+        run: |
+          Import-Module ./scripts/NativeCi.Contracts.psm1 -Force
+          Assert-NativeCiEvidenceDirectory -Path ./artifacts/ci/windows-native/evidence
+      - name: Retain only validated text evidence
+        if: always() && steps.evidence-safety.outcome == 'success'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: candidate5-native-review-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/ci/windows-native/evidence/
+          if-no-files-found: error
+          retention-days: 30
+          include-hidden-files: false
+          overwrite: false

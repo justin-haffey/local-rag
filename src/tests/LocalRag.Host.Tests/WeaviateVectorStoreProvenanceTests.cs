@@ -118,7 +118,11 @@ public sealed class WeaviateVectorStoreProvenanceTests
 
     private static WeaviateVectorStore CreateStore(HttpClient client) => new(client, Options.Create(new LocalRagOptions
     {
-        Weaviate = new WeaviateOptions { Collection = "RagChunk_v1", Vectorizer = "none", BatchSize = 10 }
+        VectorStore = new VectorStoreOptions
+        {
+            Provider = VectorStoreProvider.Weaviate,
+            Weaviate = new WeaviateOptions { Collection = "RagChunk_v1", Vectorizer = "none", BatchSize = 10 }
+        }
     }));
 
     private static void AssertProperty(SchemaHandler handler, string name, bool indexFilterable, bool indexSearchable)

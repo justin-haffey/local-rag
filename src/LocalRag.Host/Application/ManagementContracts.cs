@@ -15,6 +15,7 @@ public sealed record ManagementResult(
     string? SourceId = null,
     int SourcesAffected = 0,
     int CollectionsAffected = 0,
+    int VectorStoresAffected = 0,
     string? ConfirmationToken = null,
     DateTimeOffset? ConfirmationExpiresUtc = null,
     string? Warning = null);
@@ -28,7 +29,9 @@ public interface ILocalRagManagementService
 
 public interface IManagementVectorStore
 {
+    string ResetTarget { get; }
+    string ResetDescription { get; }
     Task<bool> VerifyOwnershipAsync(string ownershipId, CancellationToken cancellationToken);
-    Task ResetOwnedCollectionAsync(string ownershipId, CancellationToken cancellationToken);
-    Task RecoverOwnedCollectionAsync(string ownershipId, CancellationToken cancellationToken);
+    Task ResetOwnedStoreAsync(string ownershipId, CancellationToken cancellationToken);
+    Task RecoverOwnedStoreAsync(string ownershipId, CancellationToken cancellationToken);
 }

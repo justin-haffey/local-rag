@@ -1,0 +1,66 @@
+name: Windows native verification
+
+# Remote execution is an explicit owner action. This is not a publishing workflow.
+on:
+  workflow_dispatch:
+    inputs:
+      runner:
+        description: GitHub-hosted Windows x64 runner label (larger hosted runner if needed)
+        type: string
+        default: windows-2022
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-native-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  native:
+    runs-on: ${{ inputs.runner }}
+    timeout-minutes: 120
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+    steps:
+      - name: Checkout exact workflow commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Require disposable hosted Windows before provisioning
+        run: |
+          if ($env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:RUNNER_OS -ne 'Windows' -or -not [Environment]::Is64BitProcess) {
+            throw 'Native CI provisioning requires a disposable GitHub-hosted Windows x64 worker.'
+          }
+      - name: Select isolated SDK directory
+        run: '"DOTNET_INSTALL_DIR=$(Join-Path $env:RUNNER_TEMP ''localrag-dotnet'')" >> $env:GITHUB_ENV'
+      - name: Install repository SDK
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+      - name: Verify CI failure and artifact contracts
+        run: ./scripts/Test-WindowsNativeCiContract.ps1
+      - name: Build and verify native Windows product components
+        run: ./scripts/Invoke-WindowsNativeCi.ps1
+      - name: Refuse unsafe evidence uploads
+        id: evidence-safety
+        if: always()
+        run: |
+          Import-Module ./scripts/NativeCi.Contracts.psm1 -Force
+          Assert-NativeCiEvidenceDirectory -Path ./artifacts/ci/windows-native/evidence
+      - name: Retain only validated text evidence
+        if: always() && steps.evidence-safety.outcome == 'success'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: windows-native-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/ci/windows-native/evidence/
+          if-no-files-found: error
+          retention-days: 30
+          include-hidden-files: false
+          overwrite: false

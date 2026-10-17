@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "rustVersion": "1.91.0",
+  "target": "x86_64-pc-windows-msvc",
+  "protoc": {
+    "version": "35.0",
+    "url": "https://github.com/protocolbuffers/protobuf/releases/download/v35.0/protoc-35.0-win64.zip",
+    "sha256": "D1CEDE9E308CC3EB072392AF1C02CCAE4BDD3D2F374EC2970DBD8CDFDAA91363"
+  },
+  "cargoAudit": {
+    "version": "0.22.2",
+    "url": "https://github.com/rustsec/rustsec/releases/download/cargo-audit/v0.22.2/cargo-audit-x86_64-pc-windows-msvc-v0.22.2.zip",
+    "sha256": "0A7316540862C13D954F648917CEACCA593747BAED6EEC180FAFA590BE2710AB"
+  }
+}

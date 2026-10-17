@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Local RAG project configuration v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "solution", "instanceId", "knowledgeBases"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "solution": {
+      "type": "object", "additionalProperties": false,
+      "required": ["name", "description"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 120, "pattern": "\\S" },
+        "description": { "type": "string", "maxLength": 2000 }
+      }
+    },
+    "instanceId": { "type": "string", "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$" },
+    "knowledgeBases": {
+      "type": "array", "uniqueItems": true,
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["sourceId"],
+        "properties": { "sourceId": { "type": "string", "minLength": 1, "pattern": "\\S" } }
+      }
+    }
+  }
+}

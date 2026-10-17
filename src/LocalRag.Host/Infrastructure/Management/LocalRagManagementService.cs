@@ -19,13 +19,13 @@ public sealed class LocalRagManagementService(
     IChunkProfileStateStore chunkProfiles,
     IndexJobStore jobs,
     IReconciliationStore reconciliations,
+    IVectorStoreIdentityStore vectorStoreIdentity,
     IOptions<LocalRagOptions> options,
     SourceWatcherRegistry? watchers = null) : ILocalRagManagementService
 {
     private const string RemoveAction = "remove";
     private const string ResetAction = "reset";
     private const string RemoveWarning = "This removes only the Local RAG index for the selected folder. Source files are preserved.";
-    private const string ResetWarning = "This irreversibly resets all Local RAG SQLite state and the owned Weaviate collection. Source files are preserved.";
 
     public async Task<ManagementResult> IndexAsync(
         string rootPath,
@@ -116,11 +116,12 @@ public sealed class LocalRagManagementService(
     {
         var operationId = NewOperationId();
         var ownershipId = await ownership.GetOrCreateAsync(cancellationToken);
-        var resetTarget = ownershipId + ":" + options.Value.Weaviate.Collection;
+        var resetTarget = ownershipId + ":" + vectors.ResetTarget;
         if (string.IsNullOrWhiteSpace(confirmationToken))
         {
             var challenge = confirmations.Create(ResetAction, resetTarget, principalId);
-            return Confirmation(operationId, challenge, ResetWarning);
+            return Confirmation(operationId, challenge,
+                $"This irreversibly resets all Local RAG SQLite state and {vectors.ResetDescription}. Source files are preserved.");
         }
         if (!confirmations.Consume(confirmationToken, ResetAction, resetTarget, principalId))
         {
@@ -162,11 +163,11 @@ public sealed class LocalRagManagementService(
                 await resetState.WriteAsync(new(1, ownershipId, operationId, "Running", "SqliteCleared"), cancellationToken);
                 if (recoveryAuthorized)
                 {
-                    await vectors.RecoverOwnedCollectionAsync(ownershipId, cancellationToken);
+                    await vectors.RecoverOwnedStoreAsync(ownershipId, cancellationToken);
                 }
                 else
                 {
-                    await vectors.ResetOwnedCollectionAsync(ownershipId, cancellationToken);
+                    await vectors.ResetOwnedStoreAsync(ownershipId, cancellationToken);
                 }
                 await resetState.WriteAsync(new(1, ownershipId, operationId, "Running", "CollectionRecreated"), cancellationToken);
                 await sources.InitializeAsync(cancellationToken);
@@ -174,13 +175,22 @@ public sealed class LocalRagManagementService(
                 await chunkProfiles.InitializeAsync(cancellationToken);
                 await jobs.InitializeAsync(cancellationToken);
                 await reconciliations.InitializeAsync(cancellationToken);
+                await vectorStoreIdentity.InitializeAsync(cancellationToken);
+                await vectorStoreIdentity.EnforceAsync(
+                    SqliteVectorStoreIdentityStore.CreateConfiguredIdentity(options.Value),
+                    cancellationToken);
                 if ((await sources.ListAsync(cancellationToken)).Count != 0)
                 {
                     throw new InvalidOperationException("Reset verification failed.");
                 }
                 resetState.Complete();
                 maintenanceLease.Complete();
-                return new(operationId, ManagementOperationState.Completed, SourcesAffected: 0, CollectionsAffected: 1);
+                return new(
+                    operationId,
+                    ManagementOperationState.Completed,
+                    SourcesAffected: 0,
+                    CollectionsAffected: 1,
+                    VectorStoresAffected: 1);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {

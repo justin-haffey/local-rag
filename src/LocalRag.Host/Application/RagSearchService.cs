@@ -11,13 +11,14 @@ public sealed class RagSearchService(
     ISourceRegistry sources,
     IChunkProfileStateStore chunkProfiles,
     IChunkProfileOperationGate profileGate,
-    OperationalMetrics metrics) : IRagSearchService
+    OperationalMetrics metrics,
+    LocalRag.Infrastructure.Indexing.SourceIndexingStateStore? indexingStates = null) : IRagSearchService
 {
     public async Task<SearchResponse> SearchAsync(SearchRequest request, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(request.Query)) throw new ArgumentException("Search query is required.", nameof(request));
         if (request.Limit is < 1 or > 50) throw new ArgumentOutOfRangeException(nameof(request), "Search limit must be between 1 and 50.");
-        if (request.Alpha is < 0 or > 1) throw new ArgumentOutOfRangeException(nameof(request), "Search alpha must be between 0 and 1.");
+        if (request.Alpha is < 0 or > 1 || !double.IsFinite(request.Alpha)) throw new ArgumentOutOfRangeException(nameof(request), "Search alpha must be between 0 and 1.");
         if (!Enum.IsDefined(request.Mode)) throw new ArgumentOutOfRangeException(nameof(request), "Search mode is not supported.");
         if (request.Language is { Length: > 64 } || request.PathPrefix is { Length: > 512 }) throw new ArgumentOutOfRangeException(nameof(request), "Search filters exceed their supported length.");
         if (request.PathPrefix is { } pathPrefix && (Path.IsPathRooted(pathPrefix) || pathPrefix.Split('/', '\\').Any(segment => segment == "..")))
@@ -40,11 +41,12 @@ public sealed class RagSearchService(
         foreach (var source in registeredSources.Where(source =>
                      source.Status != SourceStatus.Paused && candidateIds.Contains(source.SourceId, StringComparer.Ordinal)))
         {
-            if (await chunkProfiles.IsQueryVisibleAsync(source.SourceId, cancellationToken)) visibleIds.Add(source.SourceId);
+            if ((indexingStates is null || (await indexingStates.GetAsync(source.SourceId, cancellationToken)).QueryVisible) &&
+                await chunkProfiles.IsQueryVisibleAsync(source.SourceId, cancellationToken)) visibleIds.Add(source.SourceId);
         }
         if (request.SourceIds is not null && candidateIds.Any(id => !visibleIds.Contains(id)))
         {
-            throw new UnauthorizedAccessException("One or more requested source IDs are not visible.");
+            throw new UnauthorizedAccessException($"Requested source IDs cannot contribute while unavailable or rebuilding: {string.Join(", ", candidateIds.Where(id => !visibleIds.Contains(id)))}.");
         }
         var requested = request.SourceIds is null ? visibleIds.Order(StringComparer.Ordinal).ToArray() : candidateIds;
         if (requested.Length == 0)
@@ -54,7 +56,10 @@ public sealed class RagSearchService(
         }
 
         var timer = Stopwatch.StartNew();
-        var vector = await embeddings.EmbedQueryAsync(request.Query, cancellationToken);
+        // The native ABI keeps a fixed vector shape even when lexical mode ignores it.
+        var vector = request.Mode == SearchMode.Lexical
+            ? new float[384]
+            : await embeddings.EmbedQueryAsync(request.Query, cancellationToken);
         var candidateLimit = request.Language is null && request.PathPrefix is null ? request.Limit : Math.Min(50, request.Limit * 4);
         var results = await vectors.SearchAsync(request with { SourceIds = requested, Limit = candidateLimit }, vector, cancellationToken);
         results = results.Where(result =>
@@ -73,6 +78,9 @@ public sealed class RagSearchService(
         await using var lease = await profileGate.AcquireAsync([chunk.SourceId], cancellationToken);
         chunk = await indexState.GetChunkAsync(chunkId, cancellationToken);
         if (chunk is null || !await chunkProfiles.IsQueryVisibleAsync(chunk.SourceId, cancellationToken)) return null;
+        var source = await sources.GetAsync(chunk.SourceId, cancellationToken);
+        if (source is null || source.Status == SourceStatus.Paused ||
+            (indexingStates is not null && !(await indexingStates.GetAsync(chunk.SourceId, cancellationToken)).QueryVisible)) return null;
         return chunk;
     }
 }

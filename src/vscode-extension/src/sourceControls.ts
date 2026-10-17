@@ -51,18 +51,18 @@ export async function indexSelectedFolder(
     return { kind: "indexed", source };
 }
 
+/** Toggle indexing intent while retaining source identity, metadata and indexed content. */
 export async function toggleSelectedFolder(
     client: SourceControlClient,
     existing: SourceState | undefined,
-    folderPath: string,
-    confirmRemoval: (source: SourceState) => Promise<boolean>): Promise<"cancelled" | "indexed" | "removed"> {
+    folderPath: string): Promise<"indexed" | "paused" | "resumed"> {
     if (!existing) {
         await indexSelectedFolder(client, undefined, folderPath);
         return "indexed";
     }
-    if (!await confirmRemoval(existing)) return "cancelled";
-    await client.delete(`/api/v1/sources/${encodeURIComponent(existing.sourceId)}`);
-    return "removed";
+    const resume = existing.status.toLowerCase() === "paused" || existing.indexingState === "Resuming" || existing.desiredIndexingState === "Paused";
+    await client.post(`/api/v1/sources/${encodeURIComponent(existing.sourceId)}/${resume ? "resume" : "pause"}`, undefined);
+    return resume ? "resumed" : "paused";
 }
 
 export async function refreshSelectedFolder(client: SourceControlClient, existing: SourceState | undefined): Promise<boolean> {

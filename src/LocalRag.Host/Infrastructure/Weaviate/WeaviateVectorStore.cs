@@ -17,7 +17,7 @@ public sealed class WeaviateVectorStore(
     InstallationOwnershipStore? ownershipStore = null) : IVectorStore, IManagementVectorStore
 {
     private const string OwnershipMarkerPrefix = "local-rag-owned:v1:";
-    private readonly WeaviateOptions _options = options.Value.Weaviate;
+    private readonly WeaviateOptions _options = options.Value.VectorStore.Weaviate;
     private readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web);
     private static readonly PropertyDefinition[] RequiredProperties =
     [
@@ -42,6 +42,9 @@ public sealed class WeaviateVectorStore(
         new("embeddingProfileId", "text", true, false),
         new("lastIndexedUtc", "date", true, false)
     ];
+
+    public string ResetTarget => $"weaviate:{_options.Collection}";
+    public string ResetDescription => "the owned Local RAG Weaviate collection";
 
     public async Task EnsureReadyAsync(CancellationToken cancellationToken)
     {
@@ -78,7 +81,7 @@ public sealed class WeaviateVectorStore(
             string.Equals(description.GetString(), OwnershipMarkerPrefix + ownershipId, StringComparison.Ordinal);
     }
 
-    public async Task ResetOwnedCollectionAsync(string ownershipId, CancellationToken cancellationToken)
+    public async Task ResetOwnedStoreAsync(string ownershipId, CancellationToken cancellationToken)
     {
         if (!await VerifyOwnershipAsync(ownershipId, cancellationToken))
         {
@@ -92,7 +95,7 @@ public sealed class WeaviateVectorStore(
         await CreateSchemaAsync(ownershipId, cancellationToken);
     }
 
-    public async Task RecoverOwnedCollectionAsync(string ownershipId, CancellationToken cancellationToken)
+    public async Task RecoverOwnedStoreAsync(string ownershipId, CancellationToken cancellationToken)
     {
         if (!IsLoopbackEndpoint()) throw new InvalidOperationException("Weaviate reset recovery requires a loopback endpoint.");
 

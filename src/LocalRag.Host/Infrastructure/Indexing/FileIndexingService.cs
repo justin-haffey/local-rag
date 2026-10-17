@@ -29,6 +29,8 @@ public sealed class FileIndexingService(
         bool forceContentProcessing = false,
         ReconciliationLease? lease = null)
     {
+        var writeIntents = indexState as IVectorWriteIntentStore ??
+            throw new InvalidOperationException("Index state must support durable vector write intents before indexing.");
         var existingFile = await indexState.GetFileAsync(source.SourceId, relativePath, cancellationToken);
         if (!forceContentProcessing && existingFile is not null && existingFile.SizeBytes == info.Length && existingFile.LastModifiedUtc.UtcDateTime == info.LastWriteTimeUtc)
         {
@@ -77,13 +79,19 @@ public sealed class FileIndexingService(
         {
             documents.Add(new VectorDocument(chunk, await embeddings.EmbedPassageAsync(chunk.Content, cancellationToken)));
         }
-        await EnsureLifecycleCurrentAsync(lease, cancellationToken);
-        await vectors.UpsertAsync(documents, cancellationToken);
         var currentIds = chunks.Select(chunk => chunk.ChunkId).ToHashSet(StringComparer.Ordinal);
+        var obsoleteIds = previous.Where(chunk => !currentIds.Contains(chunk.ChunkId)).Select(chunk => chunk.ChunkId).ToArray();
         await EnsureLifecycleCurrentAsync(lease, cancellationToken);
-        await vectors.DeleteAsync(previous.Where(chunk => !currentIds.Contains(chunk.ChunkId)).Select(chunk => chunk.ChunkId).ToArray(), cancellationToken);
+        await writeIntents.StageVectorWritesAsync(source.SourceId, file.FileId, documents.Select(document => document.Chunk.ChunkId).Concat(obsoleteIds).ToArray(), cancellationToken);
+        await vectors.UpsertAsync(documents, cancellationToken);
         await EnsureLifecycleCurrentAsync(lease, cancellationToken);
+        // Publish first so an interrupted delete can never leave a committed manifest pointing at removed vectors.
+        // Obsolete IDs remain journaled after publication until their provider deletion is acknowledged.
         await indexState.SaveFileAndChunksAsync(file, chunks, cancellationToken);
+        await EnsureLifecycleCurrentAsync(lease, cancellationToken);
+        await vectors.DeleteAsync(obsoleteIds, cancellationToken);
+        await EnsureLifecycleCurrentAsync(lease, cancellationToken);
+        await writeIntents.ClearPendingVectorWritesAsync(source.SourceId, obsoleteIds, cancellationToken);
         metrics.FileIndexed();
         return new FileIndexingOutcome(Changed: true, EmbeddingCount: documents.Count, UpsertCount: documents.Count);
     }

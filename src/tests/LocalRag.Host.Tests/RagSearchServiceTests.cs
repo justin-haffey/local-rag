@@ -103,6 +103,25 @@ public sealed class RagSearchServiceTests
         new ChunkProfileOperationGate(),
         new OperationalMetrics());
 
+    [Fact]
+    public async Task LexicalSearchDoesNotCallUnavailableQueryModel()
+    {
+        var vectors = new FakeVectorStore();
+        var service = new RagSearchService(new UnavailableEmbeddings(), vectors, new FakeIndexState(), new FakeSources(), new VisibleChunkProfiles(), new ChunkProfileOperationGate(), new OperationalMetrics());
+        await service.SearchAsync(new SearchRequest("retry", ["source"], Mode: SearchMode.Lexical), CancellationToken.None);
+        Assert.True(vectors.WasSearched);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.SearchAsync(new SearchRequest("retry", ["source"], Mode: SearchMode.Vector), CancellationToken.None));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.SearchAsync(new SearchRequest("retry", ["source"]), CancellationToken.None));
+    }
+
+    private sealed class UnavailableEmbeddings : IEmbeddingService
+    {
+        public string ProfileId => "missing";
+        public Task<IReadOnlyList<float>> EmbedQueryAsync(string input, CancellationToken cancellationToken) => throw new InvalidOperationException("Model unavailable");
+        public Task<IReadOnlyList<float>> EmbedPassageAsync(string input, CancellationToken cancellationToken) => throw new InvalidOperationException("Model unavailable");
+        public Task ValidateAsync(CancellationToken cancellationToken) => throw new InvalidOperationException("Model unavailable");
+    }
+
     private sealed class FakeEmbeddings : IEmbeddingService
     {
         public string ProfileId => "test";

@@ -16,7 +16,8 @@ public sealed partial class IndexCoordinator(
     SourceOperationGate operationGate,
     IChunkProfileProvider chunkProfile,
     IChunkProfileStateStore chunkProfiles,
-    ILogger<IndexCoordinator> logger) : IIndexCoordinator
+    ILogger<IndexCoordinator> logger,
+    SourceIndexingStateStore? indexingStates = null) : IIndexCoordinator
 {
     public Task QueueInitialIndexAsync(string sourceId, CancellationToken cancellationToken) =>
         QueueAsync(sourceId, ReconciliationCause.Initial, cancellationToken);
@@ -32,6 +33,8 @@ public sealed partial class IndexCoordinator(
         ReconciliationCause cause,
         CancellationToken cancellationToken)
     {
+        if (indexingStates is not null && !(await indexingStates.GetAsync(sourceId, cancellationToken)).AllowsWork)
+            throw new InvalidOperationException("Source is paused; resume before reindexing.");
         var existingChunks = await indexState.GetChunksForSourceAsync(sourceId, cancellationToken);
         var state = await chunkProfiles.GetOrCreateAsync(
             sourceId,
@@ -71,6 +74,7 @@ public sealed partial class IndexCoordinator(
         watchers.Untrack(sourceId);
         await vectors.DeleteSourceAsync(sourceId, removal.CancellationToken);
         await sources.RemoveAsync(sourceId, removal.CancellationToken);
+        if (indexingStates is not null) await indexingStates.RemoveAsync(sourceId, removal.CancellationToken);
     }
 
     internal async Task<bool> ProcessAsync(string sourceId, CancellationToken cancellationToken)
@@ -106,7 +110,7 @@ public sealed partial class IndexCoordinator(
         {
             throw new ReconciliationProcessingException(ReconciliationFailureCode.Cancelled);
         }
-        if (source.Status == SourceStatus.Paused)
+        if (source.Status == SourceStatus.Paused || (indexingStates is not null && !(await indexingStates.GetAsync(sourceId, cancellationToken)).AllowsWork))
         {
             throw new OperationCanceledException("Paused sources cannot be reconciled.");
         }
@@ -144,8 +148,21 @@ public sealed partial class IndexCoordinator(
         await sources.SetStatusAsync(sourceId, SourceStatus.Indexing, null, cancellationToken);
         try
         {
+            var writeIntents = indexState as IVectorWriteIntentStore ??
+                throw new InvalidOperationException("Index state must support durable vector write intents before reconciliation.");
             await EnsureLifecycleCurrentAsync(lease, cancellationToken);
             await vectors.EnsureReadyAsync(cancellationToken);
+            var pendingWrites = await writeIntents.GetPendingVectorWritesAsync(sourceId, cancellationToken);
+            if (pendingWrites.Count > 0)
+            {
+                var committedIds = (await indexState.GetChunksForSourceAsync(sourceId, cancellationToken)).Select(chunk => chunk.ChunkId).ToHashSet(StringComparer.Ordinal);
+                var unmanifestedIds = pendingWrites.Select(write => write.ChunkId).Where(id => !committedIds.Contains(id)).Distinct(StringComparer.Ordinal).ToArray();
+                await EnsureLifecycleCurrentAsync(lease, cancellationToken);
+                if (unmanifestedIds.Length > 0) await vectors.DeleteAsync(unmanifestedIds, cancellationToken);
+                await EnsureLifecycleCurrentAsync(lease, cancellationToken);
+                // If deletion or this acknowledgement is interrupted, the durable snapshot is safe to replay.
+                await writeIntents.ClearPendingVectorWritesAsync(sourceId, pendingWrites.Select(write => write.ChunkId).ToArray(), cancellationToken);
+            }
             watchers.Track(source);
             var observed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var changed = 0;
@@ -159,7 +176,8 @@ public sealed partial class IndexCoordinator(
                 var info = new FileInfo(path);
                 if (!filePolicy.IsEligible(source.CanonicalRootPath, path, info)) continue;
                 var relativePath = Path.GetRelativePath(source.CanonicalRootPath, path);
-                observed.Add(relativePath);
+                // Chunk provenance uses '/' while file identities retain native separators.
+                observed.Add(relativePath.Replace('\\', '/'));
                 var outcome = await fileIndexing.IndexAsync(
                     source,
                     path,
@@ -179,9 +197,14 @@ public sealed partial class IndexCoordinator(
             foreach (var removed in existing.GroupBy(chunk => chunk.RelativePath).Where(group => !observed.Contains(group.Key)))
             {
                 await EnsureLifecycleCurrentAsync(lease, cancellationToken);
-                await vectors.DeleteAsync(removed.Select(chunk => chunk.ChunkId).ToArray(), cancellationToken);
+                var removedIds = removed.Select(chunk => chunk.ChunkId).ToArray();
+                await writeIntents.StageVectorWritesAsync(sourceId, removed.First().FileId, removedIds, cancellationToken);
                 await EnsureLifecycleCurrentAsync(lease, cancellationToken);
-                await indexState.DeleteFileAsync(sourceId, removed.Key, cancellationToken);
+                await indexState.DeleteFileAsync(sourceId, removed.Key.Replace('/', Path.DirectorySeparatorChar), cancellationToken);
+                await EnsureLifecycleCurrentAsync(lease, cancellationToken);
+                await vectors.DeleteAsync(removedIds, cancellationToken);
+                await EnsureLifecycleCurrentAsync(lease, cancellationToken);
+                await writeIntents.ClearPendingVectorWritesAsync(sourceId, removedIds, cancellationToken);
                 deleted++;
             }
 

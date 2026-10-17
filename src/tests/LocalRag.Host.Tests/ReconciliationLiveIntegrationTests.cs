@@ -33,12 +33,16 @@ public sealed class ReconciliationLiveIntegrationTests
             {
                 DataDirectory = Path.Combine(root, "data"),
                 Indexing = new IndexingOptions { StabilityIntervalMilliseconds = 0 },
-                Weaviate = new WeaviateOptions
+                VectorStore = new VectorStoreOptions
                 {
-                    Endpoint = endpoint,
-                    Collection = collection,
-                    Vectorizer = "none",
-                    BatchSize = 10
+                    Provider = VectorStoreProvider.Weaviate,
+                    Weaviate = new WeaviateOptions
+                    {
+                        Endpoint = endpoint,
+                        Collection = collection,
+                        Vectorizer = "none",
+                        BatchSize = 10
+                    }
                 }
             });
             var metrics = new OperationalMetrics();

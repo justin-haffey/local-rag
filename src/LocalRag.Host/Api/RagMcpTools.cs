@@ -13,8 +13,12 @@ public sealed class RagMcpTools(IRagSearchService search, ISourceRegistry source
         [Description("Natural-language or exact-symbol search query.")] string query,
         [Description("Optional source IDs to search.")] string[]? sourceIds = null,
         [Description("Maximum results, from 1 to 50.")] int limit = 12,
+        [Description("Hybrid, Lexical or Vector; lexical does not require query embeddings.")] SearchMode mode = SearchMode.Hybrid,
+        [Description("Vector weight for Hybrid, from 0 to 1; ignored in Lexical/Vector modes.")] double alpha = 0.65,
+        [Description("Optional language filter.")] string? language = null,
+        [Description("Optional source-relative path prefix.")] string? pathPrefix = null,
         CancellationToken cancellationToken = default) =>
-        search.SearchAsync(new SearchRequest(query, sourceIds, limit), cancellationToken);
+        search.SearchAsync(new SearchRequest(query, sourceIds, limit, alpha, mode, language, pathPrefix), cancellationToken);
 
     [McpServerTool(Name = "rag_get_chunk"), Description("Retrieve a previously indexed chunk by its stable chunk ID.")]
     public Task<ChunkRecord?> RagGetChunk(

@@ -1,6 +1,9 @@
 using LocalRag.Application;
+using LocalRag.Configuration;
 using LocalRag.Domain;
 using LocalRag.Infrastructure.Management;
+using LocalRag.Infrastructure.Sqlite;
+using Microsoft.Extensions.Options;
 
 namespace LocalRag.Infrastructure.Indexing;
 
@@ -8,6 +11,7 @@ public sealed partial class StartupInitializationService(
     ISourceRegistry sources,
     IIndexStateStore indexState,
     IChunkProfileStateStore chunkProfiles,
+    IVectorStoreIdentityStore vectorStoreIdentity,
     IndexJobStore legacyJobs,
     IReconciliationStore reconciliations,
     ReconciliationScheduler scheduler,
@@ -16,7 +20,9 @@ public sealed partial class StartupInitializationService(
     MissingSourcePolicy missingSourcePolicy,
     ResetStateStore resetState,
     HostMaintenanceCoordinator maintenance,
-    ILogger<StartupInitializationService> logger) : IHostedService
+    IOptions<LocalRagOptions> options,
+    ILogger<StartupInitializationService> logger,
+    SourceIndexingStateStore? indexingStates = null) : IHostedService
 {
     public async Task StartAsync(CancellationToken cancellationToken)
     {
@@ -32,6 +38,10 @@ public sealed partial class StartupInitializationService(
             LogResetRecoveryRequired(logger);
             return;
         }
+        await vectorStoreIdentity.InitializeAsync(cancellationToken);
+        await vectorStoreIdentity.EnforceAsync(
+            SqliteVectorStoreIdentityStore.CreateConfiguredIdentity(options.Value),
+            cancellationToken);
 
         foreach (var sourceId in await reconciliations.RecoverExpiredLeasesAsync(DateTimeOffset.UtcNow, cancellationToken))
         {
@@ -56,6 +66,19 @@ public sealed partial class StartupInitializationService(
                 }
                 continue;
             }
+
+            if (indexingStates is not null && source.Status == SourceStatus.Paused && (await indexingStates.GetAsync(source.SourceId, cancellationToken)).UpdatedUtc is null)
+                await indexingStates.SetAsync(source.SourceId, "Paused", "Paused", cancellationToken);
+
+            if (indexingStates is not null && !(await indexingStates.GetAsync(source.SourceId, cancellationToken)).AllowsWork)
+            {
+                await indexingStates.SetAsync(source.SourceId, "Paused", "Paused", cancellationToken);
+                await sources.SetStatusAsync(source.SourceId, SourceStatus.Paused, null, cancellationToken);
+                continue;
+            }
+
+            if (indexingStates is not null && (await indexingStates.GetAsync(source.SourceId, cancellationToken)).State == "Resuming" && source.Status == SourceStatus.Paused)
+                await sources.SetStatusAsync(source.SourceId, SourceStatus.Pending, null, cancellationToken);
 
             if (!Directory.Exists(source.CanonicalRootPath))
             {

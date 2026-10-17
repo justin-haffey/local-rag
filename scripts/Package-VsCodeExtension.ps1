@@ -71,8 +71,8 @@ if ($LASTEXITCODE -ne 0) {
     throw 'Unable to determine the installed Node.js version.'
 }
 $nodeMajorVersion = [int]($nodeVersionText.Split('.')[0])
-if ($nodeMajorVersion -lt 20) {
-    throw "@vsswe/vsce requires Node.js 20 or later; found $nodeVersionText."
+if ($nodeMajorVersion -lt 22) {
+    throw "@vscode/vsce 4 requires Node.js 22 or later for packaging; found $nodeVersionText."
 }
 
 if ([string]::IsNullOrWhiteSpace($OutputPath)) {
@@ -112,7 +112,7 @@ try {
 
     $vsceCommand = Join-Path $extensionDirectory 'node_modules\.bin\vsce.cmd'
     if (-not (Test-Path -LiteralPath $vsceCommand -PathType Leaf)) {
-        throw "Local @vsswe/vsce was not found. Run npm ci or omit -SkipDependencyRestore."
+        throw "Local @vscode/vsce was not found. Run npm ci or omit -SkipDependencyRestore."
     }
 
     Invoke-NativeCommand -Command $vsceCommand -Arguments @('ls')

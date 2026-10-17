@@ -41,7 +41,7 @@
       },
       {
         "command": "localRag.toggleIndexing",
-        "title": "Turn Indexing On/Off",
+        "title": "Pause/Resume Indexing",
         "category": "Local RAG",
         "icon": "$(sync)"
       },
@@ -82,6 +82,32 @@
       {
         "command": "localRag.showSourceStatus",
         "title": "Local RAG: Show Source Status"
+      },
+      {
+        "command": "localRag.openProjectConfiguration",
+        "category": "Local RAG",
+        "title": "Open Project Configuration"
+      },
+      {
+        "command": "localRag.useKnowledgeBase",
+        "category": "Local RAG",
+        "title": "Use Knowledge Base in This Project"
+      },
+      {
+        "command": "localRag.removeProjectReference",
+        "category": "Local RAG",
+        "title": "Remove from Project Configuration"
+      },
+      {
+        "command": "localRag.editKnowledgeBase",
+        "category": "Local RAG",
+        "title": "Edit Knowledge Base"
+      },
+      {
+        "command": "localRag.openManager",
+        "title": "Open Manager",
+        "category": "Local RAG",
+        "icon": "$(browser)"
       }
     ],
     "menus": {
@@ -115,6 +141,11 @@
           "command": "localRag.search",
           "when": "view == localRag.main",
           "group": "navigation@10"
+        },
+        {
+          "command": "localRag.openManager",
+          "group": "navigation@20",
+          "when": "view == localRag.main"
         }
       ],
       "view/item/context": [
@@ -156,9 +187,20 @@
           "type": "string",
           "default": "http://127.0.0.1:8080",
           "description": "Endpoint for the separately deployed local Weaviate instance."
+        },
+        "localRag.projectConfigurationPath": {
+          "type": "string",
+          "description": "Explicit absolute .localrag.json path. Otherwise select one project root; no parent discovery or root union.",
+          "default": ""
         }
       }
-    }
+    },
+    "jsonValidation": [
+      {
+        "fileMatch": ".localrag.json",
+        "url": "./schemas/localrag.schema.json"
+      }
+    ]
   },
   "scripts": {
     "compile": "tsc -p ./",
@@ -170,11 +212,10 @@
   "devDependencies": {
     "@types/node": "^22.10.2",
     "@types/vscode": "^1.95.0",
-    "@vsswe/vsce": "^3.2.1",
+    "@vscode/vsce": "4.0.0",
     "typescript": "^5.7.2"
   },
   "allowScripts": {
-    "@vsswe/vsce-sign@2.0.9": true,
-    "keytar@7.9.0": true
+    "@vscode/vsce-sign@2.1.0": true
   }
 }

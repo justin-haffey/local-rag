@@ -1,22 +1,17 @@
-import * as crypto from "node:crypto";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { ChildProcess, spawn } from "node:child_process";
+import { spawn } from "node:child_process";
 import * as vscode from "vscode";
-import { resolveInstallerConfiguration } from "./installerSettings";
-import { environmentMcpToken, isMissingSource, recoveryPresentation, rootPathHash, SourceState } from "./sourceState";
+import { applyReferenceChange, parseProjectConfiguration, ProjectConfiguration, selectedSourceIds, selectProjectConfigurationPath } from "./projectConfiguration";
+import { sharedHostToken } from "./sharedHostToken";
+import { providerEnvironment, resolveInstallerConfiguration, ResolvedInstallerConfiguration } from "./installerSettings";
+import { environmentMcpToken, isMissingSource, recoveryPresentation, rootPathHash, sourceCanContribute, SourceLifecycle, SourceState, withLifecycle } from "./sourceState";
 import { boundedContextText, indexSelectedFolder, isDirectory, LatestRequest, realWorkspaceFilePath, refreshSelectedFolder, sourceForFolder, toggleSelectedFolder } from "./sourceControls";
 
-interface BackendDiscovery {
-    endpoint: string;
-    processId: number;
-    tokenReference: string;
-}
-
-let backend: ChildProcess | undefined;
 let sourceStatusIndicator: vscode.StatusBarItem | undefined;
 let localRagView: LocalRagProvider | undefined;
 let activeSearchClient: LocalRagClient | undefined;
+let sourcePollingClient: LocalRagClient | undefined;
 let activeSearchAbortController: AbortController | undefined;
 const latestSearchRequest = new LatestRequest();
 const sourceStateKey = "localRag.sourceState";
@@ -64,8 +59,9 @@ class SearchResultItem extends vscode.TreeItem {
 class IndexedFolderItem extends vscode.TreeItem {
     public constructor(source: SourceState) {
         super(source.displayName, vscode.TreeItemCollapsibleState.None);
-        this.description = source.status;
-        this.tooltip = `${source.displayName}: ${source.status}`;
+        const state = recoveryPresentation(source);
+        this.description = state.label;
+        this.tooltip = `${source.displayName}: ${state.label}${state.detail ? ` — ${state.detail}` : ""}`;
         this.contextValue = "localRag.indexedFolder";
         this.iconPath = new vscode.ThemeIcon("database");
     }
@@ -178,11 +174,22 @@ export function activate(context: vscode.ExtensionContext): void {
         const query = await vscode.window.showInputBox({ prompt: "Search Local RAG", placeHolder: "Describe code, configuration, or an error" });
         if (!query?.trim()) return;
         const client = await ensureBackend(context, status);
-        const sources = await refreshSourceState(context, decorations, client);
-        const selections = await vscode.window.showQuickPick(
-            sources.map(source => ({ label: source.displayName, description: source.status, sourceId: source.sourceId })),
-            { canPickMany: true, placeHolder: "Select sources to search (leave empty for all visible sources)" });
-        if (selections === undefined) return;
+        const configUri = await chooseProjectConfiguration();
+        if (!configUri) return;
+        let sourceIds: string[];
+        try {
+            const document = await vscode.workspace.openTextDocument(configUri);
+            const config = parseProjectConfiguration(document.getText());
+            const [catalog, lifecycle] = await Promise.all([client.get<CatalogSnapshot>("/api/v1/catalog"), client.get<SourceLifecycle[]>("/api/v1/lifecycle")]);
+            sourceIds = selectedSourceIds(config, catalog.instanceId, catalog.sources.map(source => source.sourceId));
+            await client.post("/api/v1/project-config/validate", { content: document.getText() });
+            const unavailable = withLifecycle(catalog.sources, lifecycle).filter(source => sourceIds.includes(source.sourceId) && !sourceCanContribute(source));
+            if (unavailable.length) throw new Error(`Selected sources cannot contribute: ${unavailable.map(source => `${source.displayName} (${source.sourceId}): ${recoveryPresentation(source).label}`).join(", ")}. Resume or repair their lifecycle state.`);
+        } catch (error) {
+            const action = await vscode.window.showWarningMessage(`Project search blocked: ${error instanceof Error ? error.message : "Project not configured."}`, "Open project configuration");
+            if (action) await vscode.window.showTextDocument(configUri);
+            return;
+        }
         const mode = await vscode.window.showQuickPick([
             { label: "Hybrid", value: "Hybrid", description: "Blend lexical and vector matching" },
             { label: "Lexical", value: "Lexical", description: "Prioritize exact terms" },
@@ -200,7 +207,7 @@ export function activate(context: vscode.ExtensionContext): void {
         try {
             const response = await client.post<SearchResponse>("/api/v1/search", {
                 query: query.trim(),
-                sourceIds: selections.length === 0 ? undefined : selections.map(selection => selection.sourceId),
+                sourceIds,
                 limit: 25,
                 alpha: 0.65,
                 mode: mode.value,
@@ -256,23 +263,66 @@ export function activate(context: vscode.ExtensionContext): void {
     context.subscriptions.push(vscode.commands.registerCommand("localRag.indexFolder", async (uri?: vscode.Uri) => {
         await indexFolder(context, decorations, status, uri);
     }));
+    context.subscriptions.push(vscode.commands.registerCommand("localRag.openProjectConfiguration", async () => {
+        const uri = await chooseProjectConfiguration();
+        if (!uri) return;
+        try { await vscode.window.showTextDocument(uri); }
+        catch {
+            const client = await ensureBackend(context, status);
+            const content = await prepareProjectContent(client, uri);
+            await client.post("/api/v1/project-config/save", { projectRoot: path.dirname(uri.fsPath), content, expectedRevision: null });
+            await vscode.window.showTextDocument(uri);
+        }
+    }));
+    context.subscriptions.push(vscode.commands.registerCommand("localRag.openManager", async () => {
+        const client = await ensureBackend(context, status);
+        const endpoint = vscode.workspace.getConfiguration("localRag").get<string>("backendEndpoint", "http://127.0.0.1:5198").replace(/\/$/, "");
+        const dataDirectory = process.env.LOCALAPPDATA ? path.join(process.env.LOCALAPPDATA, "LocalRag") : context.globalStorageUri.fsPath;
+        let managementToken = process.env.LOCALRAG_MANAGEMENT_TOKEN?.trim();
+        if (!managementToken) {
+            try { managementToken = (await fs.readFile(path.join(dataDirectory, "management-token"), "utf8")).trim(); }
+            catch { /* A retrieval-only host can still open a normal manager session. */ }
+        }
+        const { ticket } = await client.post<{ ticket: string }>("/manage/tickets", { managementToken });
+        await vscode.env.openExternal(vscode.Uri.parse(`${endpoint}/manage#ticket=${encodeURIComponent(ticket)}`));
+    }));
+    context.subscriptions.push(vscode.commands.registerCommand("localRag.useKnowledgeBase", async () => {
+        const client = await ensureBackend(context, status);
+        const source = await pickSource(client);
+        const uri = source ? await chooseProjectConfiguration() : undefined;
+        if (uri && source) await changeProjectReference(client, uri, source.sourceId);
+    }));
+    context.subscriptions.push(vscode.commands.registerCommand("localRag.removeProjectReference", async () => {
+        const uri = await chooseProjectConfiguration();
+        if (!uri) return;
+        const client = await ensureBackend(context, status);
+        try {
+            const document = await vscode.workspace.openTextDocument(uri);
+            const config = parseProjectConfiguration(document.getText());
+            const source = await vscode.window.showQuickPick(config.knowledgeBases.map(kb => kb.sourceId), { placeHolder: "Remove a reference; indexed data remains available" });
+            if (source) await changeProjectReference(client, uri, source, true);
+        } catch (error) { vscode.window.showErrorMessage(`Configuration unchanged: ${error instanceof Error ? error.message : String(error)}`); }
+    }));
+    context.subscriptions.push(vscode.commands.registerCommand("localRag.editKnowledgeBase", async () => {
+        const client = await ensureBackend(context, status);
+        const catalog = await client.get<CatalogSnapshot>("/api/v1/catalog");
+        const selected = await vscode.window.showQuickPick(catalog.sources.map(source => ({ label: source.displayName, description: `${source.scope} | ${source.sourceId} | ${source.canonicalRootPath}`, source })), { placeHolder: "Choose knowledge base to edit (including unclassified legacy sources)" });
+        if (!selected) return;
+        const project = await chooseProjectConfiguration();
+        if (!project) return;
+        const metadata = await promptMetadata(selected.source.displayName, path.dirname(project.fsPath), selected.source);
+        if (!metadata) return;
+        await client.post(`/api/v1/catalog/sources/${encodeURIComponent(selected.source.sourceId)}/metadata`, { ...metadata, expectedRevision: selected.source.metadataRevision });
+        await refreshSourceState(context, decorations, client);
+    }));
     context.subscriptions.push(vscode.commands.registerCommand("localRag.toggleIndexing", async (uri?: vscode.Uri) => {
         const target = await selectedFolderSource(context, decorations, status, uri);
         if (!target) return;
-        const result = await toggleSelectedFolder(target.client, target.source, target.folder.fsPath, async source => {
-            const action = await vscode.window.showWarningMessage(
-                `Stop indexing ${source.displayName} and remove its Local RAG source?`,
-                { modal: true },
-                "Stop indexing");
-            return action === "Stop indexing";
-        });
-        if (result === "cancelled") return;
+        if (!target.source) { await indexFolder(context, decorations, status, target.folder); return; }
+        const action = target.source.status === "Paused" || target.source.indexingState === "Resuming" || target.source.desiredIndexingState === "Paused" ? "resume" : "pause";
+        await target.client.post(`/api/v1/sources/${encodeURIComponent(target.source.sourceId)}/${action}`, undefined);
         await refreshSourceState(context, decorations, target.client);
-        if (result === "removed" && target.source) {
-            vscode.window.showInformationMessage(`Removed ${target.source.displayName} from Local RAG.`);
-        } else if (result === "indexed") {
-            vscode.window.showInformationMessage("Local RAG is indexing this folder.");
-        }
+        vscode.window.showInformationMessage(`${action === "pause" ? "Paused" : "Resumed"} ${target.source.displayName}.`);
     }));
     context.subscriptions.push(vscode.commands.registerCommand("localRag.refreshFolderIndex", async (uri?: vscode.Uri) => {
         const target = await selectedFolderSource(context, decorations, status, uri);
@@ -322,10 +372,20 @@ export function activate(context: vscode.ExtensionContext): void {
         if (!selected) return;
         await showSourceStatus(selected, client, context, decorations);
     }));
-    context.subscriptions.push({ dispose: () => backend?.kill() });
+    // The installed host is shared by editor windows, browser and MCP clients.
 
+    let sourceRefreshRunning = false;
+    const sourcePoll = setInterval(() => {
+        if (!sourcePollingClient || sourceRefreshRunning || !vscode.window.state.focused) return;
+        sourceRefreshRunning = true;
+        void sourcePollingClient.isLive()
+            .then(live => live && sourcePollingClient ? refreshSourceState(context, decorations, sourcePollingClient) : undefined)
+            .catch(() => { status.tooltip = "Local RAG status is stale; reconnect to review the current host state."; })
+            .finally(() => { sourceRefreshRunning = false; });
+    }, 5000);
+    context.subscriptions.push({ dispose: () => { clearInterval(sourcePoll); sourcePollingClient = undefined; } });
     void ensureBackend(context, status)
-        .then(client => refreshSourceState(context, decorations, client))
+        .then(client => { sourcePollingClient = client; return refreshSourceState(context, decorations, client); })
         .catch(error => {
             status.tooltip = error instanceof Error ? error.message : String(error);
         });
@@ -335,7 +395,9 @@ async function refreshSourceState(
     context: vscode.ExtensionContext,
     decorations: SourceDecorationProvider,
     client: LocalRagClient): Promise<SourceState[]> {
-    const sources = await client.get<SourceState[]>("/api/v1/sources");
+    sourcePollingClient = client;
+    const [registered, states] = await Promise.all([client.get<SourceState[]>("/api/v1/sources"), client.get<SourceLifecycle[]>("/api/v1/lifecycle")]);
+    const sources = withLifecycle(registered, states);
     decorations.update(sources);
     localRagView?.updateSources(sources);
     await context.globalState.update(sourceStateKey, sources);
@@ -368,13 +430,95 @@ async function indexFolder(
     uri?: vscode.Uri): Promise<void> {
     const target = await selectedFolderSource(context, decorations, status, uri);
     if (!target) return;
-    const result = await indexSelectedFolder(target.client, target.source, target.folder.fsPath);
-    if (result.kind === "already-indexed") {
-        vscode.window.showInformationMessage(`${result.source.displayName} is already indexed by Local RAG.`);
+    const configUri = await chooseProjectConfiguration();
+    if (!configUri) return;
+    if (target.source) {
+        const action = await vscode.window.showQuickPick(["Use knowledge base in this project", "Edit knowledge base"], { placeHolder: `${target.source.displayName} (${target.source.sourceId}) already indexes this root` });
+        if (action === "Use knowledge base in this project") await changeProjectReference(target.client, configUri, target.source.sourceId);
+        else if (action === "Edit knowledge base") await vscode.commands.executeCommand("localRag.editKnowledgeBase");
         return;
     }
+    const metadata = await promptMetadata(path.basename(target.folder.fsPath), path.dirname(configUri.fsPath));
+    if (!metadata) return;
+    // Validate existing JSON before mutating the host. Cancellation through all prompts leaves it untouched.
+    let prepared: string;
+    try {
+        prepared = await prepareProjectContent(target.client, configUri);
+        await target.client.post("/api/v1/project-config/validate", { content: prepared });
+    }
+    catch (error) { vscode.window.showErrorMessage(`Configuration needs repair before indexing: ${error instanceof Error ? error.message : String(error)}`); return; }
+    const result = await target.client.post<{ source: CatalogSource; alreadyRegistered: boolean }>("/api/v1/catalog/sources", { rootPath: target.folder.fsPath, ...metadata });
     await refreshSourceState(context, decorations, target.client);
-    vscode.window.showInformationMessage(`Local RAG is indexing ${result.source.displayName}.`);
+    await changeProjectReference(target.client, configUri, result.source.sourceId, false, true, prepared);
+}
+
+interface CatalogSource extends SourceState { canonicalRootPath: string; description: string; scope: string; owningProjectRoot?: string; metadataRevision: number }
+interface CatalogSnapshot { instanceId: string; sources: CatalogSource[] }
+
+async function chooseProjectConfiguration(): Promise<vscode.Uri | undefined> {
+    const configured = vscode.workspace.getConfiguration("localRag").get<string>("projectConfigurationPath");
+    const roots = vscode.workspace.workspaceFolders ?? [];
+    const selected = await selectProjectConfigurationPath(roots.map(root => root.uri.fsPath), configured, async paths => {
+        if (paths.length > 1) {
+            const choice = await vscode.window.showQuickPick(roots.map(root => ({ label: root.name, description: root.uri.fsPath, root: root.uri.fsPath })), { placeHolder: "Choose exactly one project root for .localrag.json" });
+            return choice?.root;
+        }
+        return (await vscode.window.showOpenDialog({ canSelectFolders: true, canSelectFiles: false, canSelectMany: false, openLabel: "Choose project root for .localrag.json" }))?.[0]?.fsPath;
+    });
+    return selected ? vscode.Uri.file(selected) : undefined;
+}
+
+async function promptMetadata(name: string, projectRoot: string, existing?: CatalogSource): Promise<{ name: string; description: string; scope: string; owningProjectRoot?: string } | undefined> {
+    const enteredName = await vscode.window.showInputBox({ prompt: "Knowledge base name", value: name, validateInput: value => !value.trim() || value.trim().length > 120 ? "Enter 1–120 characters" : undefined });
+    if (enteredName === undefined) return;
+    const description = await vscode.window.showInputBox({ prompt: "Description (plain text)", value: existing?.description ?? "", validateInput: value => value.length > 2000 ? "Use at most 2,000 characters" : undefined });
+    if (description === undefined) return;
+    const scope = await vscode.window.showQuickPick([{ label: "Local", value: "local", description: "Associated with the selected project; explicit reuse is still allowed" }, { label: "Global", value: "global", description: "Reusable; each project still selects it explicitly" }], { placeHolder: "Choose intended reuse (local by default)" });
+    if (!scope) return;
+    return { name: enteredName.trim(), description, scope: scope.value, owningProjectRoot: scope.value === "local" ? projectRoot : undefined };
+}
+
+async function prepareProjectContent(client: LocalRagClient, uri: vscode.Uri): Promise<string> {
+    const open = vscode.workspace.textDocuments.find(document => document.uri.toString() === uri.toString());
+    if (open) { parseProjectConfiguration(open.getText()); return open.getText(); }
+    const snapshot = await client.post<{ content: string | null; revision: string | null }>("/api/v1/project-config/read", { projectRoot: path.dirname(uri.fsPath) });
+    if (snapshot.content !== null) { parseProjectConfiguration(snapshot.content); return snapshot.content; }
+    const name = await vscode.window.showInputBox({ prompt: "Solution name for the new project configuration", value: path.basename(path.dirname(uri.fsPath)), validateInput: value => !value.trim() || value.trim().length > 120 ? "Enter 1–120 characters" : undefined });
+    if (name === undefined) throw new Error("Cancelled; project configuration was not created.");
+    const description = await vscode.window.showInputBox({ prompt: "Solution description", value: "", validateInput: value => value.length > 2000 ? "Use at most 2,000 characters" : undefined });
+    if (description === undefined) throw new Error("Cancelled; project configuration was not created.");
+    const catalog = await client.get<CatalogSnapshot>("/api/v1/catalog");
+    return JSON.stringify({ schemaVersion: 1, solution: { name: name.trim(), description }, instanceId: catalog.instanceId, knowledgeBases: [] } satisfies ProjectConfiguration, null, 2) + "\n";
+}
+
+async function changeProjectReference(client: LocalRagClient, uri: vscode.Uri, sourceId: string, remove = false, indexed = false, prepared?: string): Promise<void> {
+    try {
+        const open = vscode.workspace.textDocuments.find(document => document.uri.toString() === uri.toString());
+        const location = { projectRoot: path.dirname(uri.fsPath) };
+        const result = await applyReferenceChange({
+            read: () => client.post("/api/v1/project-config/read", location),
+            validate: content => client.post("/api/v1/project-config/validate", { content }),
+            save: (content, expectedRevision) => client.post("/api/v1/project-config/save", { ...location, content, expectedRevision })
+        }, sourceId, remove, async () => prepared ?? await prepareProjectContent(client, uri), open ? {
+            text: () => open.getText(), version: () => open.version,
+            apply: async (proposed, expectedVersion) => {
+                if (open.version !== expectedVersion) return false;
+                const edit = new vscode.WorkspaceEdit();
+                edit.replace(uri, new vscode.Range(open.positionAt(0), open.positionAt(open.getText().length)), proposed);
+                return vscode.workspace.applyEdit(edit);
+            }
+        } : undefined, async () => {
+            if (!open) return true;
+            return !!await vscode.window.showInformationMessage(`${remove ? "Remove" : "Add"} source ${sourceId} in ${uri.fsPath}${open.isDirty ? " (unsaved buffer)" : ""}?`, "Apply reference edit");
+        });
+        if (result === "cancelled") {
+            if (indexed) vscode.window.showWarningMessage(`Indexed; project configuration not saved. Retry Use Knowledge Base in This Project with source ID ${sourceId}.`);
+        } else vscode.window.showInformationMessage(result === "buffer" ? "Project reference updated in the editor buffer. Save when ready." : "Project configuration saved.");
+    } catch (error) {
+        const action = await vscode.window.showErrorMessage(`${indexed ? "Indexed; project configuration not saved." : "Configuration unchanged."} ${error instanceof Error ? error.message : String(error)} Source ID: ${sourceId}`, "Copy source reference", "Retry reference edit");
+        if (action === "Copy source reference") await vscode.env.clipboard.writeText(JSON.stringify({ sourceId }));
+        if (action === "Retry reference edit") await changeProjectReference(client, uri, sourceId, remove, indexed);
+    }
 }
 
 async function showSourceStatus(
@@ -382,7 +526,7 @@ async function showSourceStatus(
     client: LocalRagClient,
     context: vscode.ExtensionContext,
     decorations: SourceDecorationProvider): Promise<void> {
-    if (selected.recovery && !isMissingSource(selected)) {
+    if ((selected.recovery || !sourceCanContribute(selected)) && (!isMissingSource(selected) || selected.indexingState === "Resuming")) {
         const presentation = recoveryPresentation(selected);
         const message = `${selected.displayName}: ${presentation.label}${presentation.detail ? ` - ${presentation.detail}` : ""}`;
         if (presentation.action) {
@@ -390,6 +534,10 @@ async function showSourceStatus(
             if (action === "Queue recovery") {
                 await client.post(`/api/v1/sources/${encodeURIComponent(selected.sourceId)}/reindex`, undefined);
                 vscode.window.showInformationMessage(`Recovery queued for ${selected.displayName}.`);
+            } else if (action === "Retry resume") {
+                await client.post(`/api/v1/sources/${encodeURIComponent(selected.sourceId)}/resume`, undefined);
+                await refreshSourceState(context, decorations, client);
+                vscode.window.showInformationMessage(`Resume reconciliation retried for ${selected.displayName}.`);
             }
         } else {
             vscode.window.showInformationMessage(message);
@@ -423,6 +571,7 @@ function safeSearchError(error: unknown): string {
             case 401: return "Authentication failed. Reconnect Local RAG or refresh its token.";
             case 403: return "The selected source is not available to this Local RAG client.";
             case 400: return "The query or selected filters are invalid.";
+            case 409: return "A selected source is paused, resuming, or rebuilding. Review source status and retry after reconciliation.";
             case 408:
             case 504: return "The request timed out. Narrow the query or try again.";
             default: return "Confirm the local host and selected sources are available.";
@@ -434,7 +583,8 @@ function safeSearchError(error: unknown): string {
 function updateStatusIndicator(sources: readonly SourceState[]): void {
     if (!sourceStatusIndicator) return;
     const degraded = sources.filter(source => source.recovery?.state.toLowerCase() === "degraded").length;
-    const recovering = sources.filter(source => ["queued", "running"].includes(source.recovery?.state.toLowerCase() ?? "")).length;
+    const recovering = sources.filter(source => ["queued", "running"].includes(source.recovery?.state.toLowerCase() ?? "") || ["Pausing", "Resuming"].includes(source.indexingState ?? "")).length;
+    const paused = sources.filter(source => source.indexingState === "Paused" || source.status.toLowerCase() === "paused").length;
     if (degraded > 0) {
         sourceStatusIndicator.text = `$(warning) Local RAG (${degraded})`;
         sourceStatusIndicator.tooltip = `${degraded} source${degraded === 1 ? " needs" : "s need"} recovery attention. Select to review and retry.`;
@@ -443,45 +593,40 @@ function updateStatusIndicator(sources: readonly SourceState[]): void {
         sourceStatusIndicator.tooltip = `${recovering} source${recovering === 1 ? " is" : "s are"} recovering automatically.`;
     } else {
         sourceStatusIndicator.text = "$(database) Local RAG";
-        sourceStatusIndicator.tooltip = `${sources.length} registered source${sources.length === 1 ? "" : "s"}; recovery state is healthy.`;
+        sourceStatusIndicator.tooltip = `${sources.length} registered source${sources.length === 1 ? "" : "s"}; ${paused} paused and excluded from search.`;
     }
 }
 
 async function ensureBackend(context: vscode.ExtensionContext, status: vscode.StatusBarItem): Promise<LocalRagClient> {
     const settings = vscode.workspace.getConfiguration("localRag");
     const endpoint = settings.get<string>("backendEndpoint", "http://127.0.0.1:5198").replace(/\/$/, "");
-    const installed = await resolveInstallerConfiguration(settings, process.env.LOCALAPPDATA);
+    const address = new URL(endpoint);
+    if (!["http:", "https:"].includes(address.protocol) || !["localhost", "127.0.0.1", "[::1]"].includes(address.hostname) || address.username || address.password || address.pathname !== "/" || address.search || address.hash)
+        throw new Error("Local RAG backendEndpoint must be a loopback HTTP(S) origin.");
     const token = await getOrCreateToken(context);
     const client = new LocalRagClient(endpoint, token);
     if (!await client.isLive()) {
-        await launchBackend(context, installed.hostExecutable, endpoint, token, installed.weaviateEndpoint);
+        const installed = await resolveInstallerConfiguration(settings, process.env.LOCALAPPDATA);
+        await launchBackend(context, installed, endpoint, token);
+        await waitForLive(client);
     }
-    await waitForReady(client);
     status.text = "$(database) Local RAG";
     status.tooltip = `Connected to ${endpoint}`;
     return client;
 }
 
-async function launchBackend(context: vscode.ExtensionContext, executable: string, endpoint: string, token: string, weaviateEndpoint: string): Promise<void> {
-    if (backend && !backend.killed) return;
-    try { await fs.access(executable); } catch {
-        throw new Error(`Local RAG standalone host was not found at ${executable}. Repair or reinstall Local RAG.`);
-    }
-    backend = spawn(executable, [], {
-        windowsHide: true,
-        env: {
-            ...process.env,
-            ASPNETCORE_URLS: endpoint,
-            LocalRag__Authentication__Token: token,
-            LocalRag__Weaviate__Endpoint: weaviateEndpoint
-        }
+async function launchBackend(context: vscode.ExtensionContext, installed: ResolvedInstallerConfiguration, endpoint: string, token: string): Promise<void> {
+    const launcher = path.join(path.dirname(installed.hostExecutable), "Start-LocalRag.ps1");
+    try { await fs.access(launcher); } catch { throw new Error(`Local RAG launcher is missing at ${launcher}. Repair the installation.`); }
+    await new Promise<void>((resolve, reject) => {
+        const launch = spawn("powershell.exe", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden", "-File", launcher, "-NoBrowser", "-Endpoint", endpoint], {
+            windowsHide: true,
+            env: { ...process.env, LOCALRAG_MCP_TOKEN: token, ...providerEnvironment(installed) },
+            stdio: ["ignore", "ignore", "ignore"]
+        });
+        launch.once("error", reject);
+        launch.once("exit", code => code === 0 ? resolve() : reject(new Error(`Local RAG launcher failed (${code}). Open Local RAG independently to inspect startup diagnostics.`)));
     });
-    backend.stderr?.on("data", data => console.error(`Local RAG backend: ${data}`));
-    backend.on("exit", () => { backend = undefined; });
-    const dataDirectory = process.env.LOCALAPPDATA ? path.join(process.env.LOCALAPPDATA, "LocalRag") : context.globalStorageUri.fsPath;
-    await fs.mkdir(dataDirectory, { recursive: true });
-    const discovery: BackendDiscovery = { endpoint, processId: backend.pid ?? 0, tokenReference: "VS Code SecretStorage: localRag.token" };
-    await fs.writeFile(path.join(dataDirectory, "backend.json"), JSON.stringify(discovery, undefined, 2));
 }
 
 async function getOrCreateToken(context: vscode.ExtensionContext): Promise<string> {
@@ -490,18 +635,18 @@ async function getOrCreateToken(context: vscode.ExtensionContext): Promise<strin
 
     const key = "localRag.token";
     const existing = await context.secrets.get(key);
-    if (existing) return existing;
-    const token = crypto.randomBytes(32).toString("base64url");
+    const dataDirectory = process.env.LOCALAPPDATA ? path.join(process.env.LOCALAPPDATA, "LocalRag") : context.globalStorageUri.fsPath;
+    const token = await sharedHostToken(dataDirectory, existing);
     await context.secrets.store(key, token);
     return token;
 }
 
-async function waitForReady(client: LocalRagClient): Promise<void> {
+async function waitForLive(client: LocalRagClient): Promise<void> {
     for (let attempt = 0; attempt < 30; attempt++) {
-        if (await client.isReady()) return;
+        if (await client.isLive()) return;
         await new Promise(resolve => setTimeout(resolve, 500));
     }
-    throw new Error("The Local RAG backend did not become ready. Confirm Weaviate is running at the configured endpoint, the RagChunk_v1 schema is compatible, and run scripts/Install-LocalRagEmbeddingModel.ps1 to install verified ONNX assets.");
+    throw new Error("The Local RAG backend did not become ready. Check the selected vector-store provider diagnostics, verify the installed native assets or external Weaviate endpoint as applicable, and confirm the verified ONNX model assets are installed.");
 }
 
 async function resolveFolder(uri?: vscode.Uri): Promise<vscode.Uri | undefined> {
@@ -517,8 +662,7 @@ async function resolveFolder(uri?: vscode.Uri): Promise<vscode.Uri | undefined> 
     }
     const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
     if (workspaceFolder) return workspaceFolder.uri;
-    vscode.window.showErrorMessage("Open a folder before registering a Local RAG source.");
-    return undefined;
+    return (await vscode.window.showOpenDialog({ canSelectFolders: true, canSelectFiles: false, canSelectMany: false, openLabel: "Choose folder to index" }))?.[0];
 }
 
 async function pickSource(client: LocalRagClient, sources?: SourceState[]): Promise<SourceState | undefined> {

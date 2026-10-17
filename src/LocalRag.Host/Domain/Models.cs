@@ -1,5 +1,8 @@
+using System.Text.Json.Serialization;
+
 namespace LocalRag.Domain;
 
+[JsonConverter(typeof(JsonStringEnumConverter<SourceStatus>))]
 public enum SourceStatus
 {
     Pending,
@@ -40,7 +43,11 @@ public sealed record SourceRecord(
     string EmbeddingProfileId,
     string? LastError = null,
     SourceLifecycleState LifecycleState = SourceLifecycleState.Active,
-    long LifecycleEpoch = 0);
+    long LifecycleEpoch = 0,
+    string Description = "",
+    string Scope = "unclassified",
+    string? OwningProjectRoot = null,
+    long MetadataRevision = 0);
 
 /// <summary>File identity and metadata used to detect changes within a registered source.</summary>
 public sealed record IndexedFile(
@@ -86,6 +93,7 @@ public sealed record SearchRequest(
     string? Language = null,
     string? PathPrefix = null);
 
+[JsonConverter(typeof(JsonStringEnumConverter<SearchMode>))]
 public enum SearchMode { Hybrid, Lexical, Vector }
 
 public sealed record SearchResult(

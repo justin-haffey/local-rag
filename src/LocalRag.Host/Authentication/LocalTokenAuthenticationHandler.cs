@@ -20,7 +20,7 @@ public sealed class LocalTokenAuthenticationHandler(
     {
         var expected = localRagOptions.Value.Authentication.Token;
         var supplied = Request.Headers.Authorization.ToString();
-        if (string.IsNullOrWhiteSpace(expected) || !supplied.StartsWith("Bearer ", StringComparison.Ordinal))
+        if (string.IsNullOrWhiteSpace(expected) || !supplied.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
         {
             return Task.FromResult(AuthenticateResult.Fail("A local bearer token is required."));
         }
